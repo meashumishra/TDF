@@ -1,5 +1,5 @@
 [project]
-name = "tdf"
+name = "tdf-converter"
 version = "0.1.0"
 description = "Convert documents into a token-dense, LLM-native format"
 requires-python = ">=3.10"

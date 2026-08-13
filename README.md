@@ -57,7 +57,7 @@ You can install TDF via `pip`:
 ```bash
 git clone https://github.com/YOUR_USERNAME/tdf.git
 cd tdf
-pip install -e .
+pip install tdf-converter
 ```
 
 ## Usage
