@@ -1,7 +1,7 @@
 [project]
 name = "tdf-converter"
 version = "0.1.0"
-description = "Convert documents into a token-dense, LLM-native format"
+description = "Convert documents (PDF, DOCX, XLSX, HTML, etc.) into Token-Dense Format (TDF), a lossless plain-text format that cuts LLM token costs by 28-47% compared to Markdown."
 requires-python = ">=3.10"
 dependencies = [
     "tiktoken>=0.7",
