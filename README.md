@@ -56,7 +56,11 @@ TDF's numbers below use `--no-legend` mode (the fairest match to LLMLingua's raw
 
 ## Installation
 
-TDF isn't published on PyPI yet — install it from source:
+```bash
+pip install tdf-converter
+```
+
+Or install from source:
 
 ```bash
 git clone https://github.com/meashumishra/TDF-Token-Dense-Format-.git
