@@ -2,7 +2,23 @@
 name = "tdf-converter"
 version = "0.1.0"
 description = "Convert documents (PDF, DOCX, XLSX, HTML, etc.) into Token-Dense Format (TDF), a lossless plain-text format that cuts LLM token costs by 28-47% compared to Markdown."
+readme = "README.md"
 requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "Ashish", email = "meashumishra76@gmail.com" }]
+keywords = ["llm", "tokens", "markdown", "pdf", "document-conversion", "prompt-compression"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+    "Topic :: Text Processing :: Markup",
+    "Topic :: Software Development :: Libraries",
+]
 dependencies = [
     "tiktoken>=0.7",
     "pymupdf>=1.24",
@@ -15,6 +31,11 @@ dependencies = [
 
 [project.optional-dependencies]
 bench = ["markitdown[all]>=0.1", "pytest>=8"]
+
+[project.urls]
+Homepage = "https://github.com/meashumishra/TDF-Token-Dense-Format-"
+Repository = "https://github.com/meashumishra/TDF-Token-Dense-Format-"
+Issues = "https://github.com/meashumishra/TDF-Token-Dense-Format-/issues"
 
 [project.scripts]
 tdf = "tdf.cli:main"
