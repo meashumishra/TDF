@@ -10,6 +10,8 @@ A document format and converter designed specifically for LLMs, with **zero meas
 pdf docx xlsx pptx html md csv txt  ──►  TDF  ──►  your LLM
 ```
 
+![tdf stats demo](docs/demo.gif)
+
 ## The Problem
 
 Every LLM tool accepts document uploads. Under the hood, they convert the file to Markdown and paste it into the context window. That conversion is where the money and context window goes. Markdown was designed in 2004 for human readability, not token efficiency. 
