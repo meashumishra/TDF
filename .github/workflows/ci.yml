@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.10"
+        
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip uv
+        uv pip install --system -e ".[bench]"
+        uv pip install --system hypothesis pytest
+        
+    - name: Generate benchmark samples
+      run: |
+        python bench/make_samples.py
+        
+    - name: Run tests (including property-based fuzzing)
+      run: |
+        python -m pytest tests/ -v
