@@ -52,12 +52,12 @@ We measured TDF against standard Markdown, MarkItDown (Microsoft's standard conv
 
 ## Installation
 
-You can install TDF via `pip`:
+TDF isn't published on PyPI yet — install it from source:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/tdf.git
-cd tdf
-pip install tdf-converter
+git clone https://github.com/meashumishra/TDF-Token-Dense-Format-.git
+cd TDF-Token-Dense-Format-
+pip install .
 ```
 
 ## Usage
