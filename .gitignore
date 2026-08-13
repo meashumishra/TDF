@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.hypothesis/
+bench/results_*
+bench/*_llmlingua.txt
+samples/
+samples_real/
+samples_tables/

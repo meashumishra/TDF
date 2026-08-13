@@ -1,0 +1,2 @@
+[console_scripts]
+tdf = tdf.cli:main
