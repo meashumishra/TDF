@@ -349,15 +349,31 @@ def test_elision_gist_with_embedded_newline_does_not_inject():
 def test_tier_and_columnar_encoding_compose_correctly():
     """--tier (elision) and columnar encoding run in sequence in cmd_convert
     (tier() first, then encode_columns() on the tiered doc) -- verify that
-    combination doesn't corrupt either mechanism on a real document."""
-    from tdf.readers import read
+    combination doesn't corrupt either mechanism.
+
+    Built synthetically (an index-like Para to trigger tier(), a
+    low-cardinality table to trigger encode_columns()) rather than reading a
+    real sample file: samples_real/ is gitignored and has no generator
+    script (unlike samples/, which bench/make_samples.py creates), so a real
+    file here works locally but breaks CI, which never has that directory.
+    """
     from tdf.tier import tier, restore
 
-    doc = read(ROOT / "samples_real" / "kubernetes_docs.html")
+    # >= tier.MIN_TOKENS (120) and 0 sentence terminators -- matches the
+    # nav-tree/index shape tier() is designed to catch.
+    nav_text = " ".join(f"Item{i}" for i in range(200))
+    regions = ["Asia Pacific Region", "Europe Middle East Africa", "Americas Region North South"]
+    rows = [[f"Person{i}", regions[i % 3], str(100000 + i)] for i in range(40)]
+    doc = Doc(blocks=[
+        Para("Real prose sentence one. Real prose sentence two."),
+        Para(nav_text),
+        Table(["Person", "Region", "Salary"], rows),
+    ])
     original = copy.deepcopy(doc)
     store = tier(doc)
     assert store, "expected at least one elided region on this document"
     books = encode_columns(doc)
+    assert books, "expected the table to trigger columnar encoding"
     out = render_tdf(doc, legend=False, codebooks=books)
     restored = parse_tdf(out)
 
