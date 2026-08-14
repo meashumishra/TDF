@@ -4,7 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://github.com/meashumishra/TDF-Token-Dense-Format-/actions/workflows/ci.yml/badge.svg)](https://github.com/meashumishra/TDF-Token-Dense-Format-/actions/workflows/ci.yml)
 
-A document format and converter designed specifically for LLMs, with **zero measured content loss**. Savings scale with how structured the document is: **28–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping to single digits on prose-heavy documents where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
+A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **28–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping to single digits on prose-heavy documents where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
 
 ```
 pdf docx xlsx pptx html md csv txt  ──►  TDF  ──►  your LLM
@@ -22,7 +22,7 @@ Pipes in tables (`|`), repeating header cells, and standard formatting drastical
 
 TDF solves this by introducing a line-oriented, token-optimized, plain-text format specifically engineered for BPE tokenizers.
 
-* **100% Fidelity (Lossless):** Unlike prompt compression tools (like LLMLingua) that destructively shrink text, TDF achieves its compression purely through format optimization, structural normalization, and dictionary coding. Data is never lost.
+* **100% Distinct-Content Recall:** Unlike prompt compression tools (like LLMLingua) that destructively discard entities and numbers, TDF's default mode achieves its compression through format optimization and dictionary coding. Every meaning-bearing term survives the round-trip.
 * **Instant Conversion:** Runs instantly without requiring a GPU or a local LLM inference step.
 * **Advanced Table Handling:** Borderless PDF table detection, rectangular grid enforcement, and columnar dictionary coding (Parquet/ORC concepts applied to LLM tokens).
 * **Addressable Elision:** TDF can identify low-density structural boilerplate (like giant website nav trees) and replace it with a token-cheap `!E` marker. The LLM can retrieve the original if needed.
@@ -45,7 +45,7 @@ We measured TDF against standard Markdown, MarkItDown (Microsoft's standard conv
 
 These are structured/table-heavy documents, where TDF's gains are largest. On prose-heavy, out-of-training documents savings are smaller — `sec_filing.html` (42.9%), `attention.pdf` (12.9%), `kubernetes_docs.html` (2.0%) — because there's less table/boilerplate overhead for TDF to strip out and Markdown is already close to token-optimal for plain prose. Full numbers: [`bench/results_samples_real.md`](bench/results_samples_real.md).
 
-**TDF vs LLMLingua (Lossless vs Lossy):**
+**TDF vs LLMLingua (Content-Preserving vs Lossy):**
 
 TDF's numbers below use `--no-legend` mode (the fairest match to LLMLingua's raw compressed output, which has no self-describing header either); with the default legend-on output, `handbook.html` saves 43.2% instead of 47.9% (see table above).
 
@@ -54,7 +54,7 @@ TDF's numbers below use `--no-legend` mode (the fairest match to LLMLingua's raw
 | sec_filing.html | 26,587 | 15,032 (43.5%) | 14,728 (44.6%) | 14.33s |
 | handbook.html | 4,732 | 2,464 (47.9%) | 3,084 (34.8%) | 1.94s |
 
-*LLMLingua destroys table structure, strips out rows randomly, merges columns, and drops critical values to achieve its compression. **TDF achieves similar or better compression (43-47%) natively during conversion with 100% semantic fidelity.***
+*LLMLingua destroys table structure, strips out rows randomly, merges columns, and drops critical values to achieve its compression. **TDF achieves similar or better compression (43-47%) natively during conversion with 100% distinct-content recall.***
 
 ## Installation
 
