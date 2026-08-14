@@ -38,23 +38,23 @@ We measured TDF against standard Markdown, MarkItDown (Microsoft's standard conv
 |---|---|---|---|
 | operating_review.pdf | **65.7%** | **65.7%** | 100.0% |
 | services_agreement.docx | **47.0%** | **47.7%** | 100.0% |
-| orders.csv | **45.7%** | **45.7%** | 100.0% |
+| orders.csv | **45.8%** | **45.8%** | 100.0% |
 | quarterly_deck.pptx | **37.3%** | **38.2%** | 100.0% |
-| handbook.html | **43.2%** | **43.2%** | 100.0% |
+| handbook.html | **43.8%** | **43.8%** | 100.0% |
 | runbook.md | **27.8%** | **27.8%** | 100.0% |
 
-These are structured/table-heavy documents, where TDF's gains are largest. On prose-heavy, out-of-training documents savings are smaller — `sec_filing.html` (42.6%), `kubernetes_docs.html` (22.9%), `attention.pdf` (13.3%) — because there's less table/boilerplate overhead for TDF to strip out and Markdown is already close to token-optimal for plain prose. Full numbers: [`bench/results_samples_real.md`](bench/results_samples_real.md).
+These are structured/table-heavy documents, where TDF's gains are largest. On prose-heavy, out-of-training documents savings are smaller — `sec_filing.html` (42.8%), `kubernetes_docs.html` (22.9%), `attention.pdf` (13.3%) — because there's less table/boilerplate overhead for TDF to strip out and Markdown is already close to token-optimal for plain prose. Full numbers: [`bench/results_samples_real.md`](bench/results_samples_real.md).
 
 **TDF vs LLMLingua (Content-Preserving vs Lossy):**
 
-TDF's numbers below use `--no-legend` mode (the fairest match to LLMLingua's raw compressed output, which has no self-describing header either); with the default legend-on output, `handbook.html` saves 43.2% instead of 47.9% (see table above).
+TDF's numbers below use `--no-legend` mode (the fairest match to LLMLingua's raw compressed output, which has no self-describing header either); with the default legend-on output, `handbook.html` saves 43.8% instead of 48.5% (see table above).
 
 | Document | Markdown Tokens | TDF Tokens (Savings, no-legend) | LLMLingua Tokens (Savings) | LLMLingua CPU Time |
 |---|---|---|---|---|
-| sec_filing.html | 26,587 | 15,032 (43.5%) | 14,728 (44.6%) | 14.33s |
-| handbook.html | 4,732 | 2,464 (47.9%) | 3,084 (34.8%) | 1.94s |
+| sec_filing.html | 26,587 | 14,972 (43.7%) | 14,728 (44.6%) | 14.33s |
+| handbook.html | 4,732 | 2,435 (48.5%) | 3,084 (34.8%) | 1.94s |
 
-*LLMLingua destroys table structure, strips out rows randomly, merges columns, and drops critical values to achieve its compression. **TDF achieves similar or better compression (43-47%) natively during conversion with 100% distinct-content recall.***
+*LLMLingua destroys table structure, strips out rows randomly, merges columns, and drops critical values to achieve its compression. **TDF achieves similar or better compression (44-49%) natively during conversion with 100% distinct-content recall.***
 
 ## Installation
 
@@ -94,7 +94,7 @@ For a deep dive into the research, algorithmic decisions (Token-cost-weighted Re
 
 ## Known limitations
 
-- **Small documents can come out larger.** `prose_only.pdf` is 222 Markdown tokens but 252 in TDF, because the ~130-token self-describing legend dominates. Below roughly 500 tokens, use `--no-legend`.
+- **Small documents can come out larger, and it's not just prose.** `prose_only.pdf` is 222 Markdown tokens but 337 by default, because the ~130-token self-describing legend dominates (`--no-legend` brings it to 113). The same effect hits small tables: `borderless_report.pdf` and `ruled_report.pdf` (9x5 tables, ~530 Markdown tokens) are 1.7% *larger* than Markdown at default settings, but save 40%+ under `--no-legend`. `tdf stats` shows both numbers for a given file before you commit to one — below roughly 500 tokens, check it rather than assuming.
 - **Scanned/image PDFs are not handled** — there is no OCR step. Pair with olmOCR or Chandra first.
 - **Dictionary substitution hurts raw prose readability.** `...at the start of §3 1.` expands losslessly but reads badly to humans.
 - **Fidelity metric is blind to word order.** "100% distinct-content recall" is a 'bag-of-words' metric. Reversing a sentence (e.g., "A > B" to "B > A") or swapping table columns still yields a 100% score despite destroying meaning.

@@ -53,8 +53,18 @@ def cmd_stats(a) -> int:
     doc = _load(a.input, a.max_pages)
     md = render_markdown(copy.deepcopy(doc))
     skel = render_skeleton(copy.deepcopy(doc))
-    tdf_nl = render_tdf(copy.deepcopy(doc), legend=False)
-    tdf = render_tdf(copy.deepcopy(doc), legend=True)
+
+    # encode_columns() and render_tdf() must run on the same doc object --
+    # codebooks computed from one copy don't correctly substitute into a
+    # separate (structurally identical) deepcopy. Mirrors `cmd_convert`'s
+    # default behavior so these numbers match what `tdf convert` produces.
+    doc_nl = copy.deepcopy(doc)
+    books_nl = encode_columns(doc_nl)
+    tdf_nl = render_tdf(doc_nl, legend=False, codebooks=books_nl)
+
+    doc_wl = copy.deepcopy(doc)
+    books_wl = encode_columns(doc_wl)
+    tdf = render_tdf(doc_wl, legend=True, codebooks=books_wl)
 
     t_md, t_tdf, t_nl, t_sk = count(md), count(tdf), count(tdf_nl), count(skel)
     rows = [

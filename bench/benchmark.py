@@ -23,6 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from tdf.columnar import encode_columns  # noqa: E402
 from tdf.emit import render_markdown, render_skeleton, render_tdf  # noqa: E402
 from tdf.fidelity import compare  # noqa: E402
 from tdf.ir import Doc, Table  # noqa: E402
@@ -98,10 +99,19 @@ def bench_one(path: Path) -> dict:
     ht = render_html(copy.deepcopy(doc))
     sk = render_skeleton(copy.deepcopy(doc))
 
+    # encode_columns() and render_tdf() must run on the *same* doc object --
+    # codebooks computed from one copy don't correctly substitute into a
+    # separate (structurally identical) deepcopy. This mirrors exactly what
+    # `tdf convert` does by default (cli.py's cmd_convert).
+    doc_tdf = copy.deepcopy(doc)
+    books = encode_columns(doc_tdf)
     t1 = time.perf_counter()
-    td = render_tdf(copy.deepcopy(doc), legend=True)
+    td = render_tdf(doc_tdf, legend=True, codebooks=books)
     tdf_s = time.perf_counter() - t1
-    td_nl = render_tdf(copy.deepcopy(doc), legend=False)
+
+    doc_tdf_nl = copy.deepcopy(doc)
+    books_nl = encode_columns(doc_tdf_nl)
+    td_nl = render_tdf(doc_tdf_nl, legend=False, codebooks=books_nl)
 
     mit, mit_s = markitdown_tokens(path)
     fid = compare(original, parse_tdf(td))
