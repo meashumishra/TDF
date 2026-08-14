@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://github.com/meashumishra/TDF-Token-Dense-Format-/actions/workflows/ci.yml/badge.svg)](https://github.com/meashumishra/TDF-Token-Dense-Format-/actions/workflows/ci.yml)
+[![Tests](https://github.com/meashumishra/TDF/actions/workflows/ci.yml/badge.svg)](https://github.com/meashumishra/TDF/actions/workflows/ci.yml)
 
 A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **28–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping into the low teens on prose-heavy documents where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
 
@@ -22,7 +22,7 @@ Pipes in tables (`|`), repeating header cells, and standard formatting drastical
 
 TDF solves this by introducing a line-oriented, token-optimized, plain-text format specifically engineered for BPE tokenizers.
 
-* **100% Distinct-Content Recall:** Unlike prompt compression tools (like LLMLingua) that destructively discard entities and numbers, TDF's default mode achieves its compression through format optimization and dictionary coding. Every meaning-bearing term survives the round-trip.
+* **Content Preservation:** Unlike prompt compression tools (like LLMLingua) that destructively discard entities and numbers, TDF's default mode achieves its compression through format optimization and dictionary coding. Tested round-trips on our benchmark corpus show 100% distinct-content recall, and ≥99.4% observed on out-of-corpus prose like PEP 8.
 * **Instant Conversion:** Runs instantly without requiring a GPU or a local LLM inference step.
 * **Advanced Table Handling:** Borderless PDF table detection, rectangular grid enforcement, and columnar dictionary coding (Parquet/ORC concepts applied to LLM tokens).
 * **Addressable Elision:** TDF can identify low-density structural boilerplate (like giant website nav trees) and replace it with a token-cheap `!E` marker. The LLM can retrieve the original if needed.
@@ -65,8 +65,8 @@ pip install tdf-converter
 Or install from source:
 
 ```bash
-git clone https://github.com/meashumishra/TDF-Token-Dense-Format-.git
-cd TDF-Token-Dense-Format-
+git clone https://github.com/meashumishra/TDF.git
+cd TDF
 pip install .
 ```
 

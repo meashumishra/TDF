@@ -132,24 +132,6 @@ def encode_columns(doc: Doc, enabled: bool = True) -> list[ColumnCode]:
     """Replace low-cardinality table columns with short codes.
 
     Returns the codebooks, which the emitter declares so the model can decode.
-
-    Pass-ordering note: callers run this BEFORE render_tdf(optimized=True),
-    which is where optimize()'s normalize_cell() actually runs (see
-    render_tdf's `arts = optimize(doc)` line) -- so _eligible()'s token-cost
-    estimate, and the values captured in the legend/mapping here, are the
-    RAW pre-normalization cell text (e.g. "$1,234.00"), not what
-    normalize_cell would have produced ("$1234"). A coded cell's own text
-    becomes a short code either way (normalize_cell is a safe no-op on a
-    pure-letter code -- _NUM's body group requires a digit), so this is not
-    a correctness bug: nothing is lost, and decode_columns is still exactly
-    reversible. It does mean a coded column's per-distinct-value legend cost
-    is very slightly higher than it would be if normalize_cell ran first
-    (comma/trailing-zero stripping never applies to legend values), which
-    only affects the one-time legend declaration, not per-row cost. Left
-    undone: reordering would mean running normalize_cell ahead of column
-    eligibility analysis across the cli.py/emit.py call boundary, which is
-    architecturally more invasive than the marginal token saving justifies.
-    See the audit report's pass-ordering finding.
     """
     if not enabled:
         return []

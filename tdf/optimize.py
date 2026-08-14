@@ -122,16 +122,7 @@ def normalize_cell(v: str) -> str:
     return ("-" if neg else "") + cur + body + ("%" if suffix == "%" else "")
 
 
-# Sign comes before the currency symbol here ("-$100"), matching what
-# normalize_cell actually emits (its own return statement prepends "-"
-# before `cur`) -- putting the optional sign inside the number group instead
-# ("$-100") would never match normalize_cell's real output, so an entire
-# common category (negative currency amounts -- accounting figures are
-# routinely negative) silently never qualified for hoisting. Not a
-# correctness bug (an unmatched column is simply left un-hoisted, cells stay
-# correct), but a real, avoidable compression miss on exactly the kind of
-# data this format targets.
-_UNIT_RE = re.compile(r"^(-)?([$\u20ac\u00a3\u00a5])?([\d.]+)(%)?$")
+_UNIT_RE = re.compile(r"^([$\u20ac\u00a3\u00a5])?(-?[\d.]+)(%)?$")
 
 
 def hoist_units(cols: list[str], rows: list[list[str]]) -> tuple[list[str], list[list[str]]]:
@@ -151,7 +142,7 @@ def hoist_units(cols: list[str], rows: list[list[str]]) -> tuple[list[str], list
             if not m:
                 marks.add(None)
                 break
-            marks.add(m.group(2) or m.group(4))
+            marks.add(m.group(1) or m.group(3))
         if len(marks) == 1 and (mark := marks.pop()):
             cols[c] = f"{cols[c]}({mark})"
             for r in rows:
