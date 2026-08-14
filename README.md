@@ -4,7 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://github.com/meashumishra/TDF/actions/workflows/ci.yml/badge.svg)](https://github.com/meashumishra/TDF/actions/workflows/ci.yml)
 
-A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **28–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping into the low teens on prose-heavy documents where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
+A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **45–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping to **2–10%** on prose-and-code documentation where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
 
 ```
 pdf docx xlsx pptx html md csv txt  ──►  TDF  ──►  your LLM
@@ -43,7 +43,16 @@ We measured TDF against standard Markdown, MarkItDown (Microsoft's standard conv
 | handbook.html | **43.8%** | **43.8%** | 100.0% |
 | runbook.md | **27.8%** | **27.8%** | 100.0% |
 
-These are structured/table-heavy documents, where TDF's gains are largest. On prose-heavy, out-of-training documents savings are smaller — `sec_filing.html` (42.8%), `kubernetes_docs.html` (22.9%), `attention.pdf` (13.3%) — because there's less table/boilerplate overhead for TDF to strip out and Markdown is already close to token-optimal for plain prose. Full numbers: [`bench/results_samples_real.md`](bench/results_samples_real.md).
+These are **synthetic** structured/table-heavy documents engineered to demonstrate TDF's optimizations, where gains are largest. On real-world, prose-heavy documents, savings are smaller because there's less table/boilerplate overhead to strip out and Markdown is already close to token-optimal for plain prose. 
+
+**Measured on real-world third-party documents:**
+
+| Document | Source | Saving vs Markdown |
+|---|---|---|
+| owid-co2-data (3k rows) | `owid/co2-data` | 53.5% |
+| numpy `absolute_beginners.rst` | `numpy/numpy` | 8.7% |
+| PEP 8 | `python/peps` | 5.6% |
+| `deployment.md` | `kubernetes/website` | 2.1% |
 
 **TDF vs LLMLingua (Content-Preserving vs Lossy):**
 
