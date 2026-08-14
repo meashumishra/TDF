@@ -96,8 +96,11 @@ For a deep dive into the research, algorithmic decisions (Token-cost-weighted Re
 
 - **Small documents can come out larger.** `prose_only.pdf` is 222 Markdown tokens but 252 in TDF, because the ~130-token self-describing legend dominates. Below roughly 500 tokens, use `--no-legend`.
 - **Scanned/image PDFs are not handled** — there is no OCR step. Pair with olmOCR or Chandra first.
-- **Dictionary substitution hurts raw prose readability.** `...at the start of §3 1.` expands losslessly but reads badly to humans (though models handle it fine).
-- **Fidelity is content recall, not structural equivalence.** It proves no meaning-bearing term is lost.
+- **Dictionary substitution hurts raw prose readability.** `...at the start of §3 1.` expands losslessly but reads badly to humans.
+- **Fidelity metric is blind to word order.** "100% distinct-content recall" is a 'bag-of-words' metric. Reversing a sentence (e.g., "A > B" to "B > A") or swapping table columns still yields a 100% score despite destroying meaning.
+- **Elision is intentionally lossy.** Addressable Elision (`!E`) deliberately drops content to shrink context; it does not preserve the original text.
+- **LLM QA accuracy is insufficiently validated.** While TDF compresses structurally, we have not yet run an end-to-end LLM benchmark (e.g., GSM8K or RAG eval) to empirically prove that models can accurately reason over heavily compressed `!D` dictionaries without degradation.
+- **Tokenizer assumptions:** We have verified compression consistency (44-72% savings on structured docs) across OpenAI's `o200k_base` and `cl100k_base` tokenizers, but it remains untested on SentencePiece or Llama tokenizers.
 
 ## License
 
