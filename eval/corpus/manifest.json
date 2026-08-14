@@ -1,0 +1,42 @@
+[
+  {
+    "id": "co2_data",
+    "url": "https://raw.githubusercontent.com/owid/co2-data/master/owid-co2-data.csv",
+    "filename": "co2.csv",
+    "type": "csv",
+    "sha256": "7f78e2b218ce4bb8c538bbec04fdc9a7982e8d40bff972e650df603899edd5f6",
+    "path": "eval/corpus/raw/co2.csv"
+  },
+  {
+    "id": "k8s_deployment",
+    "url": "https://raw.githubusercontent.com/kubernetes/website/main/content/en/docs/concepts/workloads/controllers/deployment.md",
+    "filename": "deployment.md",
+    "type": "md",
+    "sha256": "b4896e5d45a7d97b0d36ca5fe9e2cac2188ab46ce9cfbc61b4c143220e550c98",
+    "path": "eval/corpus/raw/deployment.md"
+  },
+  {
+    "id": "sec_filing",
+    "url": "local://samples_real/sec_filing.html",
+    "filename": "sec_filing.html",
+    "type": "html",
+    "sha256": "bda1f34435199672c16ecdf2034c650872d2cac8399ed0d179fc25450b080b90",
+    "path": "eval/corpus/raw/sec_filing.html"
+  },
+  {
+    "id": "operating_review",
+    "url": "local://samples/operating_review.pdf",
+    "filename": "operating_review.pdf",
+    "type": "pdf",
+    "sha256": "26f38631446fbcfa0eca52a338d53572eec309a85732af5844ff63d1fe253251",
+    "path": "eval/corpus/raw/operating_review.pdf"
+  },
+  {
+    "id": "sales_report",
+    "url": "local://samples/sales_report.xlsx",
+    "filename": "sales_report.xlsx",
+    "type": "xlsx",
+    "sha256": "33b5f1be9972a77b617f088d6951cbf0ffb221abc599b6fc9afec14bddec55e4",
+    "path": "eval/corpus/raw/sales_report.xlsx"
+  }
+]

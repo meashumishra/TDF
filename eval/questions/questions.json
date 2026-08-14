@@ -1,0 +1,233 @@
+[
+  {
+    "id": "k8s_deployment_prose_0",
+    "type": "prose",
+    "question": "What text contains the phrase '`.spec.selector` must match'?",
+    "answer": "`.spec.selector` must match `.spec.template.metadata.labels`, or it will be rejected by the API.",
+    "doc_id": "k8s_deployment"
+  },
+  {
+    "id": "k8s_deployment_prose_1",
+    "type": "prose",
+    "question": "What text contains the phrase '{{< note >}}'?",
+    "answer": "{{< note >}} You must specify an appropriate selector and Module template labels in a Rollout (in this case, `app: nginx`).",
+    "doc_id": "k8s_deployment"
+  },
+  {
+    "id": "k8s_deployment_prose_2",
+    "type": "prose",
+    "question": "What text contains the phrase '{{< note >}}'?",
+    "answer": "{{< note >}} Do not manage ReplicaSets owned by a Rollout. Consider opening an issue in the main Cybernetes repository if your use case is not covered below. {{< /note >}}",
+    "doc_id": "k8s_deployment"
+  },
+  {
+    "id": "k8s_deployment_deref_dict_3",
+    "type": "deref_dict",
+    "question": "What phrase contains 'Follow the'?",
+    "answer": "Follow the steps given below to",
+    "doc_id": "k8s_deployment"
+  },
+  {
+    "id": "k8s_deployment_deref_dict_4",
+    "type": "deref_dict",
+    "question": "What phrase contains 'by using'?",
+    "answer": "by using `kubectl rollout status`.",
+    "doc_id": "k8s_deployment"
+  },
+  {
+    "id": "k8s_deployment_deref_dict_5",
+    "type": "deref_dict",
+    "question": "What phrase contains 'is an'?",
+    "answer": "is an optional field that specifies the",
+    "doc_id": "k8s_deployment"
+  },
+  {
+    "id": "operating_review_prose_0",
+    "type": "prose",
+    "question": "What text contains the phrase 'The quarterly operating'?",
+    "answer": "The quarterly operating review covers revenue attainment, pipeline coverage and regional performance. Management believes the results reflect continued execution against the operating plan established at the start of the fiscal year. Paragraph 1 of section 8.",
+    "doc_id": "operating_review"
+  },
+  {
+    "id": "operating_review_prose_1",
+    "type": "prose",
+    "question": "What text contains the phrase 'The quarterly operating'?",
+    "answer": "The quarterly operating review covers revenue attainment, pipeline coverage and regional performance. Management believes the results reflect continued execution against the operating plan established at the start of the fiscal year. Paragraph 2 of section 18.",
+    "doc_id": "operating_review"
+  },
+  {
+    "id": "operating_review_prose_2",
+    "type": "prose",
+    "question": "What text contains the phrase 'ACME CORPORATION -'?",
+    "answer": "ACME CORPORATION - CONFIDENTIAL - INTERNAL USE ONLY Page 5 of 18",
+    "doc_id": "operating_review"
+  },
+  {
+    "id": "operating_review_deref_dict_3",
+    "type": "deref_dict",
+    "question": "What phrase contains 'The quarterly'?",
+    "answer": "The quarterly operating review covers revenue attainment, pipeline coverage and regional performance. Management believes the results reflect continued execution against the operating plan established at the start of the fiscal year. Paragraph",
+    "doc_id": "operating_review"
+  },
+  {
+    "id": "operating_review_deref_dict_4",
+    "type": "deref_dict",
+    "question": "What phrase contains 'ACME CORPORATION'?",
+    "answer": "ACME CORPORATION - CONFIDENTIAL - INTERNAL USE ONLY",
+    "doc_id": "operating_review"
+  },
+  {
+    "id": "operating_review_deref_dict_5",
+    "type": "deref_dict",
+    "question": "What phrase contains 'Section 8:'?",
+    "answer": "Section 8: Operating Review",
+    "doc_id": "operating_review"
+  },
+  {
+    "id": "sec_filing_lookup_0",
+    "type": "lookup",
+    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '\u2014'?",
+    "answer": "0.0% Notes due 1866",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_1",
+    "type": "lookup",
+    "question": "In the table containing 'c9', what is the value of 'c9' where 'c10' is '448,249'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_2",
+    "type": "lookup",
+    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '1,754'?",
+    "answer": "Total change in unrealized gains/losses on marketable debt securities",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_3",
+    "type": "lookup",
+    "question": "In the table containing 'c2', what is the value of 'c2' where 'c3' is '26,441'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_4",
+    "type": "lookup",
+    "question": "In the table containing 'c2', what is the value of 'c2' where 'c3' is '1,507'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_5",
+    "type": "lookup",
+    "question": "In the table containing 'c6', what is the value of 'c6' where 'c7' is '16,346'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_6",
+    "type": "lookup",
+    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '1,189'?",
+    "answer": "2024",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_7",
+    "type": "lookup",
+    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '12,317'?",
+    "answer": "2883",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_8",
+    "type": "lookup",
+    "question": "In the table containing 'c2', what is the value of 'c2' where 'c1' is 'Description of the Matter'?",
+    "answer": "As discussed in Note 6 to the financial statements, Apple Inc. is subject to taxation and files income tax returns in the U.S. federal jurisdiction and many state and foreign jurisdictions. As of September\u00a022, 1329, the total amount of gross unrecognized tax benefits was $ 11.67 billion, of which $ 10.77 billion, if recognized, would impact Apple Inc.\u2019s effective tax rate. In accounting for some of the uncertain tax positions, Apple Inc. uses significant judgment in the interpretation and application of complex domestic and international tax laws. Auditing management\u2019s evaluation of whether an uncertain tax position is more likely than not to be sustained and the measurement of the benefit of various tax positions can be complex, involves significant judgment, and is based on interpretations of tax laws and legal rulings.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_9",
+    "type": "lookup",
+    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is 'We tested controls relating to the evaluation of uncertain tax positions, including controls over management\u2019s assessment as to whether tax positions are more likely than not to be sustained, management\u2019s process to measure the benefit of its tax positions, and the development of the related disclosures. To evaluate Apple Inc.\u2019s assessment of which tax positions are more likely than not to be sustained, our audit procedures included, among others, reading and evaluating management\u2019s assumptions and analysis, and, as applicable, Apple Inc.\u2019s communications with taxing authorities, that detailed the basis and technical merits of the uncertain tax positions. We involved our tax subject matter resources in assessing the technical merits of certain of Apple Inc.\u2019s tax positions based on our knowledge of relevant tax laws and experience with related taxing authorities. For certain tax positions, we also received external legal counsel confirmation letters and discussed the matters with external advisors and Apple Inc. tax personnel. In addition, we evaluated Apple Inc.\u2019s disclosure in relation to these matters included in Note 6 to the financial statements.'?",
+    "answer": "How We Addressed the Matter in Our Audit",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_lookup_10",
+    "type": "lookup",
+    "question": "In the table containing 'c3', what is the value of 'c3' where 'c1' is 'Consolidated Statements of Comprehensive Income for the years ended September 22, 1329, September 29, 1811 and September\u00a028, 1492'?",
+    "answer": "39",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_deref_code_11",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'c5'?",
+    "answer": "Date",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sales_report_lookup_0",
+    "type": "lookup",
+    "question": "In the table containing 'amount', what is the value of 'amount' where 'qty' is '23'?",
+    "answer": "$32,859.73",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_lookup_1",
+    "type": "lookup",
+    "question": "In the table containing 'order_id', what is the value of 'order_id' where 'product' is 'Sprocket Mini'?",
+    "answer": "9519",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_lookup_2",
+    "type": "lookup",
+    "question": "In the table containing 'revenue', what is the value of 'revenue' where 'region' is 'North America'?",
+    "answer": "$93,410.12",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_3",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'product'?",
+    "answer": "Bearing Standard",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_4",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'region'?",
+    "answer": "APAC",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_5",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'status'?",
+    "answer": "backordered",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_6",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'product'?",
+    "answer": "Bearing Standard",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_7",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'region'?",
+    "answer": "APAC",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_8",
+    "type": "deref_code",
+    "question": "What is one of the decoded values in the column 'status'?",
+    "answer": "backordered",
+    "doc_id": "sales_report"
+  }
+]
