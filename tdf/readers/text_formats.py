@@ -18,9 +18,17 @@ _ROW = re.compile(r"^\s*\|(.*)\|\s*$")
 _SEPROW = re.compile(r"^\s*\|[\s:|-]+\|\s*$")
 
 
+_UNESCAPED_PIPE = re.compile(r"(?<!\\)\|")
+
+
 def _split_row(line: str) -> list[str]:
     inner = _ROW.match(line).group(1)
-    return [c.strip().replace("<br>", " ").replace("\\|", "|") for c in inner.split("|")]
+    # Split on unescaped '|' only. A naive str.split("|") followed by
+    # unescaping runs too late -- "a\|b" (one cell, GFM's escaped-pipe
+    # syntax for a literal '|') was already split into "a\" and "b" before
+    # any unescaping happened, shifting the whole row's column count.
+    cells = _UNESCAPED_PIPE.split(inner)
+    return [c.strip().replace("<br>", " ").replace("\\|", "|") for c in cells]
 
 
 def read_markdown(path: str | Path, text: str | None = None) -> Doc:
@@ -161,12 +169,22 @@ def read_html(path: str | Path, text: str | None = None) -> Doc:
             trs = el.find_all("tr")
             if not trs:
                 continue
-            grid = [[c.get_text(" ", strip=True) for c in tr.find_all(["td", "th"])] for tr in trs]
-            grid = [g for g in grid if any(g)]
-            if not grid:
+            # Keep each <tr> paired with its extracted row while filtering
+            # out blank ones (spacer rows are common in real HTML tables) --
+            # filtering `grid` alone and then still indexing the header
+            # check against the *unfiltered* trs[0] desyncs the two lists
+            # the moment the true first row is blank, silently swapping the
+            # real header into the data rows and fabricating synthetic
+            # column names instead.
+            pairs = [(tr, [c.get_text(" ", strip=True) for c in tr.find_all(["td", "th"])])
+                     for tr in trs]
+            pairs = [(tr, g) for tr, g in pairs if any(g)]
+            if not pairs:
                 continue
-            head = grid[0] if trs[0].find("th") else [f"c{i+1}" for i in range(len(grid[0]))]
-            data = grid[1:] if trs[0].find("th") else grid
+            first_tr, first_row = pairs[0]
+            grid = [g for _, g in pairs]
+            head = first_row if first_tr.find("th") else [f"c{i+1}" for i in range(len(first_row))]
+            data = grid[1:] if first_tr.find("th") else grid
             cap = el.find("caption")
             doc.add(Table(head, data, caption=cap.get_text(" ", strip=True) if cap else ""))
     return doc

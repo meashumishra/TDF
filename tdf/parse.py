@@ -15,12 +15,20 @@ from .ir import Code, Doc, Elision, Figure, Heading, KV, ListBlock, PageMark, Pa
 _H = re.compile(r"^(#{1,6})\s+(.*)$")
 _REF = re.compile(r"\u00a7(\d+)")
 _UNIT_COL = re.compile(r"^(.*)\(([$\u20ac\u00a3\u00a5%])\)$")
+_FENCE_OPEN = re.compile(r"^(`{3,})(.*)$")
 
 
 def _unquote(cell: str) -> str:
     if len(cell) >= 2 and cell[0] == '"' and cell[-1] == '"':
         return cell[1:-1].replace('""', '"')
     return cell
+
+
+def _unescape_caret_cell(v: str) -> str:
+    """Exact inverse of emit._escape_caret_cell: drop one trailing caret from
+    any all-caret cell of length >= 2. A bare single '^' never reaches this
+    function -- it is caught by the back-reference check first."""
+    return v[:-1] if len(v) >= 2 and set(v) == {"^"} else v
 
 
 def _split(line: str, sep: str) -> list[str]:
@@ -195,7 +203,13 @@ def parse_tdf(text: str) -> Doc:
             if i < n and _is_sigil(lines[i].strip(), "C"):
                 rest = lines[i][2:]
                 sep = "\t" if "\t" in rest else " "
-                cols = [_unquote(c) for c in _split(rest.lstrip(" \t"), sep)]
+                # Exactly one separator character sits between "!C" and the
+                # first column value (see emit._tdf_table) -- .lstrip(" \t")
+                # would greedily eat into a first column name that itself
+                # starts with whitespace, e.g. " leading space".
+                if rest[:1] in (" ", "\t"):
+                    rest = rest[1:]
+                cols = [_unquote(c) for c in _split(rest, sep)]
                 i += 1
 
             rows: list[list[str]] = []
@@ -203,11 +217,20 @@ def parse_tdf(text: str) -> Doc:
             for _ in range(nrows):
                 if i >= n:
                     break
-                raw = [_unquote(c) for c in _split(lines[i], sep)]
-                raw = [(prev[j] if (c == "^" and prev and j < len(prev)) else c)
-                       for j, c in enumerate(raw)]
-                rows.append(raw)
-                prev = raw
+                # The marker check runs on the *raw* split cell, before
+                # unquoting/unescaping: the emitter only ever produces a bare
+                # '^' for a genuine back-reference, since a literal all-caret
+                # value is always lengthened by one caret first (see
+                # emit._escape_caret_cell). So a bare '^' here is unambiguous.
+                split_cells = _split(lines[i], sep)
+                row = []
+                for j, c in enumerate(split_cells):
+                    if c == "^" and prev and j < len(prev):
+                        row.append(prev[j])
+                    else:
+                        row.append(_unescape_caret_cell(_unquote(c)))
+                rows.append(row)
+                prev = row
                 i += 1
 
             # Restore hoisted units and constant columns.
@@ -245,7 +268,8 @@ def parse_tdf(text: str) -> Doc:
             pairs = []
             while i < n and lines[i].strip() and not (
                 _starts_sigil(lines[i]) or _starts_heading(lines[i])
-                or lines[i].startswith("- ")
+                or lines[i].startswith(("- ", "> ", "```"))
+                or re.match(r"^\d+\s", lines[i])
             ):
                 k, sepc, v = _unescape(lines[i].strip()).partition(":")
                 if not sepc:
@@ -269,11 +293,17 @@ def parse_tdf(text: str) -> Doc:
                             int(parts[3]) if len(parts) > 3 and parts[3].isdigit() else 0))
             i += 1; continue
 
-        if stripped.startswith("```"):
+        if fm := _FENCE_OPEN.match(stripped):
             flush()
-            lang = stripped[3:].strip(); i += 1
+            fence, lang = fm.group(1), fm.group(2).strip()
+            i += 1
             buf = []
-            while i < n and not lines[i].startswith("```"):
+            # The closing fence must be at least as long as the opening one
+            # (CommonMark's rule) -- the emitter always picks a fence longer
+            # than any backtick run in the content, so a shorter or equal-run
+            # of backticks *inside* the code can never be mistaken for it.
+            close = re.compile(r"^`{" + str(len(fence)) + r",}\s*$")
+            while i < n and not close.match(lines[i]):
                 buf.append(lines[i]); i += 1
             doc.add(Code("\n".join(buf), lang)); i += 1
             continue

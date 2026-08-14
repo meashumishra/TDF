@@ -30,6 +30,21 @@ LEGEND = (
 
 
 _SIGIL_LINE = re.compile(r"^!([A-Z])(\s|$)")
+_BACKTICK_RUN = re.compile(r"`+")
+
+
+def _code_fence(text: str) -> str:
+    """A fence strictly longer than any backtick run inside the code.
+
+    A fixed 3-backtick fence terminates on the first embedded ```` ``` ````
+    (a Markdown example inside a code block, a shell heredoc, etc.), silently
+    truncating the block. CommonMark's own answer is to make the fence longer
+    than the longest backtick run in the content; parsing then only needs to
+    read the opening fence's actual length instead of assuming 3, which is
+    fully backward compatible with every existing 3-backtick document.
+    """
+    longest = max((len(m.group(0)) for m in _BACKTICK_RUN.finditer(text)), default=0)
+    return "`" * max(3, longest + 1)
 
 
 _STRUCTURAL = re.compile(r"""
@@ -39,6 +54,8 @@ _STRUCTURAL = re.compile(r"""
     | \d+[.)]?\s        # ordered item; TDF drops the dot, so "2024 was ..."
                         # would otherwise be eaten as a list marker
     | >\s               # quote
+    | `{3,}             # code fence opener; parse_tdf matches any line
+                        # starting with 3+ backticks, not just real code blocks
     | %TDF              # magic header
 """, re.VERBOSE)
 
@@ -125,26 +142,51 @@ def render_markdown(doc: Doc) -> str:
 
 # ----------------------------------------------------------------------- TDF
 
-_NEWLINE = re.compile(r"[\r\n]+")
+_NEWLINE = re.compile(r"[\r\n\t]+")
 
 
 def _oneline(v: str) -> str:
-    """Collapse embedded newlines so one value stays one physical line.
+    """Collapse embedded newlines (and tabs) so one value stays one physical
+    line and never masquerades as a separator.
 
     TDF is line-oriented and a table declares its row count up front, so a cell
     containing a newline (an Alt+Enter cell in Excel, a wrapped PDF cell) would
     split into two lines, shift every following row by one, and silently
     corrupt the grid. Distinct-content recall cannot see this because the words
     all survive -- only the structure is wrong -- so it must be prevented here.
+
+    A literal tab is the same class of problem one level down: the parser
+    decides whether a table used tab or space separation by checking for a
+    tab character anywhere on the header line (parse_tdf's ``"\\t" in rest``),
+    so a value that merely *contains* a tab -- not used as a separator at all
+    -- can flip that detection and misparse an otherwise space-separated row.
     """
     return _NEWLINE.sub(" ", v) if v else v
+
+
+def _escape_caret_cell(v: str) -> str:
+    """A cell literally equal to '^' collides with elide_repeats' own use of
+    '^' as a back-reference marker -- the parser has no way to tell "this
+    cell's real content is the caret" from "this cell repeats the one above".
+
+    Lengthening any all-caret value by one caret resolves it: a lone '^'
+    becomes '^^', and '^^' itself (rare, but possible) becomes '^^^', so no
+    escaped form ever collides with a shorter all-caret value that wasn't
+    escaped. Unescaping is the exact inverse (drop one trailing caret from any
+    all-caret cell of length >= 2), which is unambiguous for the same reason.
+    """
+    return v + "^" if v and set(v) == {"^"} else v
 
 
 def _quote(v: str) -> str:
     v = _oneline(v)
     if v == "":
         return '""'
-    if " " in v or v.startswith('"'):
+    # Any embedded '"' must trigger quoting, not just a leading one: _split's
+    # parser toggles "inside a quoted field" on *every* unescaped '"' it
+    # sees, so an unquoted value like '0"0' is misread as a quote opening
+    # mid-field with no closing quote, silently dropping the character.
+    if " " in v or '"' in v:
         return '"' + v.replace('"', '""') + '"'
     return v
 
@@ -165,12 +207,21 @@ def _tdf_table(t: Table) -> list[str]:
 
     cols, rows = hoist_units(cols, rows)
     cols, rows, constants = drop_constant_columns(cols, rows)
+    rows = [[_escape_caret_cell(c) for c in r] for r in rows]
     rows = elide_repeats(rows)
 
-    # Pick whichever separator tokenises cheaper for this specific table.
-    space = _render_rows(cols, rows, " ")
-    tab = _render_rows(cols, rows, "\t")
-    body = space if count(space) <= count(tab) else tab
+    # Pick whichever separator tokenises cheaper for this specific table --
+    # except a single-column table has no separator between fields, so the
+    # parser has no way to detect tab-mode was used (it decides by checking
+    # for a literal tab on the !C line, and a single field never has one).
+    # A space in that lone column's value would then be wrongly re-split as
+    # if it were two columns. Space mode's quoting makes it unambiguous.
+    if len(cols) <= 1:
+        body = _render_rows(cols, rows, " ")
+    else:
+        space = _render_rows(cols, rows, " ")
+        tab = _render_rows(cols, rows, "\t")
+        body = space if count(space) <= count(tab) else tab
 
     head = f"!T {len(rows)}" + (f" {_oneline(t.caption)}" if t.caption else "")
     out = [head]
@@ -195,11 +246,19 @@ def render_tdf(
     out: list[str] = []
     out.append(LEGEND if legend else "%TDF1")
     if doc.title:
-        out.append("# " + doc.title)
+        # Same reasoning as Heading blocks below: doc.title is a single
+        # physical line, and an embedded newline would create an unprefixed
+        # second line vulnerable to sigil injection.
+        out.append("# " + _oneline(doc.title))
 
     if arts["dictionary"]:
+        # arts["dictionary"] is (phrase, number) pairs -- number can skip
+        # values already used by a literal "§N" in the document (see
+        # optimize._reserved_section_refs), so it must not be re-derived
+        # from position here. parse_tdf already reads the declared number
+        # off each line rather than assuming 1..n, so this is a pure fix.
         out.append(f"!D {len(arts['dictionary'])}")
-        out.extend(f"{i + 1} {p}" for i, p in enumerate(arts["dictionary"]))
+        out.extend(f"{n} {p}" for p, n in arts["dictionary"])
     if arts["boilerplate"]:
         out.append("!R")
         out.extend(_escape_body(line) for line in arts["boilerplate"])
@@ -209,27 +268,47 @@ def render_tdf(
 
     for b in doc.blocks:
         if isinstance(b, Heading):
-            out.append("#" * min(b.level, 6) + " " + b.text)
+            # A heading embedding a newline whose second line looks like a
+            # sigil (e.g. "!T 5 ...") would otherwise open a real structural
+            # block on parse -- headings are single-line by construction, so
+            # any embedded newline is collapsed rather than split.
+            out.append("#" * min(b.level, 6) + " " + _oneline(b.text))
         elif isinstance(b, Para):
             out.append(_escape_body(b.text))
         elif isinstance(b, Quote):
-            out.append("> " + b.text)
+            # Same reasoning as headings: a multi-line quote whose second
+            # physical line has no "> " prefix is reparsed as loose text (or,
+            # worse, as an injected sigil), not as a continuation of the quote.
+            out.append("> " + _oneline(b.text))
         elif isinstance(b, ListBlock):
             for i, item in enumerate(b.items):
-                out.append(f"{i + 1} {item}" if b.ordered else f"- {item}")
+                # A list item's own "- "/"N " prefix already stops single-line
+                # content from being misread as structure, but an embedded
+                # newline creates an unprefixed second physical line that
+                # isn't protected -- collapse it before that line can exist.
+                out.append(f"{i + 1} {_oneline(item)}" if b.ordered else f"- {_oneline(item)}")
         elif isinstance(b, Table):
             out.extend(_tdf_table(b))
         elif isinstance(b, KV):
             out.append("!K" + (f" {_oneline(b.caption)}" if b.caption else ""))
             out.extend(_escape_body(f"{k}: {v}") for k, v in b.pairs)
         elif isinstance(b, Figure):
-            out.append("!G " + b.desc)
+            out.append("!G " + _oneline(b.desc))
         elif isinstance(b, Code):
-            out.append(f"```{b.lang}\n{b.text}\n```")
+            fence = _code_fence(b.text)
+            out.append(f"{fence}{b.lang}\n{b.text}\n{fence}")
         elif isinstance(b, PageMark):
             out.append(f"!P {b.number}")
         elif isinstance(b, Elision):
-            out.append(f"!E {b.eid} {b.kind} {b.tokens} {b.items} {b.gist}")
+            # gist is a free-text field at the end of the !E line; an
+            # embedded newline would create the same kind of unprefixed
+            # continuation line that let Heading/Quote/ListBlock/Figure
+            # injection happen before they were fixed. tier()'s own gist
+            # construction already collapses whitespace via str.split(), so
+            # this isn't reachable from the current tier() code path, but it
+            # closes the same IR-round-trip contract gap for anything else
+            # that constructs an Elision directly.
+            out.append(f"!E {b.eid} {b.kind} {b.tokens} {b.items} {_oneline(b.gist)}")
 
     return "\n".join(l for l in out if l is not None) + "\n"
 

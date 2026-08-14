@@ -41,6 +41,7 @@ class Validation:
 
 _SIGIL = re.compile(r"^!([A-Z])(\s|$)")
 _DECLARED_ROW = re.compile(r"^!T\s+(\d+)")
+_FENCE_OPEN = re.compile(r"^(`{3,})")
 
 
 def _validate_doc(doc: Doc, v: Validation) -> None:
@@ -73,7 +74,21 @@ def _validate_lines(text: str, v: Validation) -> None:
     n = len(lines)
     while i < n:
         line = lines[i]
-        m = _DECLARED_ROW.match(line.strip())
+        stripped = line.strip()
+
+        # A sigil-looking line inside a fenced code block is inert content,
+        # not structure -- parse_tdf never re-interprets it either (it just
+        # accumulates raw lines until the matching close fence). Skip the
+        # whole fenced region so it can't be misread as a real directive.
+        if fm := _FENCE_OPEN.match(stripped):
+            fence = fm.group(1)
+            i += 1
+            while i < n and not lines[i].startswith(fence):
+                i += 1
+            i += 1
+            continue
+
+        m = _DECLARED_ROW.match(stripped)
         if m:
             # A table declares its rows; every declared row must physically
             # exist after the optional !F/!C lines, or later content shifts.

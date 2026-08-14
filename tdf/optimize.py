@@ -193,6 +193,43 @@ def strip_boilerplate(doc: Doc, min_repeats: int = 3) -> list[str]:
 # --------------------------------------------------------------- dictionary
 
 _WORD = re.compile(r"\S+")
+_SECTION_REF = re.compile(r"§(\d+)")
+
+
+def _reserved_section_refs(doc: Doc) -> set[int]:
+    """Numbers already used by a literal '§N' somewhere in the document.
+
+    '§' (section sign) is a real character in legal/academic text --
+    "§1", "§2.3" are ordinary section references, not something a
+    reader needs to guess might appear. parse_tdf's expand() can't tell our
+    own inserted reference apart from text that already looked like one, so
+    if build_dictionary reused number N for a phrase while the document also
+    contains a literal '§N', that literal text would be silently
+    replaced by the phrase on parse. Scan everywhere expand() is applied on
+    the read side (title, Heading, Para, Quote, ListBlock, Figure, Table
+    caption, KV pairs) so every number already spoken for is avoided.
+    """
+    found: set[int] = set()
+
+    def scan(s: str) -> None:
+        found.update(int(m) for m in _SECTION_REF.findall(s))
+
+    scan(doc.title)
+    for b in doc.blocks:
+        if isinstance(b, (Para, Quote, Heading)):
+            scan(b.text)
+        elif isinstance(b, Figure):
+            scan(b.desc)
+        elif isinstance(b, ListBlock):
+            for item in b.items:
+                scan(item)
+        elif isinstance(b, Table):
+            scan(b.caption)
+        elif isinstance(b, KV):
+            for k, v in b.pairs:
+                scan(k)
+                scan(v)
+    return found
 
 
 class _ItemSlot:
@@ -272,8 +309,12 @@ def build_dictionary(
     max_entries: int = 96,
     min_phrase_tokens: int = 5,
     max_phrase_words: int = 40,
-) -> list[str]:
+) -> list[tuple[str, int]]:
     """Find repeated multi-word phrases and replace them with `§n` references.
+
+    Returns ``(phrase, n)`` pairs, not just phrases -- ``n`` can skip numbers
+    already used by a literal ``§N`` elsewhere in the document (see
+    ``_reserved_section_refs``), so the caller must not assume 1..len(result).
 
     Entries are accepted greedily against a *working copy* of the corpus that
     already has earlier entries substituted in. That is what stops overlapping
@@ -314,13 +355,27 @@ def build_dictionary(
         return []
 
     # Apply in acceptance order so the substitution mirrors the accounting.
-    repl = {p: f"\u00a7{i + 1}" for i, p in enumerate(accepted)}
+    # Skip any number a literal '\u00a7N' in the document already uses -- see
+    # _reserved_section_refs.
+    reserved = _reserved_section_refs(doc)
+    numbers: list[int] = []
+    nxt = 1
+    for _ in accepted:
+        while nxt in reserved:
+            nxt += 1
+        numbers.append(nxt)
+        reserved.add(nxt)
+        nxt += 1
+    repl = {p: f"\u00a7{n}" for p, n in zip(accepted, numbers)}
     for obj, attr, val in texts:
         for p in accepted:
             if p in val:
                 val = val.replace(p, repl[p])
         setattr(obj, attr, val)
-    return accepted
+    # Numbers may skip reserved values above, so the caller (the !D legend
+    # emitter) needs the actual (phrase, number) pairs, not just the phrase
+    # list with an assumed 1..n numbering -- see _reserved_section_refs.
+    return list(zip(accepted, numbers))
 
 
 # ------------------------------------------------------------------ pipeline

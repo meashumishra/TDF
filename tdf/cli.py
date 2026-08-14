@@ -90,7 +90,13 @@ def cmd_stats(a) -> int:
 def cmd_verify(a) -> int:
     doc = _load(a.input, a.max_pages)
     original = copy.deepcopy(doc)
-    tdf = render_tdf(doc, legend=not a.no_legend)
+
+    # encode_columns() and render_tdf() must run on the same doc object (see
+    # cmd_stats). Without this, verify exercises a rendering path `tdf
+    # convert` never actually produces, so a bug reachable only through
+    # columnar encoding could pass verification and still ship.
+    books = encode_columns(doc)
+    tdf = render_tdf(doc, legend=not a.no_legend, codebooks=books)
     restored = parse_tdf(tdf)
     res = compare(original, restored)
     res["input"] = a.input
