@@ -4,7 +4,7 @@
 [![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
 [![Tests](https://github.com/meashumishra/TDF-Token-Dense-Format-/actions/workflows/ci.yml/badge.svg)](https://github.com/meashumishra/TDF-Token-Dense-Format-/actions/workflows/ci.yml)
 
-A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **28–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping to single digits on prose-heavy documents where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
+A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **28–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping into the low teens on prose-heavy documents where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
 
 ```
 pdf docx xlsx pptx html md csv txt  ──►  TDF  ──►  your LLM
@@ -36,14 +36,14 @@ We measured TDF against standard Markdown, MarkItDown (Microsoft's standard conv
 
 | Document | TDF Saving vs MD | TDF Saving vs MarkItDown | Recall (Fidelity) |
 |---|---|---|---|
-| operating_review.pdf | **65.8%** | **65.7%** | 100.0% |
-| services_agreement.docx | **47.1%** | **47.8%** | 100.0% |
+| operating_review.pdf | **65.7%** | **65.7%** | 100.0% |
+| services_agreement.docx | **47.0%** | **47.7%** | 100.0% |
 | orders.csv | **45.7%** | **45.7%** | 100.0% |
-| quarterly_deck.pptx | **37.5%** | **38.4%** | 100.0% |
+| quarterly_deck.pptx | **37.3%** | **38.2%** | 100.0% |
 | handbook.html | **43.2%** | **43.2%** | 100.0% |
-| runbook.md | **28.0%** | **28.0%** | 100.0% |
+| runbook.md | **27.8%** | **27.8%** | 100.0% |
 
-These are structured/table-heavy documents, where TDF's gains are largest. On prose-heavy, out-of-training documents savings are smaller — `sec_filing.html` (42.9%), `attention.pdf` (12.9%), `kubernetes_docs.html` (2.0%) — because there's less table/boilerplate overhead for TDF to strip out and Markdown is already close to token-optimal for plain prose. Full numbers: [`bench/results_samples_real.md`](bench/results_samples_real.md).
+These are structured/table-heavy documents, where TDF's gains are largest. On prose-heavy, out-of-training documents savings are smaller — `sec_filing.html` (42.6%), `kubernetes_docs.html` (22.9%), `attention.pdf` (13.3%) — because there's less table/boilerplate overhead for TDF to strip out and Markdown is already close to token-optimal for plain prose. Full numbers: [`bench/results_samples_real.md`](bench/results_samples_real.md).
 
 **TDF vs LLMLingua (Content-Preserving vs Lossy):**
 
