@@ -51,6 +51,12 @@ def cmd_convert(a) -> int:
 
 def cmd_stats(a) -> int:
     doc = _load(a.input, a.max_pages)
+    # Mirror cmd_convert's --tier handling -- otherwise `tdf stats --tier`
+    # silently reports numbers for the untiered document while accepting
+    # (and ignoring) the flag, diverging from what `tdf convert --tier`
+    # actually emits.
+    if getattr(a, "tier", False):
+        tier(doc)
     md = render_markdown(copy.deepcopy(doc))
     skel = render_skeleton(copy.deepcopy(doc))
 
@@ -91,6 +97,16 @@ def cmd_verify(a) -> int:
     doc = _load(a.input, a.max_pages)
     original = copy.deepcopy(doc)
 
+    # Mirror cmd_convert's --tier handling. Previously `--tier` was accepted
+    # here (it's a `common()` flag) but silently ignored, so `tdf verify
+    # --tier` always verified the UNTIERED document -- a bug in tiering, or
+    # in its interaction with columnar encoding/dictionary substitution,
+    # could never be caught by verify even though `tdf convert --tier` ships
+    # that exact path. `restore` undoes the declared elision before
+    # comparing, since it's intentionally lossy-but-recoverable, not a
+    # fidelity failure.
+    store = tier(doc) if getattr(a, "tier", False) else {}
+
     # encode_columns() and render_tdf() must run on the same doc object (see
     # cmd_stats). Without this, verify exercises a rendering path `tdf
     # convert` never actually produces, so a bug reachable only through
@@ -98,6 +114,8 @@ def cmd_verify(a) -> int:
     books = encode_columns(doc)
     tdf = render_tdf(doc, legend=not a.no_legend, codebooks=books)
     restored = parse_tdf(tdf)
+    if store:
+        restore(restored, store)
     res = compare(original, restored)
     res["input"] = a.input
     res["tokens_tdf"] = count(tdf)

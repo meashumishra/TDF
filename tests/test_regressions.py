@@ -193,6 +193,64 @@ def test_cmd_verify_pipeline_uses_columnar_encoding():
     assert report["distinct_recall"] == 1.0
 
 
+def test_cmd_verify_and_stats_honor_tier_flag(monkeypatch, capsys):
+    """`--tier` is a `common()` flag accepted by every subcommand, but
+    cmd_verify/cmd_stats used to silently ignore it -- `tdf verify --tier`
+    always verified the UNTIERED document, so a bug reachable only through
+    tiering (or its interaction with columnar encoding) could pass
+    verification and still ship via `tdf convert --tier`. See the optimizer
+    red-team audit's P1 convert/verify parity fix.
+
+    Asserting the return code alone can't tell "flag applied" from "flag
+    silently ignored" (both would report 100% recall here) -- so this checks
+    the tiered token count is actually smaller than the untiered one, proving
+    tier() genuinely ran rather than being a no-op."""
+    import argparse
+    import json
+    import random
+    from tdf import cli as climod
+    from tdf.ir import Doc, Para
+
+    PROSE = ("The controller manager runs reconciliation loops. Each loop "
+              "compares observed state to desired state. It issues changes "
+              "until the cluster converges. Operators rely on it. ") * 3
+    # Shuffled, non-repeating nav terms -- a single repeated phrase would let
+    # the dictionary pass compress the UNTIERED version so well (one §n
+    # definition covering all repeats) that it beats tiering's fixed-size
+    # 40-word literal gist preview on raw token count alone, which is a
+    # compression-ratio artifact of this specific fixture, not a bug (see
+    # tier.py's `_gist`/GIST_ITEMS design) -- not what this test is checking.
+    nav_words = ["Overview", "Components", "Objects", "Names", "Labels", "Selectors",
+                 "Namespaces", "Annotations", "Finalizers", "Owners", "Dependents",
+                 "Storage", "Versions", "Controllers", "Volumes", "Secrets",
+                 "ConfigMaps", "Ingress", "Services", "Endpoints", "Nodes", "Pods"]
+    rng = random.Random(7)
+    NAV = " ".join(rng.choice(nav_words) for _ in range(160))
+
+    def fake_load(path, max_pages):
+        return Doc(blocks=[Para(PROSE), Para(NAV), Para(PROSE)])
+
+    monkeypatch.setattr(climod, "_load", fake_load)
+
+    a = argparse.Namespace(input="fake.txt", max_pages=None, tier=True,
+                            no_legend=False, json=True)
+    assert climod.cmd_verify(a) == 0
+    verify_res = json.loads(capsys.readouterr().out)
+    assert verify_res["distinct_recall"] == 1.0
+
+    s_tiered = argparse.Namespace(input="fake.txt", max_pages=None, tier=True,
+                                   no_legend=False, json=True)
+    climod.cmd_stats(s_tiered)
+    tiered = json.loads(capsys.readouterr().out)["tokens"]["tdf (no legend)"]
+
+    s_plain = argparse.Namespace(input="fake.txt", max_pages=None, tier=False,
+                                  no_legend=False, json=True)
+    climod.cmd_stats(s_plain)
+    untiered = json.loads(capsys.readouterr().out)["tokens"]["tdf (no legend)"]
+
+    assert tiered < untiered, "tier=True produced the same size as tier=False -- flag is a no-op"
+
+
 # ---------------------------------------------- issue 11: unicode fidelity
 
 def test_fidelity_metric_detects_cjk_content_replacement():
@@ -266,6 +324,41 @@ def test_embedded_quote_character_without_space_is_escaped():
     out, parsed, original = roundtrip(doc)
 
     assert parsed.blocks[0].cols == ['0"0'], f"embedded quote corrupted:\n{out}"
+
+
+def test_literal_quote_wrapped_content_is_not_double_unquoted():
+    """A value whose actual content starts and ends with a literal '"'
+    character (e.g. a column header that is the two characters '""', or a
+    cell holding a quoted title like '"quoted"') must survive round-trip
+    intact.
+
+    _split() already fully resolves CSV-style quoting inline while
+    tokenizing (space mode) -- or applies none at all, correctly, since tab
+    mode never quotes on emit (see _render_rows, which uses _oneline for
+    tab-separated cells). parse.py used to call a separate _unquote() AGAIN
+    on every token _split() returned, redundantly reprocessing already-
+    decoded content: whenever that content itself happened to start and end
+    with '"', the second pass stripped it as if it were still raw,
+    unresolved wire syntax -- e.g. decoded content '""' (two literal quote
+    characters) collapsed to '' (empty string), and '"quoted"' collapsed to
+    'quoted', in BOTH tab and space mode, silently discarding real content
+    (see the optimizer red-team audit's unit-hoisting investigation, which
+    surfaced this via the structural round-trip property test)."""
+    doc = Doc(blocks=[Table(cols=['""'], rows=[])])
+    out, parsed, original = roundtrip(doc)
+    assert parsed.blocks[0].cols == ['""'], f"two-quote header corrupted:\n{out}"
+
+    doc2 = Doc(blocks=[Table(["Full Name"], [['"quoted"'], ["Bob"]])])
+    out2, parsed2, _ = roundtrip(doc2)
+    assert parsed2.blocks[0].rows == [['"quoted"'], ["Bob"]], f"quoted cell corrupted:\n{out2}"
+
+    # Multi-column with an embedded space forces tab-separated mode, the
+    # path that never quotes on emit at all -- the bug hit there too.
+    doc3 = Doc(blocks=[Table(["A", "B"], [['"quoted"', "has space here"], ["x", "y"]])])
+    out3, parsed3, _ = roundtrip(doc3)
+    assert parsed3.blocks[0].rows == [['"quoted"', "has space here"], ["x", "y"]], (
+        f"quoted cell corrupted in tab mode:\n{out3}"
+    )
 
 
 def test_leading_space_column_name_preserved():
@@ -474,3 +567,168 @@ def test_dictionary_legend_numbers_match_actual_references():
     assert re.search(r"^!D 1\n(\d+) !T 5 caption$", out, re.M), f"no legend entry found:\n{out}"
     n = re.search(r"^!D 1\n(\d+) !T 5 caption$", out, re.M).group(1)
     assert out.count(f"§{n}") == 3, f"legend number {n} doesn't match reference count:\n{out}"
+
+
+# --------------------------------- optimizer audit: semantic-invariant tests
+#
+# Unlike the tests above (each reproducing one specific historical bug), these
+# prove the optimizer's transformations preserve the FACTS a document states
+# -- sign, unit, identifier, and row/column relationships -- through the real
+# production pipeline (optimize -> encode_columns -> render_tdf -> parse_tdf),
+# not just that the right words appear somewhere (fidelity.compare's bag-of-
+# words recall is order- and position-blind and would report 100% even if a
+# value moved to the wrong row or a sign flipped on the wrong cell).
+
+def test_negative_parenthesized_numbers_survive_full_pipeline():
+    """(500) must decode back as a negative number after the FULL pipeline,
+    not just at the normalize_cell unit level -- see the P1 paren fix."""
+    rows = [["A", "(500)"], ["B", "-500"], ["C", "500"], ["D", "(500)"]]
+    doc = Doc(blocks=[Table(["Name", "Delta"], rows)])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    got = {r[0]: r[1] for r in table.rows}
+    assert got == {"A": "-500", "B": "-500", "C": "500", "D": "-500"}, out
+
+
+def test_unmatched_parens_and_dates_are_not_corrupted_into_negatives():
+    """A stray, unpaired paren or a date-shaped value must not be
+    misread as accounting notation and flipped negative, and a genuinely
+    matched pair must still flip -- through the full pipeline."""
+    rows = [
+        ["Note A", "123)"],
+        ["Note B", "(123"],
+        ["Edition", "(2024)"],
+        ["Range", "2020-2024"],
+    ]
+    doc = Doc(blocks=[Table(["Label", "Value"], rows)])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    got = {r[0]: r[1] for r in table.rows}
+    assert got["Note A"] == "123)", out
+    assert got["Note B"] == "(123", out
+    assert got["Edition"] == "-2024", out
+    assert got["Range"] == "2020-2024", out
+
+
+def test_identifiers_and_emphasis_survive_full_pipeline():
+    """Code identifiers must survive byte-exact; genuine multi-word emphasis
+    must still strip -- through the full pipeline, not just clean_text()
+    called directly. See the P0 underscore/identifier fix."""
+    doc = Doc(blocks=[
+        Para("Call foo_bar_baz() then check __init__ and api_key_secret."),
+        Para("This is _genuine emphasis_ and this is __strong text too__."),
+    ])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    paras = [b.text for b in parsed.blocks if isinstance(b, Para)]
+    assert "foo_bar_baz" in paras[0], out
+    assert "__init__" in paras[0], out
+    assert "api_key_secret" in paras[0], out
+    assert "genuine emphasis" in paras[1], out
+    assert "strong text too" in paras[1], out
+    assert "_genuine emphasis_" not in paras[1], out
+    assert "__strong text too__" not in paras[1], out
+
+
+def test_mixed_currency_and_percent_columns_stay_isolated():
+    """Two adjacent unit-bearing columns (currency, percent) must each keep
+    their own mark through hoist -> render -> parse -- neither column's
+    values may pick up the other's symbol."""
+    rows = [[f"P{i}", f"${100 + i}.00", f"{i}%"] for i in range(12)]
+    doc = Doc(blocks=[Table(["Person", "Salary", "Growth"], rows)])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    by_person = {r[0]: r for r in table.rows}
+    for i in range(12):
+        r = by_person[f"P{i}"]
+        assert r[1] == f"${100 + i}", out
+        assert r[2] == f"{i}%", out
+
+
+def test_table_row_facts_survive_full_pipeline_with_combined_passes():
+    """Constant-column hoisting, repeated-cell elision, and columnar
+    dictionary coding all fire together on this table (40 rows, a constant
+    Currency column, and a low-cardinality Region column). Every row's
+    Person/Region/Salary/Currency facts must still be individually correct
+    after a full round trip -- looked up by column name, since a dropped
+    constant column is legitimately restored at the end of the row (see
+    parse_tdf's constant-column handling), not necessarily its original
+    position."""
+    regions = ["Asia Pacific", "Europe Middle East Africa", "Americas"]
+    rows = [[f"Person{i}", regions[i % 3], str(50000 + i * 137), "USD"] for i in range(40)]
+    doc = Doc(blocks=[Table(["Person", "Region", "Salary", "Currency"], rows)])
+    original_facts = {r[0]: {"Region": r[1], "Salary": r[2], "Currency": r[3]} for r in rows}
+
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    assert len(table.rows) == 40, out
+
+    for r in table.rows:
+        facts = dict(zip(table.cols, r))
+        person = facts["Person"]
+        expected = original_facts[person]
+        assert facts["Region"] == expected["Region"], f"{person}: {out}"
+        assert facts["Salary"] == expected["Salary"], f"{person}: {out}"
+        assert facts["Currency"] == expected["Currency"], f"{person}: {out}"
+
+
+def test_dictionary_phrase_does_not_match_inside_a_fused_token():
+    """A Re-Pair-selected phrase must only substitute where it stands as its
+    own whitespace-delimited run, not as a substring fused onto a longer
+    token elsewhere in the corpus (messy PDF extraction routinely glues a
+    trailing digit or footnote marker onto the last word with no space).
+
+    Before the fix, `build_dictionary`/`select` matched and replaced via
+    plain substring (`str.replace`/`str.count`), so a phrase ending in
+    "...covers" also matched inside the unrelated token "covers2024",
+    splicing a "§n" reference directly onto "2024" with no separator. On
+    read-back, parse_tdf's own reference regex (`§(\\d+)`) is greedy, so
+    "§12024" was read as reference 12024 -- never defined -- and the entire
+    fused run, digits included, was silently lost rather than reconstructed
+    (see the optimizer red-team audit's Re-Pair phrase-boundary fix)."""
+    phrase = "the annual financial report covers"
+    paras = [
+        Para(f"{phrase} many topics of interest to readers everywhere."),
+        Para(f"{phrase} many other things as well, in detail."),
+        Para(f"{phrase} the full fiscal year in depth."),
+        Para(f"Executives noted that {phrase}2024 was a record year."),
+    ]
+    doc = Doc(blocks=paras)
+    out, parsed, original = roundtrip(doc, optimized=True)
+
+    report = compare(original, parsed)
+    assert report["distinct_recall"] == 1.0, f"fused-token phrase corrupted:\n{out}\n{report['missing_sample']}"
+    fused = next(b.text for b in parsed.blocks if "2024" in b.text)
+    assert f"{phrase}2024" in fused, f"fused occurrence not reconstructed:\n{out}"
+    assert "§" not in fused, f"stray unresolved reference leaked into body text:\n{out}"
+
+
+# ------------------------------- optimizer audit: reserved-syntax collisions
+
+def test_reserved_syntax_shaped_table_cells_survive_full_pipeline():
+    """Values that look like TDF's own sigils, repeat markers, section
+    references, or column codes must stay literal through the full
+    optimizer pipeline when they appear as TABLE CELLS specifically --
+    where hoist_units, drop_constant_columns, elide_repeats, and
+    encode_columns all interact with the raw cell text, not just prose
+    (test_sigil_shaped_text_survives already covers Para-level text via
+    fidelity.compare's bag-of-words recall; this checks exact per-cell
+    content, including values repeated back-to-back to force elide_repeats'
+    '^' marker into play, and low-cardinality repeats to force
+    encode_columns' a/b/c-style codes into play alongside them)."""
+    reserved_shaped = [
+        "^", "^^", "^^^", "§1", "§99", "!T 5 x", "!F a=b", "!C", "!K x",
+        "!P 3", "!G chart", "!E x1 index 9 9 g", "!D 1", "!R", "%TDF1",
+        "!V col", "a", "b", "aa",  # also shaped like the codebook's own codes
+    ]
+    # Repeat each value 3x consecutively (forces elide_repeats' '^' marker to
+    # actually fire on top of already-'^'-shaped literal content) across
+    # enough rows to also clear encode_columns' MIN_ROWS=12 threshold.
+    rows = [[str(i), reserved_shaped[i % len(reserved_shaped)]] for i in range(len(reserved_shaped) * 3)]
+    doc = Doc(blocks=[Table(["id", "value"], rows)])
+    out, parsed, original = roundtrip(doc, optimized=True)
+
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    got = {r[0]: r[1] for r in table.rows}
+    for i in range(len(rows)):
+        expected = reserved_shaped[i % len(reserved_shaped)]
+        assert got[str(i)] == expected, f"row {i} corrupted (expected {expected!r}):\n{out}"

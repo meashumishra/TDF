@@ -14,6 +14,7 @@ from tdf.columnar import decode_columns, encode_columns
 from tdf.emit import render_tdf
 from tdf.fidelity import canonicalize, compare
 from tdf.ir import Code, Doc, Elision, Heading, KV, ListBlock, PageMark, Para, Quote, Table
+from tdf.optimize import optimize
 from tdf.parse import parse_tdf
 
 # Hostile strings from the old fuzzer, plus hypothesis's own text generation
@@ -259,4 +260,105 @@ def test_doc_structural_roundtrip(doc: Doc):
     assert canonicalize(original) == canonicalize(parsed), (
         f"Structural mismatch.\nTDF:\n{out}\n"
         f"original: {canonicalize(original)}\nparsed:   {canonicalize(parsed)}"
+    )
+
+
+@settings(max_examples=1000, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(doc_strategy())
+def test_optimizer_structural_roundtrip(doc: Doc):
+    """Property: the real optimize() pass (text hygiene, boilerplate dedup,
+    phrase-dictionary substitution) does not corrupt block type, order, or
+    positional relationships through a full emit/parse cycle.
+
+    test_doc_structural_roundtrip above deliberately runs with
+    optimized=False to isolate serialize/parse correctness from optimize()'s
+    own content transforms. This test is the P1 optimizer-level counterpart
+    the audit calls for: it exercises optimize() itself (which
+    render_tdf(optimized=True) -- the actual default cmd_convert uses --
+    applies internally) and checks the result still round-trips
+    structurally, not just that distinct words survive (see fidelity.compare,
+    which is order-blind and would report 100% even if optimize() silently
+    reordered or misattributed content).
+
+    `expected` runs optimize() directly on an independent copy of the same
+    input, standing in for ground truth: optimize() itself prunes blocks that
+    normalize to nothing (e.g. a Para that is pure zero-width-space content
+    becomes "" after clean_text and is dropped -- see optimize()'s own
+    empty-block filter), so the degenerate-case exclusions below are applied
+    to `expected` (post-optimize) rather than to `doc` (pre-optimize): they
+    are the same wire-format ambiguities test_doc_structural_roundtrip
+    documents, just evaluated after optimize() has already resolved the
+    "does this block survive at all" question.
+
+    Columnar coding is out of scope here on purpose: MIN_ROWS=12 in
+    columnar.py and doc_strategy's 10-row table cap mean encode_columns
+    never actually fires for these generated fixtures, so this test does not
+    exercise (and would give a false failure on) the separately-documented
+    pass-ordering finding where a coded column's legend keeps its raw,
+    pre-normalize_cell formatting -- see the audit report.
+    """
+    # use_dictionary=False: build_dictionary()'s phrase -> "§n" substitution
+    # is fully reversible -- parse_tdf expands "§n" back to the literal
+    # phrase on read (like the four passes canonicalize()'s docstring already
+    # calls out: codebook/columnar encoding, "^" elision, constant-column and
+    # unit hoisting) -- so a real round trip's final text matches what
+    # optimize() would have produced WITHOUT the dictionary pass, not the
+    # substituted reference text optimize() leaves in place internally. Disabling
+    # it here keeps `expected` representing optimize()'s irreversible
+    # transforms only (text hygiene, boilerplate dedup, empty-block
+    # pruning); the real pipeline below still runs the dictionary pass
+    # (default True), exercising it precisely because it's expected to wash
+    # out by the time parse_tdf returns.
+    expected = copy.deepcopy(doc)
+    arts = optimize(expected, use_dictionary=False)
+
+    assume(not any(
+        isinstance(b, (Para, Quote, Heading)) and not b.text.strip()
+        for b in expected.blocks
+    ))
+    assume(not any(
+        isinstance(b, ListBlock) and any(not i.strip() for i in b.items)
+        for b in expected.blocks
+    ))
+    assume(not any(
+        isinstance(b, Table) and not b.cols
+        for b in expected.blocks
+    ))
+    assume(not expected.title or expected.title.strip())
+    assume(not any(
+        isinstance(x, ListBlock) and isinstance(y, ListBlock)
+        for x, y in zip(expected.blocks, expected.blocks[1:])
+    ))
+    assume(not any(
+        isinstance(x, KV) and isinstance(y, Para) and ":" in y.text
+        for x, y in zip(expected.blocks, expected.blocks[1:])
+    ))
+    assume(not any(
+        isinstance(b, KV) and any(":" in k for k, v in b.pairs)
+        for b in expected.blocks
+    ))
+    # strip_boilerplate() is deliberately lossy about position and block type
+    # (see its docstring): text repeated >= min_repeats times collapses to
+    # ONE Para reinserted right after the legend, not at any of its original
+    # positions, and not as its original block type if that was a ListBlock
+    # item. Content survives (distinct-recall unaffected) but the structural
+    # fingerprint intentionally does not match `expected` in that case --
+    # this is the documented tradeoff, not a bug this property test should
+    # flag. `arts["boilerplate"]` is optimize()'s own record of whether it
+    # fired, so this skip is exact rather than an approximation of its
+    # (post-clean_text) repeat-counting logic.
+    assume(not arts["boilerplate"])
+
+    working = copy.deepcopy(doc)
+    books = encode_columns(working)
+    out = render_tdf(working, codebooks=books)
+
+    from tdf.validate import validate
+    val_res = validate(out)
+    assert val_res.ok, f"Generated invalid TDF:\n{out}\nViolations: {val_res.violations}"
+
+    parsed = parse_tdf(out)
+    assert canonicalize(expected) == canonicalize(parsed), (
+        f"Structural mismatch after optimize().\nTDF:\n{out}\n"
+        f"expected: {canonicalize(expected)}\nparsed:   {canonicalize(parsed)}"
     )

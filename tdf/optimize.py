@@ -12,7 +12,7 @@ import unicodedata
 from collections import Counter, defaultdict
 
 from .ir import Doc, Figure, Heading, KV, ListBlock, Para, Quote, Table
-from .repair import repair_candidates, select
+from .repair import repair_candidates, select, word_bounded_sub
 from .tokens import count
 
 # ---------------------------------------------------------------- text hygiene
@@ -28,7 +28,44 @@ _UNI = {
 }
 _UNI_RE = re.compile("|".join(map(re.escape, _UNI)))
 
-_EMPHASIS = re.compile(r"(\*\*\*|\*\*|\*|___|__|_)(?=\S)(.+?)(?<=\S)\1", re.S)
+# Asterisk emphasis is unambiguous -- `*` is never part of an identifier, so
+# intraword use (*bold*inside*text*) is safe to strip exactly as before.
+_EMPHASIS_STAR = re.compile(r"(\*\*\*|\*\*|\*)(?=\S)(.+?)(?<=\S)\1", re.S)
+# Underscore emphasis is not: `foo_bar_baz`, `__init__`, `api_key_secret` are
+# all real identifiers a technical document is full of, and treating every
+# underscore pair as emphasis destroyed them (`foo_bar_baz` -> `foobarbaz`,
+# `__init__` -> `init`). Two guards, both needed:
+#   (?<!\w) ... (?!\w)   CommonMark's intraword rule -- a delimiter touching
+#                        a word character on its outside edge never opens or
+#                        closes emphasis. Protects foo_bar_baz, _internal_var.
+#   content must be multi-word    __init__ and __name__ satisfy the intraword
+#                        rule (nothing outside the dunders), so that rule
+#                        alone still stripped them to `init`/`name` --
+#                        genuine underscore emphasis in prose is essentially
+#                        always multi-word ("_this is emphasis_"), while a
+#                        bare single "word" wrapped in underscores is far
+#                        more likely to be a code identifier in TDF's target
+#                        domain. `__init__` and `__strong__` are otherwise
+#                        lexically identical (single word, same delimiter) --
+#                        there is no local-pattern rule that strips one but
+#                        not the other, so this trades a small, one-sided
+#                        cost (single-word underscore emphasis no longer
+#                        strips -- extra tokens kept, never content lost) for
+#                        protecting the identifier case, matching "semantic
+#                        correctness over ratio".
+#
+# The content pattern itself needs care too: a naive `.+?` forced to contain
+# a space will happily backtrack THROUGH an adjacent, unrelated delimiter
+# run to find one further away -- "_ital_ and __strong__" collapsed into one
+# match spanning the whole string, with the inner "__" swallowed as content.
+# Restricting content to "non-underscore, or an underscore that is itself
+# intraword" stops a delimiter-adjacent underscore (whitespace on one side)
+# from ever being consumed as plain content, so each run is matched
+# independently.
+_CONTENT = r"(?:[^_\s]|(?<=\w)_(?=\w)|\s(?!_))"
+_EMPHASIS_UNDERSCORE = re.compile(
+    r"(?<!\w)(___|__|_)(?=\S)(" + _CONTENT + r"*\s" + _CONTENT + r"*)(?<=\S)\1(?!\w)", re.S
+)
 _MD_ESCAPE = re.compile(r"\\([\\`*_{}\[\]()#+\-.!|>~])")
 _WS = re.compile(r"[ \t]+")
 _HYPHEN_BREAK = re.compile(r"(\w)-\n(\w)")
@@ -49,7 +86,9 @@ def clean_text(s: str, strip_emphasis: bool = True) -> str:
     if strip_emphasis:
         prev = None
         while prev != s:
-            prev, s = s, _EMPHASIS.sub(r"\2", s)
+            prev = s
+            s = _EMPHASIS_STAR.sub(r"\2", s)
+            s = _EMPHASIS_UNDERSCORE.sub(r"\2", s)
     s = _MD_ESCAPE.sub(r"\1", s)
     s = _WS.sub(" ", s)
     return s.strip()
@@ -70,14 +109,29 @@ def normalize_cell(v: str) -> str:
     if not m:
         return v
     sign, cur, body, suffix = m.groups()
+    # `(` and `)` are only a negative marker as a matched pair -- an unpaired
+    # paren ("123)", "(123") is not accounting notation at all, and treating
+    # it as one fabricates a sign that was never there. Leave the value
+    # untouched rather than guess.
+    if (sign == "(") != (suffix == ")"):
+        return v
     body = body.replace(",", "")
     if "." in body:
         body = body.rstrip("0").rstrip(".") or "0"
-    neg = sign in ("-", "(") or suffix == ")"
+    neg = sign == "-" or (sign == "(" and suffix == ")")
     return ("-" if neg else "") + cur + body + ("%" if suffix == "%" else "")
 
 
-_UNIT_RE = re.compile(r"^([$\u20ac\u00a3\u00a5])?(-?[\d.]+)(%)?$")
+# Sign comes before the currency symbol here ("-$100"), matching what
+# normalize_cell actually emits (its own return statement prepends "-"
+# before `cur`) -- putting the optional sign inside the number group instead
+# ("$-100") would never match normalize_cell's real output, so an entire
+# common category (negative currency amounts -- accounting figures are
+# routinely negative) silently never qualified for hoisting. Not a
+# correctness bug (an unmatched column is simply left un-hoisted, cells stay
+# correct), but a real, avoidable compression miss on exactly the kind of
+# data this format targets.
+_UNIT_RE = re.compile(r"^(-)?([$\u20ac\u00a3\u00a5])?([\d.]+)(%)?$")
 
 
 def hoist_units(cols: list[str], rows: list[list[str]]) -> tuple[list[str], list[list[str]]]:
@@ -97,7 +151,7 @@ def hoist_units(cols: list[str], rows: list[list[str]]) -> tuple[list[str], list
             if not m:
                 marks.add(None)
                 break
-            marks.add(m.group(1) or m.group(3))
+            marks.add(m.group(2) or m.group(4))
         if len(marks) == 1 and (mark := marks.pop()):
             cols[c] = f"{cols[c]}({mark})"
             for r in rows:
@@ -115,7 +169,11 @@ def drop_constant_columns(
         return cols, rows, []
     keep, constants = [], []
     for c, name in enumerate(cols):
-        vals = {r[c] for r in rows if c < len(r)}
+        # A ragged row missing this cell entirely is not the same claim as an
+        # agreeing value -- it must count as a disagreement (via the `None`
+        # sentinel, distinct from any real string including ""), not be
+        # silently excluded from consideration the way `if c < len(r)` did.
+        vals = {r[c] if c < len(r) else None for r in rows}
         if len(vals) == 1 and (v := next(iter(vals))):
             constants.append((name, v))
         else:
@@ -153,6 +211,20 @@ def strip_boilerplate(doc: Doc, min_repeats: int = 3) -> list[str]:
     A short line that recurs verbatim many times through a document is page
     furniture, not content. We remove every copy and declare it once. Applies to
     both standalone paragraphs and list items (slide decks put chrome in both).
+
+    This is intentionally lossy about everything except the literal text: all
+    N occurrences collapse to one, parse_tdf reinserts that one as a plain
+    Para positioned right after the legend (see its "!R" handling) -- not at
+    any of the original occurrences' positions, and not preserving whichever
+    original block type carried it (a ListBlock item that was boilerplate
+    comes back as a standalone Para, not a list item). Distinct-content
+    recall is therefore unaffected, but position/count/type are not
+    recoverable from the declaration alone -- unlike `!E` elision, which
+    marks its exact original position. The heuristic itself (recur >=
+    min_repeats times, <=200 chars, >=3 tokens) has no positional signal
+    either, so it fires equally on genuine page furniture and on any other
+    short line a document happens to repeat >=3 times -- both get the same
+    relocate-and-retype treatment.
     """
     counts: Counter[str] = Counter()
     for b in doc.blocks:
@@ -369,8 +441,7 @@ def build_dictionary(
     repl = {p: f"\u00a7{n}" for p, n in zip(accepted, numbers)}
     for obj, attr, val in texts:
         for p in accepted:
-            if p in val:
-                val = val.replace(p, repl[p])
+            val = word_bounded_sub(val, p, repl[p])
         setattr(obj, attr, val)
     # Numbers may skip reserved values above, so the caller (the !D legend
     # emitter) needs the actual (phrase, number) pairs, not just the phrase

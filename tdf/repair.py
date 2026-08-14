@@ -37,6 +37,7 @@ resolve `§n` by eye.
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 
 from .tokens import count
@@ -44,6 +45,44 @@ from .tokens import count
 # Merging stops here; long phrases are built by composition, not by this bound.
 MAX_PHRASE_WORDS = 40
 REF_TOKENS = 2  # what one "§n" reference costs
+
+_pattern_cache: dict[str, "re.Pattern[str]"] = {}
+
+
+def _word_bounded(phrase: str) -> "re.Pattern[str]":
+    """Match `phrase` only where it stands as its own run of whitespace-
+    delimited tokens (see optimize.py's `_WORD = \\S+`), not as a substring
+    fused onto a longer token.
+
+    A phrase built from word tokens can still occur as a literal SUBSTRING
+    inside an unrelated, longer token elsewhere in the corpus -- e.g. a
+    phrase ending in "...covers" is also a substring of "covers2024" if the
+    source text has that run with no space (common in messy PDF extraction).
+    A naive `str.replace` fires there too, splicing a "§n" reference
+    directly onto "2024" with no separator. That is not just a stray
+    artifact: parse_tdf's own reference regex (`§(\\d+)`) is greedy, so
+    "§12024" reads back as reference number 12024 -- which was never
+    defined -- and the entire fused run (including the digits that were
+    genuine original content) is lost rather than reconstructed.
+
+    Anchoring on "not preceded/followed by a non-whitespace character"
+    enforces the same boundary the phrase was tokenized on, without
+    depending on `\\b`'s `\\w`-based definition, which would wrongly refuse
+    a phrase that starts or ends in punctuation (word tokens here are
+    `\\S+`, not `[\\w]+` -- e.g. `"$100"` or `"widgets,"` are valid tokens).
+    """
+    pat = _pattern_cache.get(phrase)
+    if pat is None:
+        pat = _pattern_cache[phrase] = re.compile(r"(?<!\S)" + re.escape(phrase) + r"(?!\S)")
+    return pat
+
+
+def word_bounded_count(text: str, phrase: str) -> int:
+    return len(_word_bounded(phrase).findall(text))
+
+
+def word_bounded_sub(text: str, phrase: str, replacement: str) -> str:
+    return _word_bounded(phrase).sub(lambda _m: replacement, text)
 
 
 def _pair_key(a: int, b: int) -> int:
@@ -163,12 +202,12 @@ def select(
     """
     working = corpus
     accepted: list[str] = []
-    ranked = sorted(candidates, key=lambda p: -(corpus.count(p) * count(p)))
+    ranked = sorted(candidates, key=lambda p: -(word_bounded_count(corpus, p) * count(p)))
 
     for phrase in ranked:
         if len(accepted) >= max_entries:
             break
-        occurrences = working.count(phrase)
+        occurrences = word_bounded_count(working, phrase)
         if occurrences < min_occurrences:
             continue
         tokens = count(phrase)
@@ -180,6 +219,6 @@ def select(
         if saving <= 0:
             continue
         accepted.append(phrase)
-        working = working.replace(phrase, "\x01")
+        working = word_bounded_sub(working, phrase, "\x01")
 
     return accepted

@@ -29,7 +29,14 @@ REAL = ROOT / "samples_real"
     ("\u201csmart\u201d", '"smart"'),
     ("em\u2014dash", "em-dash"),
     ("**bold** text", "bold text"),
-    ("_ital_ and __strong__", "ital and strong"),
+    # Single-word underscore emphasis ("_ital_", "__strong__") is no longer
+    # stripped -- it is lexically identical to a code identifier like
+    # `__init__` (single "word", underscore-delimited), and there is no
+    # local-pattern rule that can tell them apart. Multi-word underscore
+    # emphasis ("_this is emphasis_") still strips; see the optimizer
+    # red-team audit's P0 underscore/identifier-corruption fix.
+    ("_ital_ and __strong__", "_ital_ and __strong__"),
+    ("_this is emphasis_ and __this is strong__", "this is emphasis and this is strong"),
     ("a\u00a0b", "a b"),
     ("multi   space", "multi space"),
 ])
@@ -44,6 +51,12 @@ def test_clean_text(raw, want):
     ("12.50%", "12.5%"),
     ("3.1400", "3.14"),
     ("not a number", "not a number"),
+    # A parenthesis is only an accounting-negative marker as a MATCHED pair.
+    # An unpaired paren is not a number at all -- fabricating a sign from it
+    # invents data. See the optimizer red-team audit's P1 paren fix.
+    ("123)", "123)"),
+    ("(123", "(123"),
+    ("+123)", "+123)"),
 ])
 def test_normalize_cell(raw, want):
     assert normalize_cell(raw) == want
@@ -99,6 +112,55 @@ def test_roundtrip_constant_column_and_units():
               [[str(i), f"${i * 100}.00", "USD"] for i in range(1, 9)])
     res = _roundtrip(Doc(title="T", blocks=[t]))
     assert res["distinct_recall"] == 1.0
+
+
+# A blank cell ("") is a real, distinct value -- a column that is "USD" on
+# every row but one, where that one row is blank, is NOT constant, and must
+# never be silently collapsed to a single "USD" fact that erases the blank.
+# See the optimizer red-team audit's P0 constant-column investigation
+# (confirmed no bug in drop_constant_columns itself -- these lock the
+# behavior in against regression -- but the full pipeline is exercised too,
+# since drop_constant_columns alone isn't the whole story: emit/parse must
+# also preserve the surviving column faithfully).
+@pytest.mark.parametrize("rows", [
+    pytest.param([["1", "USD"], ["2", ""], ["3", "USD"], ["4", "USD"]], id="blank-middle"),
+    pytest.param([["1", ""], ["2", "USD"], ["3", "USD"], ["4", "USD"]], id="blank-first"),
+    pytest.param([["1", "USD"], ["2", "USD"], ["3", "USD"], ["4", ""]], id="blank-last"),
+    pytest.param([["1", "USD"], ["2", "EUR"], ["3", "USD"], ["4", "USD"]], id="multi-distinct"),
+])
+def test_constant_column_with_blank_is_not_collapsed(rows):
+    from tdf.optimize import drop_constant_columns
+    cols, out_rows, constants = drop_constant_columns(["id", "currency"], rows)
+    assert constants == []
+    assert cols == ["id", "currency"]
+    assert out_rows == rows
+
+    t = Table(["id", "currency"], [list(r) for r in rows])
+    res = _roundtrip(Doc(blocks=[t]))
+    assert res["distinct_recall"] == 1.0
+    parsed = parse_tdf(render_tdf(Doc(blocks=[Table(["id", "currency"], [list(r) for r in rows])])))
+    parsed_table = next(b for b in parsed.blocks if isinstance(b, Table))
+    assert parsed_table.rows == rows
+
+
+def test_constant_column_all_genuinely_constant_is_dropped():
+    from tdf.optimize import drop_constant_columns
+    rows = [["1", "USD"], ["2", "USD"], ["3", "USD"], ["4", "USD"]]
+    cols, out_rows, constants = drop_constant_columns(["id", "currency"], rows)
+    assert constants == [("currency", "USD")]
+    assert cols == ["id"]
+    assert out_rows == [["1"], ["2"], ["3"], ["4"]]
+
+
+def test_constant_column_ragged_row_is_not_collapsed():
+    """A row missing the trailing cell entirely (ragged) is not the same
+    claim as that cell being blank -- drop_constant_columns must not treat a
+    missing cell as agreeing with the other rows' value."""
+    from tdf.optimize import drop_constant_columns
+    rows = [["1", "USD"], ["2", "USD"], ["3", "USD"], ["4"]]
+    cols, out_rows, constants = drop_constant_columns(["id", "currency"], rows)
+    assert constants == []
+    assert cols == ["id", "currency"]
 
 
 def test_roundtrip_cells_with_spaces_and_empties():

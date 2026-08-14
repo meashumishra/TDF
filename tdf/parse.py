@@ -18,12 +18,6 @@ _UNIT_COL = re.compile(r"^(.*)\(([$\u20ac\u00a3\u00a5%])\)$")
 _FENCE_OPEN = re.compile(r"^(`{3,})(.*)$")
 
 
-def _unquote(cell: str) -> str:
-    if len(cell) >= 2 and cell[0] == '"' and cell[-1] == '"':
-        return cell[1:-1].replace('""', '"')
-    return cell
-
-
 def _unescape_caret_cell(v: str) -> str:
     """Exact inverse of emit._escape_caret_cell: drop one trailing caret from
     any all-caret cell of length >= 2. A bare single '^' never reaches this
@@ -195,7 +189,7 @@ def parse_tdf(text: str) -> Doc:
                 for tok in _split(lines[i][3:], " "):
                     if "=" in tok:
                         k, _, v = tok.partition("=")
-                        constants.append((k, _unquote(v)))
+                        constants.append((k, v))
                 i += 1
 
             cols: list[str] = []
@@ -209,7 +203,7 @@ def parse_tdf(text: str) -> Doc:
                 # starts with whitespace, e.g. " leading space".
                 if rest[:1] in (" ", "\t"):
                     rest = rest[1:]
-                cols = [_unquote(c) for c in _split(rest, sep)]
+                cols = _split(rest, sep)
                 i += 1
 
             rows: list[list[str]] = []
@@ -228,7 +222,7 @@ def parse_tdf(text: str) -> Doc:
                     if c == "^" and prev and j < len(prev):
                         row.append(prev[j])
                     else:
-                        row.append(_unescape_caret_cell(_unquote(c)))
+                        row.append(_unescape_caret_cell(c))
                 rows.append(row)
                 prev = row
                 i += 1
@@ -243,7 +237,20 @@ def parse_tdf(text: str) -> Doc:
             for r in rows:
                 for j, mk in enumerate(marks):
                     if mk and j < len(r) and r[j]:
-                        r[j] = (mk + r[j]) if mk != "%" else (r[j] + "%")
+                        if mk == "%":
+                            r[j] = r[j] + "%"
+                        elif r[j].startswith("-"):
+                            # normalize_cell puts the sign before the currency
+                            # symbol ("-$100"), not after it -- restoring the
+                            # mark at position 0 unconditionally would instead
+                            # produce "$-100", changing the literal formatting
+                            # of every negative value in a hoisted currency
+                            # column on a round trip (see hoist_units' _UNIT_RE
+                            # comment for why the emit side already accounts
+                            # for this).
+                            r[j] = "-" + mk + r[j][1:]
+                        else:
+                            r[j] = mk + r[j]
             for k, v in constants:
                 out_cols.append(k)
                 for r in rows:
