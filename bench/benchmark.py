@@ -117,6 +117,7 @@ def bench_one(path: Path) -> dict:
     fid = compare(original, parse_tdf(td))
 
     toks = {
+        "raw": None if path.suffix not in (".csv", ".tsv", ".txt") else count(path.read_text(errors="ignore")),
         "markitdown": mit,
         "html": count(ht),
         "json": count(js),
@@ -138,16 +139,17 @@ def bench_one(path: Path) -> dict:
             None if not mit else round(100 * (1 - toks["tdf"] / mit), 1)
         ),
         "fidelity_recall": round(fid["distinct_recall"] * 100, 2),
+        "occurrence_ratio": round(fid.get("occurrence_ratio", 1.0) * 100, 2),
         "seconds": {"parse": round(parse_s, 3), "tdf_render": round(tdf_s, 3),
                     "markitdown": None if mit_s is None else round(mit_s, 3)},
     }
 
 
 def fmt_table(results: list[dict]) -> str:
-    cols = ["markitdown", "html", "json", "markdown", "tdf", "tdf_no_legend", "tdf_skeleton"]
+    cols = ["raw", "markitdown", "html", "json", "markdown", "tdf", "tdf_no_legend", "tdf_skeleton"]
     head = ("| file | " + " | ".join(cols) +
-            " | TDF saving vs MD | TDF saving vs MarkItDown | recall |")
-    sep = "|" + "---|" * (len(cols) + 4)
+            " | TDF saving vs MD | TDF saving vs MarkItDown | recall | occurrence |")
+    sep = "|" + "---|" * (len(cols) + 5)
     lines = [head, sep]
     for r in results:
         cells = []
@@ -158,7 +160,7 @@ def fmt_table(results: list[dict]) -> str:
             f"| {r['file']} | " + " | ".join(cells) +
             f" | **{r['vs_markdown_pct']['tdf']:.1f}%** | " +
             (f"**{r['vs_markitdown_pct']:.1f}%**" if r["vs_markitdown_pct"] is not None else "n/a") +
-            f" | {r['fidelity_recall']:.1f}% |"
+            f" | {r['fidelity_recall']:.1f}% | {r['occurrence_ratio']:.1f}% |"
         )
 
     tot = {c: sum(r["tokens"][c] or 0 for r in results) for c in cols}
@@ -170,7 +172,7 @@ def fmt_table(results: list[dict]) -> str:
         "| **TOTAL** | " + " | ".join(f"**{tot[c]:,}**" for c in cols) +
         f" | **{100*(1-tot['tdf']/tot['markdown']):.1f}%** | " +
         (f"**{100*(1-tdf_on_mit/mit_tot):.1f}%**" if mit_tot else "n/a") +
-        f" | {sum(r['fidelity_recall'] for r in results)/len(results):.1f}% |"
+        f" | {sum(r['fidelity_recall'] for r in results)/len(results):.1f}% | {sum(r['occurrence_ratio'] for r in results)/len(results):.1f}% |"
     )
     if len(mit_rows) != len(results):
         lines.append(f"\n_MarkItDown column totals cover only the {len(mit_rows)} of "
