@@ -20,8 +20,8 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
             
     api_key = os.environ.get("OPENAI_API_KEY")
     if not api_key:
-        # FAKE MOCK MODE FOR HARNESS DEV
-        return "Simulated Answer"
+        # Require API key instead of silently inventing fake results
+        raise RuntimeError("OPENAI_API_KEY environment variable is required to run the evaluation.")
         
     url = "https://api.openai.com/v1/chat/completions"
     headers = {
