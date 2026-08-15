@@ -112,6 +112,7 @@ This is the pointer-not-payload pattern applied at document-region granularity. 
 
 ```
 tdf convert <file> [--to tdf|md|skeleton] [-o OUT] [--no-legend] [--tier] [--raw]
+tdf diff    <old> <new>            # structural document diffing (50-99% token savings over raw comparison)
 tdf stats   <file> [--json]        # token counts across all output modes
 tdf verify  <file> [--json]        # round-trip fidelity report
 tdf expand  <file> <section-ids>   # emit selected sections
