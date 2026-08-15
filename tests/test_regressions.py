@@ -544,7 +544,10 @@ def test_literal_section_reference_survives_dictionary_substitution():
 
     report = compare(original, restored)
     assert report["distinct_recall"] == 1.0, f"literal section ref corrupted:\n{out}\n{report['missing_sample']}"
-    assert restored.blocks[0].items[-1] == "§1"
+    # blocks[0] is the Heading -- doc.title has its own "!H" sigil now (see
+    # the independent audit's BUG-5 fix), so a leading H1 is no longer
+    # promoted into doc.title and swallowed out of the block list.
+    assert restored.blocks[1].items[-1] == "§1"
 
 
 def test_dictionary_legend_numbers_match_actual_references():
@@ -640,7 +643,7 @@ def test_mixed_currency_and_percent_columns_stay_isolated():
     by_person = {r[0]: r for r in table.rows}
     for i in range(12):
         r = by_person[f"P{i}"]
-        assert r[1] == f"${100 + i}", out
+        assert r[1] == f"${100 + i}.00", out
         assert r[2] == f"{i}%", out
 
 
@@ -749,3 +752,133 @@ def test_regression_table_cell_quotes():
     parsed_table = parsed.blocks[0]
     assert parsed_table.cols == ['""', '"x"', 'a"b', '']
     assert parsed_table.rows[0] == ['""', '"x"', 'a"b', '']
+
+
+# ------------------------------------- independent audit: BUG-1, BUG-2
+
+def test_constant_column_position_is_preserved():
+    """A constant column must reinsert at its ORIGINAL position on parse,
+    not always get appended after every surviving column -- appending
+    silently reorders the whole table (every other column shifts one slot
+    left, and every row's cells shift with it). See the independent audit's
+    BUG-1."""
+    from tdf.ir import Doc, Table
+
+    doc = Doc(blocks=[Table(cols=["v", "k"], rows=[["CONST", str(i)] for i in range(5)])])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    assert table.cols == ["v", "k"], f"column order corrupted:\n{out}"
+    assert table.rows[0] == ["CONST", "0"], f"row values shifted:\n{out}"
+    assert table.rows == [["CONST", str(i)] for i in range(5)]
+
+
+def test_constant_column_position_preserved_with_multiple_constants():
+    """Same as above but with constants interleaved among surviving columns,
+    to exercise the general merge-by-index case, not just a single constant
+    at the start."""
+    from tdf.ir import Doc, Table
+
+    doc = Doc(blocks=[Table(cols=["const_a", "const_b", "k", "const_c"],
+                            rows=[["X", "CONST1", str(i), "CONST2"] for i in range(5)])])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    assert table.cols == ["const_a", "const_b", "k", "const_c"], f"column order corrupted:\n{out}"
+    assert table.rows == [["X", "CONST1", str(i), "CONST2"] for i in range(5)], f"rows corrupted:\n{out}"
+
+
+def test_numeric_precision_is_cardinality_independent():
+    """Whether a value keeps its trailing-zero precision must not depend on
+    how many OTHER distinct values happen to share its column -- previously
+    encode_columns() ran before normalize_cell() (which callers apply via
+    optimize() inside render_tdf), so a coded (low-cardinality) column kept
+    its raw pre-normalization text while an uncoded (high-cardinality)
+    column in the SAME document got normalized as usual. See the
+    independent audit's BUG-3."""
+    from tdf.ir import Doc, Table
+    from tdf.columnar import encode_columns
+
+    low = Doc(blocks=[Table(["v", "k"], [["3.0" if i % 2 else "4.0", f"k{i}"] for i in range(30)])])
+    high = Doc(blocks=[Table(["v", "k"], [[f"{i}.0", f"k{i}"] for i in range(30)])])
+
+    working_low = copy.deepcopy(low)
+    books_low = encode_columns(working_low)
+    out_low = render_tdf(working_low, codebooks=books_low)
+    parsed_low = parse_tdf(out_low)
+
+    working_high = copy.deepcopy(high)
+    books_high = encode_columns(working_high)
+    out_high = render_tdf(working_high, codebooks=books_high)
+    parsed_high = parse_tdf(out_high)
+
+    assert books_low, "low-cardinality column should have been coded"
+    assert not books_high, "high-cardinality column should not have been coded"
+    assert parsed_low.blocks[0].rows[0][0] == "4.0", out_low
+    assert parsed_high.blocks[0].rows[0][0] == "0.0", out_high
+
+
+def test_leading_h1_is_not_promoted_to_title():
+    """A titleless document whose first block is a level-1 Heading must
+    keep that block, not silently absorb it into doc.title. Before the
+    fix, doc.title and a leading level-1 Heading both emitted as the exact
+    same "# text" line on the wire, so they were byte-for-byte
+    indistinguishable -- parse_tdf's "first H1 in a titleless doc becomes
+    the title" heuristic destroyed the Heading block on every such
+    document. doc.title now has its own "!H" sigil. See the independent
+    audit's BUG-5."""
+    from tdf.ir import Doc, Heading
+
+    doc = Doc(title="", blocks=[Heading(level=1, text="H1")])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    assert parsed.title == "", f"title should stay empty:\n{out}"
+    assert len(parsed.blocks) == 1, f"heading block was swallowed:\n{out}"
+    assert isinstance(parsed.blocks[0], Heading) and parsed.blocks[0].level == 1
+    assert parsed.blocks[0].text == "H1", f"heading text corrupted:\n{out}"
+
+
+def test_real_title_and_leading_h1_are_both_preserved():
+    """A document that has BOTH a real title AND a leading level-1 Heading
+    must keep both distinctly -- the title sigil is separate from the
+    heading's own '#' line."""
+    from tdf.ir import Doc, Heading
+
+    doc = Doc(title="My Title", blocks=[Heading(level=1, text="H1")])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    assert parsed.title == "My Title", f"title corrupted:\n{out}"
+    assert len(parsed.blocks) == 1
+    assert parsed.blocks[0].text == "H1", f"heading corrupted:\n{out}"
+
+
+def test_boilerplate_does_not_fire_on_ordinary_repeated_prose_by_default():
+    """A sentence that recurs 3+ times in ordinary technical documentation
+    ("The output is similar to this:" before three different examples) is
+    not page furniture, and strip_boilerplate's heuristic (recur >= 3
+    times, no positional/page signal at all) cannot tell the difference --
+    confirmed firing on real third-party documentation. It must not run by
+    default. See the independent audit's BUG-4."""
+    from tdf.ir import Doc, Para
+
+    doc = Doc(blocks=[
+        Para("The output is similar to this:"), Para("body A"),
+        Para("The output is similar to this:"), Para("body B"),
+        Para("The output is similar to this:"), Para("body C"),
+    ])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    assert canonicalize(original) == canonicalize(parsed), (
+        f"repeated ordinary prose was reordered/collapsed by default:\n{out}"
+    )
+
+
+def test_all_constant_table_has_no_phantom_column():
+    """When every column in a table is constant, no data grid survives to
+    declare -- the table must come back with its original dimensions and
+    column names, not a phantom leading empty-string column materialised
+    from _split("")'s inherent "" vs [] ambiguity. See the independent
+    audit's BUG-2."""
+    from tdf.ir import Doc, Table
+
+    doc = Doc(blocks=[Table(cols=["a", "b"], rows=[["1", "2"]] * 4)])
+    out, parsed, original = roundtrip(doc, optimized=True)
+    table = next(b for b in parsed.blocks if isinstance(b, Table))
+    assert table.cols == ["a", "b"], f"phantom column present:\n{out}"
+    assert (len(table.rows), len(table.cols)) == (4, 2), f"wrong dims:\n{out}"
+    assert table.rows == [["1", "2"]] * 4, f"row values corrupted:\n{out}"

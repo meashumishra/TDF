@@ -50,7 +50,7 @@ def _split(line: str, sep: str) -> list[str]:
     return out
 
 
-_SIGILS = "DRTFCKGPEV"
+_SIGILS = "DRTFCKGPEVH"
 
 
 def _is_sigil(line: str, letter: str) -> bool:
@@ -130,6 +130,15 @@ def parse_tdf(text: str) -> Doc:
         if not stripped:
             i += 1; continue
 
+        if _is_sigil(stripped, "H"):
+            # Distinct from "#" (Heading) on purpose -- see emit.py's
+            # comment on this sigil for why reusing "# " for the title made
+            # a titleless doc's leading H1 indistinguishable from an actual
+            # title on the wire (the independent audit's BUG-5).
+            doc.title = expand(stripped[2:].strip())
+            i += 1
+            continue
+
         if _is_sigil(stripped, "D"):
             m = re.match(r"^!D\s+(\d+)", stripped)
             count = int(m.group(1)) if m else -1
@@ -184,14 +193,20 @@ def parse_tdf(text: str) -> Doc:
             caption = (m.group(2) or "").strip() if m else ""
             i += 1
 
-            constants: list[tuple[str, str]] = []
+            # Each entry is (original_index, key, value) -- the index is what
+            # lets the merge below reinsert a constant column where it
+            # actually was, instead of always appending it after every
+            # surviving column (see the independent audit's BUG-1).
+            constants: list[tuple[int, str, str]] = []
             f_line = None
             if i < n and _is_sigil(lines[i].strip(), "F"):
                 f_line = lines[i]
                 for tok in _split(lines[i][3:], " "):
                     if "=" in tok:
-                        k, _, v = tok.partition("=")
-                        constants.append((k, v))
+                        idx_key, _, v = tok.partition("=")
+                        idx_str, sep_found, k = idx_key.partition(":")
+                        if sep_found and idx_str.isdigit():
+                            constants.append((int(idx_str), k, v))
                 i += 1
 
             cols: list[str] = []
@@ -211,40 +226,49 @@ def parse_tdf(text: str) -> Doc:
                 i += 1
 
             rows: list[list[str]] = []
-            prev: list[str] | None = None
-            added = 0
-            while added < nrows:
-                if i >= n:
-                    break
-                # Skip periodic headers injected for context
-                if (c_line is not None and lines[i] == c_line) or (f_line is not None and lines[i] == f_line):
-                    i += 1
-                    continue
-                    
-                # The marker check runs on the *raw* split cell, before
-                # unquoting/unescaping: the emitter only ever produces a bare
-                # '^' for a genuine back-reference, since a literal all-caret
-                # value is always lengthened by one caret first (see
-                # emit._escape_caret_cell). So a bare '^' here is unambiguous.
-                split_cells = _split(lines[i], sep)
-                added += 1
-                row = []
-                for j, c in enumerate(split_cells):
-                    if c == "^" and prev and j < len(prev):
-                        row.append(prev[j])
-                    else:
-                        row.append(_unescape_caret_cell(c))
-                rows.append(row)
-                prev = row
-                i += 1
+            if c_line is None:
+                # No data grid was emitted at all -- either every column was
+                # constant (see emit._tdf_table's early return, BUG-2) or the
+                # table is genuinely columnless. "!T n" already declared the
+                # row count; there are no body lines to read, and treating a
+                # blank/absent line as "one empty-string column" is exactly
+                # the ambiguity that produced the phantom column.
+                rows = [[] for _ in range(nrows)]
+            else:
+                prev: list[str] | None = None
+                added = 0
+                while added < nrows:
+                    if i >= n:
+                        break
+                    # Skip periodic headers injected for context
+                    if (c_line is not None and lines[i] == c_line) or (f_line is not None and lines[i] == f_line):
+                        i += 1
+                        continue
 
-            # Restore hoisted units and constant columns.
-            out_cols, marks = [], []
+                    # The marker check runs on the *raw* split cell, before
+                    # unquoting/unescaping: the emitter only ever produces a bare
+                    # '^' for a genuine back-reference, since a literal all-caret
+                    # value is always lengthened by one caret first (see
+                    # emit._escape_caret_cell). So a bare '^' here is unambiguous.
+                    split_cells = _split(lines[i], sep)
+                    added += 1
+                    row = []
+                    for j, c in enumerate(split_cells):
+                        if c == "^" and prev and j < len(prev):
+                            row.append(prev[j])
+                        else:
+                            row.append(_unescape_caret_cell(c))
+                    rows.append(row)
+                    prev = row
+                    i += 1
+
+            # Restore hoisted units.
+            surv_cols, marks = [], []
             for c in cols:
                 if um := _UNIT_COL.match(c):
-                    out_cols.append(um.group(1)); marks.append(um.group(2))
+                    surv_cols.append(um.group(1)); marks.append(um.group(2))
                 else:
-                    out_cols.append(c); marks.append("")
+                    surv_cols.append(c); marks.append("")
             for r in rows:
                 for j, mk in enumerate(marks):
                     if mk and j < len(r) and r[j]:
@@ -262,10 +286,38 @@ def parse_tdf(text: str) -> Doc:
                             r[j] = "-" + mk + r[j][1:]
                         else:
                             r[j] = mk + r[j]
-            for k, v in constants:
-                out_cols.append(k)
-                for r in rows:
-                    r.append(v)
+
+            # Reinsert constant columns at their original index by merging
+            # them with the surviving columns positionally, rather than
+            # appending every constant after all surviving columns (which
+            # silently reordered the whole table -- BUG-1).
+            if constants:
+                total_width = len(surv_cols) + len(constants)
+                by_idx = {idx: (k, v) for idx, k, v in constants}
+                # Guards against malformed/adversarial "!F" content (duplicate
+                # or out-of-range indices) -- degrade to the old
+                # append-at-end behaviour rather than crash or drop data.
+                valid = len(by_idx) == len(constants) and all(0 <= idx < total_width for idx in by_idx)
+                if valid:
+                    out_cols = []
+                    surv_iter = iter(surv_cols)
+                    for pos in range(total_width):
+                        out_cols.append(by_idx[pos][0] if pos in by_idx else next(surv_iter))
+                    new_rows = []
+                    for r in rows:
+                        row_iter = iter(r)
+                        new_rows.append([
+                            by_idx[pos][1] if pos in by_idx else next(row_iter, "")
+                            for pos in range(total_width)
+                        ])
+                    rows = new_rows
+                else:
+                    out_cols = surv_cols + [k for _, k, v in constants]
+                    for r in rows:
+                        for _, k, v in constants:
+                            r.append(v)
+            else:
+                out_cols = surv_cols
 
             # A coded column stores one-letter codes; without this the table
             # comes back full of "a"/"g" placeholders. Content recall cannot
@@ -330,10 +382,7 @@ def parse_tdf(text: str) -> Doc:
         if m := _H.match(stripped):
             flush()
             lvl, txt = len(m.group(1)), expand(m.group(2))
-            if lvl == 1 and not doc.title and not doc.blocks:
-                doc.title = txt
-            else:
-                doc.add(Heading(lvl, txt))
+            doc.add(Heading(lvl, txt))
             i += 1
             continue
 

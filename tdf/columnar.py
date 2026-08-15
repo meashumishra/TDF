@@ -35,6 +35,7 @@ import string
 from dataclasses import dataclass
 
 from .ir import Doc, Table
+from .optimize import normalize_cell
 from .tokens import count
 
 # A column must be at least this tall before a legend line can pay for itself.
@@ -140,6 +141,23 @@ def encode_columns(doc: Doc, enabled: bool = True) -> list[ColumnCode]:
     for block in doc.blocks:
         if not isinstance(block, Table) or len(block.rows) < MIN_ROWS:
             continue
+
+        # This must run BEFORE eligibility/mapping is computed, and mutate
+        # cells in place, so a coded and an uncoded column see the exact
+        # same normalized values. Previously this table's cells were only
+        # normalized later, inside optimize() -- which callers run AFTER
+        # encode_columns(). A column that happened to qualify for coding
+        # therefore kept its raw pre-normalization text in the codebook
+        # (safe -- codes are pure letters, never matching normalize_cell's
+        # digit pattern, so nothing was lost there), while a column that
+        # DIDN'T qualify got normalized as usual -- so whether a value like
+        # "4.0" kept or lost its formatting depended on how many *other*
+        # distinct values happened to share its column, not on the value
+        # itself. Normalizing here first makes both paths see the same
+        # values (see the independent audit's BUG-3).
+        for row in block.rows:
+            for ci in range(len(row)):
+                row[ci] = normalize_cell(row[ci])
 
         # `Table.cols` is the header; every entry of `rows` is data. Reading the
         # header off rows[0] both mislabels the codebook and leaves the first

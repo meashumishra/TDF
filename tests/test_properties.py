@@ -203,12 +203,13 @@ def test_doc_structural_roundtrip(doc: Doc):
         isinstance(b, Table) and not b.cols
         for b in doc.blocks
     ))
-    # Same ambiguity as above, for doc.title: "X" is fine, "" is fine (no
-    # title emitted at all), but a whitespace-only title emits "# " which
-    # strips to "#" on parse -- one char short of matching the heading regex
-    # (which requires at least one whitespace *after* the hashes) -- so it
-    # falls through to a spurious Para instead of vanishing like it should.
-    assume(not doc.title or doc.title.strip())
+    # doc.title now has its own "!H" sigil, distinct from "#" Heading lines
+    # (see the independent audit's BUG-5 fix), so the old whitespace-only-
+    # title ambiguity this used to guard against ("# " stripping to "#",
+    # one char short of the heading regex, falling through to a spurious
+    # Para) no longer applies -- title.strip() empty round-trips cleanly to
+    # "" with zero spurious blocks, same as the general single-line-field
+    # whitespace normalization every other field already gets.
     # Two adjacent ListBlocks have no boundary marker between them, even when
     # they differ in `ordered`: parse_tdf's accumulator only flips the
     # ordered flag when a numbered marker is the *first* item in the current
@@ -266,8 +267,9 @@ def test_doc_structural_roundtrip(doc: Doc):
 @settings(max_examples=1000, deadline=None, suppress_health_check=[HealthCheck.too_slow])
 @given(doc_strategy())
 def test_optimizer_structural_roundtrip(doc: Doc):
-    """Property: the real optimize() pass (text hygiene, boilerplate dedup,
-    phrase-dictionary substitution) does not corrupt block type, order, or
+    """Property: the real optimize() pass (text hygiene, phrase-dictionary
+    substitution -- boilerplate dedup is opt-in and off by default, see
+    optimize()'s docstring) does not corrupt block type, order, or
     positional relationships through a full emit/parse cycle.
 
     test_doc_structural_roundtrip above deliberately runs with
@@ -305,8 +307,9 @@ def test_optimizer_structural_roundtrip(doc: Doc):
     # optimize() would have produced WITHOUT the dictionary pass, not the
     # substituted reference text optimize() leaves in place internally. Disabling
     # it here keeps `expected` representing optimize()'s irreversible
-    # transforms only (text hygiene, boilerplate dedup, empty-block
-    # pruning); the real pipeline below still runs the dictionary pass
+    # transforms only (text hygiene, empty-block pruning -- boilerplate
+    # dedup is opt-in and off by default); the real pipeline below still
+    # runs the dictionary pass
     # (default True), exercising it precisely because it's expected to wash
     # out by the time parse_tdf returns.
     expected = copy.deepcopy(doc)
@@ -337,17 +340,13 @@ def test_optimizer_structural_roundtrip(doc: Doc):
         isinstance(b, KV) and any(":" in k for k, v in b.pairs)
         for b in expected.blocks
     ))
-    # strip_boilerplate() is deliberately lossy about position and block type
-    # (see its docstring): text repeated >= min_repeats times collapses to
-    # ONE Para reinserted right after the legend, not at any of its original
-    # positions, and not as its original block type if that was a ListBlock
-    # item. Content survives (distinct-recall unaffected) but the structural
-    # fingerprint intentionally does not match `expected` in that case --
-    # this is the documented tradeoff, not a bug this property test should
-    # flag. `arts["boilerplate"]` is optimize()'s own record of whether it
-    # fired, so this skip is exact rather than an approximation of its
-    # (post-clean_text) repeat-counting logic.
-    assume(not arts["boilerplate"])
+    # strip_boilerplate() no longer runs here at all: optimize()'s
+    # use_boilerplate defaults to False (see its docstring and the
+    # independent audit's BUG-4 -- the heuristic fires on ordinary repeated
+    # prose, not just page furniture, so it must be opt-in). `arts` is kept
+    # for its dictionary-related fields; boilerplate is asserted empty as a
+    # tripwire in case that default ever changes silently.
+    assert arts["boilerplate"] == []
 
     working = copy.deepcopy(doc)
     books = encode_columns(working)

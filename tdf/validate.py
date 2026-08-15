@@ -99,14 +99,23 @@ def _validate_lines(text: str, v: Validation) -> None:
             j = i + 1
             if j < n and _SIGIL.match(lines[j].strip()) and lines[j].strip()[1] == "F":
                 j += 1
-            if j < n and _SIGIL.match(lines[j].strip()) and lines[j].strip()[1] == "C":
+            has_c = j < n and _SIGIL.match(lines[j].strip()) and lines[j].strip()[1] == "C"
+            if has_c:
                 j += 1
-            available = sum(1 for _ in range(j, min(j + declared, n)))
-            if available < declared:
+                expected = declared
+            else:
+                # No "!C" line means the table has zero data columns --
+                # every column was constant, or the table was genuinely
+                # columnless (see emit._tdf_table's early return for the
+                # all-constant case). Zero-width rows carry no body lines
+                # at all, regardless of the declared row count.
+                expected = 0
+            available = sum(1 for _ in range(j, min(j + expected, n)))
+            if available < expected:
                 v.add(i, "declared-rows",
                       f"!T declares {declared} rows but only {available} "
                       f"lines remain before EOF")
-            i = j + declared
+            i = j + expected
             continue
         i += 1
 

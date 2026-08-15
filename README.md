@@ -43,13 +43,13 @@ Both numbers are real. The Markdown comparison is the fair one if your pipeline 
 
 | File | Markdown | TDF | Saved |
 |---|---|---|---|
-| `operating_review.pdf` | 3,588 | 1,232 | 65.7% |
-| `services_agreement.docx` | 1,945 | 1,031 | 47.0% |
-| `orders.csv` | 16,982 | 9,196 | 45.8% |
-| `sales_report.xlsx` | 20,505 | 11,296 | 44.9% |
-| `handbook.html` | 4,732 | 2,660 | 43.8% |
-| `quarterly_deck.pptx` | 1,559 | 977 | 37.3% |
-| `runbook.md` | 1,355 | 978 | 27.8% |
+| `operating_review.pdf` | 3,588 | 1,275 | 64.5% |
+| `services_agreement.docx` | 1,945 | 1,089 | 44.0% |
+| `orders.csv` | 16,982 | 10,412 | 38.7% |
+| `sales_report.xlsx` | 20,505 | 12,680 | 38.2% |
+| `handbook.html` | 4,732 | 2,976 | 37.1% |
+| `quarterly_deck.pptx` | 1,559 | 1,037 | 33.5% |
+| `runbook.md` | 1,355 | 1,011 | 25.4% |
 
 The Markdown baseline is not a strawman: MarkItDown independently produces token counts within ~1% of this project's own Markdown renderer on six of the seven files.
 
@@ -139,12 +139,15 @@ print(render_tdf(doc, codebooks=books))
 ## Format
 
 ```
-!T <n> <caption>      table declaration          !D  phrase dictionary
-!C <col> <col> ...    column header row          §n  dictionary reference
-!V <col>              column value codebook      ^   repeat cell above
-!R                    running header/footer       !P  page boundary
-!F key=value          constant field             !E  elided region
+!H <title>            document title             !D  phrase dictionary
+!T <n> <caption>      table declaration          §n  dictionary reference
+!C <col> <col> ...    column header row          ^   repeat cell above
+!V <col>              column value codebook      !P  page boundary
+!R                    running header/footer       !E  elided region
+!F <i>:key=value      constant field, at column i
 ```
+
+`!H` and a level-1 `#` heading are deliberately distinct sigils: reusing `# ` for the title made a titleless document's leading heading indistinguishable from an actual title on the wire. `!F`'s leading `<i>:` is the constant column's original position, so it reinserts where it actually was instead of always landing after every surviving column.
 
 A table with coded columns:
 
@@ -188,6 +191,8 @@ There is reason for genuine concern. Published work on table serialization consi
 **Small documents can grow.** The legend is a fixed ~130-token cost. On a short prose document — `bench/samples_tables/prose_only.pdf` gains 115 tokens — TDF is a net loss. Use `--no-legend`, or use Markdown.
 
 **Fidelity metrics are order-blind.** See above.
+
+**A KV key containing its own colon loses content.** `parse_tdf` splits a `key: value` line on the *first* colon, so a key like `"Time: start"` in `KV([("Time: start", "10:00")])` reads back as `[("Time", "start: 10:00")]` — the key's own colon is indistinguishable from the key/value separator, and content shifts from the key into the value. This is a genuine content bug, not just formatting; fixing it needs a different key/value line convention (a trailing `rpartition` alone doesn't work either, since values legitimately contain colons too). Avoid colons in KV keys until this is addressed.
 
 **No OCR.** Scanned PDFs yield nothing. Use MinerU or Marker upstream.
 

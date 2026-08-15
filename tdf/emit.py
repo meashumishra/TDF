@@ -15,7 +15,7 @@ from .tokens import count
 
 LEGEND = (
     "%TDF1 Sigil lines are structure; all other lines are body text, one per line. "
-    "#=heading (depth by count). !D=phrase table, following 'n text' lines define "
+    "!H=document title. #=heading (depth by count). !D=phrase table, following 'n text' lines define "
     "\u00a7n, which means that text verbatim wherever it appears. !R=lines that "
     "repeated on every page (running header/footer), stated once. !T n cap=table of "
     "n rows; !F=column values constant for all its rows; !C=column names; then n rows "
@@ -210,6 +210,30 @@ def _tdf_table(t: Table) -> list[str]:
     rows = [[_escape_caret_cell(c) for c in r] for r in rows]
     rows = elide_repeats(rows)
 
+    head = f"!T {len(rows)}" + (f" {_oneline(t.caption)}" if t.caption else "")
+    out = [head]
+
+    # Each entry carries its original column index ("idx:key=value") so the
+    # parser can reinsert it where it actually was, instead of appending
+    # every constant after all surviving columns and silently reordering
+    # the table (see the independent audit's BUG-1).
+    f_line = ("!F " + " ".join(f"{idx}:{k}={_quote(v)}" for idx, k, v in constants)
+              if constants else None)
+    if f_line:
+        out.append(f_line)
+
+    # Every column was constant -- there is no data grid left to declare at
+    # all, so a "!C" line has nothing meaningful to hold. Emitting one
+    # anyway would need an empty payload, and `_split("")` cannot tell
+    # "zero columns" apart from "one empty-string column" (the same
+    # ambiguity the zero-column-source-table case already has) -- so a
+    # genuinely all-constant table would materialise a phantom leading
+    # column full of empty cells on parse (see the independent audit's
+    # BUG-2). The row count in "!T n" already says how many rows exist;
+    # zero-width rows need no body lines at all to represent that.
+    if not cols:
+        return out
+
     # Pick whichever separator tokenises cheaper for this specific table --
     # except a single-column table has no separator between fields, so the
     # parser has no way to detect tab-mode was used (it decides by checking
@@ -223,18 +247,11 @@ def _tdf_table(t: Table) -> list[str]:
         tab = _render_rows(cols, rows, "\t")
         body = space if count(space) <= count(tab) else tab
 
-    head = f"!T {len(rows)}" + (f" {_oneline(t.caption)}" if t.caption else "")
-    out = [head]
-    
-    f_line = "!F " + " ".join(f"{k}={_quote(v)}" for k, v in constants) if constants else None
-    if f_line:
-        out.append(f_line)
-        
     lines = body.split("\n")
     first = lines[0]
     c_line = "!C" + ("\t" if "\t" in first else " ") + first
     out.append(c_line)
-    
+
     # Research Brief: Periodic header re-emission to counter long-context degradation
     # Re-emit !C (and !F if present) every 50 rows
     for i, line in enumerate(lines[1:]):
@@ -243,7 +260,7 @@ def _tdf_table(t: Table) -> list[str]:
                 out.append(f_line)
             out.append(c_line)
         out.append(line)
-        
+
     return out
 
 
@@ -252,17 +269,29 @@ def render_tdf(
     legend: bool = True,
     optimized: bool = True,
     codebooks: "list | None" = None,
+    use_boilerplate: bool = False,
 ) -> str:
-    """Serialize to TDF. Mutates ``doc`` when ``optimized`` (passes are in-place)."""
-    arts = optimize(doc) if optimized else {"boilerplate": [], "dictionary": []}
+    """Serialize to TDF. Mutates ``doc`` when ``optimized`` (passes are in-place).
+
+    ``use_boilerplate`` defaults to False -- see optimize()'s docstring.
+    """
+    arts = (optimize(doc, use_boilerplate=use_boilerplate) if optimized
+            else {"boilerplate": [], "dictionary": []})
 
     out: list[str] = []
     out.append(LEGEND if legend else "%TDF1")
     if doc.title:
-        # Same reasoning as Heading blocks below: doc.title is a single
-        # physical line, and an embedded newline would create an unprefixed
-        # second line vulnerable to sigil injection.
-        out.append("# " + _oneline(doc.title))
+        # A distinct sigil, not "# " -- a level-1 Heading block emits as
+        # "# " + text too (see the Heading branch below), so reusing "# "
+        # for the title made a titleless document with a leading H1
+        # byte-for-byte indistinguishable on the wire from a document whose
+        # title is that same text. parse_tdf used to paper over this with a
+        # "first H1 in a titleless doc becomes the title" heuristic, which
+        # silently turned a real Heading block into a title -- losing the
+        # block -- on every leading-H1 document (see the independent
+        # audit's BUG-5). Same newline-safety reasoning as Heading blocks
+        # below: doc.title is a single physical line.
+        out.append("!H " + _oneline(doc.title))
 
     if arts["dictionary"]:
         # arts["dictionary"] is (phrase, number) pairs -- number can skip

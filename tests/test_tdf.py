@@ -45,11 +45,16 @@ def test_clean_text(raw, want):
 
 
 @pytest.mark.parametrize("raw,want", [
-    ("$1,234.00", "$1234"),
+    ("$1,234.00", "$1234.00"),
     ("1,000", "1000"),
     ("(500)", "-500"),
-    ("12.50%", "12.5%"),
-    ("3.1400", "3.14"),
+    # Trailing decimal zeros are NOT stripped -- "12.50" and "12.5" claim
+    # different precision, and there is no way to tell from the string
+    # alone which trailing zeros are real digits of precision versus
+    # formatting noise, so the only safe choice is to leave them as-is. See
+    # the independent audit's BUG-3.
+    ("12.50%", "12.50%"),
+    ("3.1400", "3.1400"),
     ("not a number", "not a number"),
     # A parenthesis is only an accounting-negative marker as a MATCHED pair.
     # An unpaired paren is not a number at all -- fabricating a sign from it
@@ -93,11 +98,27 @@ def test_dictionary_skipped_for_unique_text():
 
 
 def test_boilerplate_deduplicated():
+    """use_boilerplate defaults to False (see optimize()'s docstring and the
+    independent audit's BUG-4 -- the heuristic cannot distinguish page
+    furniture from an ordinary repeated sentence), so this test opts in
+    explicitly to verify the mechanism still works correctly for callers
+    who know their source has genuine running headers/footers."""
+    d = Doc(blocks=[b for i in range(5) for b in
+                    (Para("ACME CONFIDENTIAL DO NOT DISTRIBUTE"), Para(f"Real content {i}."))])
+    arts = optimize(d, use_boilerplate=True)
+    assert arts["boilerplate"] == ["ACME CONFIDENTIAL DO NOT DISTRIBUTE"]
+    assert sum(1 for b in d.blocks if isinstance(b, Para)) == 5
+
+
+def test_boilerplate_off_by_default():
+    """See the independent audit's BUG-4: the heuristic fires on ordinary
+    repeated prose (confirmed on real technical documentation), not just
+    page furniture, so it must not run unless explicitly requested."""
     d = Doc(blocks=[b for i in range(5) for b in
                     (Para("ACME CONFIDENTIAL DO NOT DISTRIBUTE"), Para(f"Real content {i}."))])
     arts = optimize(d)
-    assert arts["boilerplate"] == ["ACME CONFIDENTIAL DO NOT DISTRIBUTE"]
-    assert sum(1 for b in d.blocks if isinstance(b, Para)) == 5
+    assert arts["boilerplate"] == []
+    assert sum(1 for b in d.blocks if isinstance(b, Para)) == 10
 
 
 # --------------------------------------------------------------- round tripping
@@ -147,7 +168,7 @@ def test_constant_column_all_genuinely_constant_is_dropped():
     from tdf.optimize import drop_constant_columns
     rows = [["1", "USD"], ["2", "USD"], ["3", "USD"], ["4", "USD"]]
     cols, out_rows, constants = drop_constant_columns(["id", "currency"], rows)
-    assert constants == [("currency", "USD")]
+    assert constants == [(1, "currency", "USD")]
     assert cols == ["id"]
     assert out_rows == [["1"], ["2"], ["3"], ["4"]]
 

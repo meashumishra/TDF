@@ -123,19 +123,15 @@ def canonicalize(doc: Doc) -> tuple:
     Both are applied to both sides below so neither registers as a false
     structural mismatch.
 
-    A third unconditional rule: a level-1 heading as the very first block of
-    a titleless doc is read back as ``doc.title``, not a Heading block (see
-    parse_tdf) -- title promotion, not data loss, so it is replicated here
-    rather than treated as one.
+    doc.title has its own sigil ("!H", distinct from "#" Heading lines --
+    see emit.py's comment on it), so a leading level-1 Heading is no longer
+    ambiguous with the title and is never promoted/consumed here.
     """
     def norm(t: str) -> str:
         return _oneline(t).strip()
 
     title = doc.title
     blocks = doc.blocks
-    if not title and blocks and isinstance(blocks[0], Heading) and blocks[0].level == 1:
-        title = blocks[0].text
-        blocks = blocks[1:]
 
     out = []
     for b in blocks:

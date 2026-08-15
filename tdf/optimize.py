@@ -100,8 +100,23 @@ _NUM = re.compile(r"^\s*([\-+(]?)\s*([$\u20ac\u00a3\u00a5]?)\s*([\d,]+(?:\.\d+)?
 
 
 def normalize_cell(v: str) -> str:
-    """`$1,234.00` -> `1234` and friends. Currency/percent are hoisted to the
-    column header by :func:`hoist_units`, so stripping them here is safe."""
+    """`$1,234.00` -> `$1234.00` and friends: thousand separators and
+    unpaired/paired parenthesis-negative notation are pure formatting
+    overhead and safe to normalise. Currency/percent are hoisted to the
+    column header by :func:`hoist_units`, so stripping them here is safe.
+
+    Trailing decimal zeros are deliberately NOT stripped (`1.50` stays
+    `1.50`, not `1.5`): the number of trailing zeros after a decimal point
+    is significant-figures information in financial and scientific data --
+    "$1,000.00" and "$1,000" are not interchangeable to an accountant, and
+    "3.1400" carries a claimed precision "3.14" does not. There is no way
+    to tell from the string alone which trailing zeros are "real" digits of
+    precision and which are formatting noise, so the only safe choice is to
+    never guess (see the independent audit's BUG-3, which additionally
+    found this interacting with encode_columns to produce *inconsistent*
+    precision loss depending on a column's cardinality -- fixed separately
+    in columnar.py by normalizing before coding).
+    """
     v = clean_text(str(v))
     if not v:
         return ""
@@ -116,8 +131,6 @@ def normalize_cell(v: str) -> str:
     if (sign == "(") != (suffix == ")"):
         return v
     body = body.replace(",", "")
-    if "." in body:
-        body = body.rstrip("0").rstrip(".") or "0"
     neg = sign == "-" or (sign == "(" and suffix == ")")
     return ("-" if neg else "") + cur + body + ("%" if suffix == "%" else "")
 
@@ -153,9 +166,15 @@ def hoist_units(cols: list[str], rows: list[list[str]]) -> tuple[list[str], list
 
 def drop_constant_columns(
     cols: list[str], rows: list[list[str]]
-) -> tuple[list[str], list[list[str]], list[tuple[str, str]]]:
+) -> tuple[list[str], list[list[str]], list[tuple[int, str, str]]]:
     """A column with one distinct value across 4+ rows is stated once as a fact
-    about the table rather than repeated per row."""
+    about the table rather than repeated per row.
+
+    Each constant is returned with its ORIGINAL column index (not just name
+    and value): the emitter must declare that index so the parser can
+    reinsert the column where it actually was, rather than appending every
+    constant at the end and silently reordering every surviving column
+    around it (see the independent audit's BUG-1)."""
     if len(rows) < 4:
         return cols, rows, []
     keep, constants = [], []
@@ -166,7 +185,7 @@ def drop_constant_columns(
         # silently excluded from consideration the way `if c < len(r)` did.
         vals = {r[c] if c < len(r) else None for r in rows}
         if len(vals) == 1 and (v := next(iter(vals))):
-            constants.append((name, v))
+            constants.append((c, name, v))
         else:
             keep.append(c)
     if not constants:
@@ -442,8 +461,19 @@ def build_dictionary(
 
 # ------------------------------------------------------------------ pipeline
 
-def optimize(doc: Doc, use_dictionary: bool = True) -> dict:
-    """Run every reduction pass. Returns the artifacts the emitter must declare."""
+def optimize(doc: Doc, use_dictionary: bool = True, use_boilerplate: bool = False) -> dict:
+    """Run every reduction pass. Returns the artifacts the emitter must declare.
+
+    ``use_boilerplate`` defaults to False: strip_boilerplate's heuristic
+    (text repeated >= min_repeats times, no positional/page signal at all)
+    cannot distinguish genuine page furniture from an ordinary sentence a
+    document happens to repeat -- confirmed firing on real technical
+    documentation ("The output is similar to this:" recurring across
+    examples), where it relocates, retypes, and deduplicates content that
+    was never meant to collapse. See strip_boilerplate's own docstring for
+    the full tradeoff and the independent audit's BUG-4. Opt in explicitly
+    when the source is known to have real running headers/footers.
+    """
     for b in doc.blocks:
         if isinstance(b, (Para, Quote)):
             b.text = clean_text(b.text)
@@ -466,6 +496,6 @@ def optimize(doc: Doc, use_dictionary: bool = True) -> dict:
         and not (isinstance(b, ListBlock) and not any(b.items))
     ]
 
-    boiler = strip_boilerplate(doc)
+    boiler = strip_boilerplate(doc) if use_boilerplate else []
     dictionary = build_dictionary(doc) if use_dictionary else []
     return {"boilerplate": boiler, "dictionary": dictionary}
