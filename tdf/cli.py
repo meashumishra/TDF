@@ -168,6 +168,50 @@ def cmd_expand(a) -> int:
     return 0
 
 
+def cmd_diff(a) -> int:
+    from .diff import diff_docs
+    old_doc = _load(a.old, a.max_pages)
+    new_doc = _load(a.new, a.max_pages)
+    
+    out = diff_docs(
+        old_doc, new_doc, 
+        granularity=a.granularity, 
+        context=a.context, 
+        summary_only=a.summary_only,
+        old_name=Path(a.old).name,
+        new_name=Path(a.new).name
+    )
+    
+    if a.to == "json":
+        import json
+        out = json.dumps({"diff": out.split("\n")}, indent=2)
+    elif a.to == "md":
+        md_lines = []
+        for line in out.split("\n"):
+            if line.startswith("!DIFF"):
+                md_lines.append(f"# Diff: {line[6:]}\n")
+            elif line.startswith("!~"):
+                md_lines.append(f"\n### Modified: {line[3:]}")
+            elif line.startswith("!+"):
+                md_lines.append(f"\n### Added: {line[3:]}")
+            elif line.startswith("!-"):
+                md_lines.append(f"\n### Removed: {line[3:]}")
+            elif line.startswith("!="):
+                md_lines.append(f"*(Skipped {line[3:]} unchanged blocks)*")
+            elif line.startswith("~"):
+                md_lines.append(f"`{line}`")
+            else:
+                md_lines.append(line)
+        out = "\n".join(md_lines)
+
+    
+    if a.output:
+        Path(a.output).write_text(out, encoding="utf-8")
+        print(f"wrote {a.output}  ({count(out)} tokens)", file=sys.stderr)
+    else:
+        sys.stdout.write(out + "\n")
+    return 0
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(
         prog="tdf",
@@ -212,6 +256,20 @@ def main(argv=None) -> int:
     vd = sub.add_parser("validate", help="check a .tdf file against the structural invariants")
     vd.add_argument("input")
     vd.set_defaults(func=cmd_validate)
+
+    d = sub.add_parser("diff", help="structural document diffing")
+    d.add_argument("old")
+    d.add_argument("new")
+    d.add_argument("--max-pages", type=int, default=None)
+    d.add_argument("--tier", action="store_true")
+    d.add_argument("--no-legend", action="store_true")
+    d.add_argument("--to", choices=["tdf", "md", "json"], default="tdf")
+    d.add_argument("--context", type=int, default=1)
+    d.add_argument("--granularity", choices=["block", "cell", "line"], default="block")
+    d.add_argument("--summary-only", action="store_true")
+    d.add_argument("-o", "--output")
+    d.set_defaults(func=cmd_diff)
+
 
     a = p.parse_args(argv)
     try:

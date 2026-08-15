@@ -68,8 +68,11 @@ def _validate_doc(doc: Doc, v: Validation) -> None:
 def _validate_lines(text: str, v: Validation) -> None:
     """Invariants on the serialized form."""
     lines = text.splitlines()
-    if not lines or not lines[0].startswith("%TDF"):
-        v.add(0, "magic-header", "document does not start with %TDF")
+    if not lines or not (lines[0].startswith("%TDF") or lines[0].startswith("!DIFF")):
+        v.add(0, "magic-header", "document does not start with %TDF or !DIFF")
+    
+    if lines and lines[0].startswith("!DIFF"):
+        return # Skip IR-level validation for diffs since parse_tdf doesn't support parsing them yet
     i = 0
     n = len(lines)
     while i < n:
@@ -112,6 +115,8 @@ def validate(text: str) -> Validation:
     """Check a serialized TDF document against every invariant."""
     v = Validation(ok=True)
     _validate_lines(text, v)
+    if text.startswith("!DIFF"):
+        return v
     _validate_doc(parse_tdf(text), v)
     # Round-trip convergence: the optimizer is a normalizer, not the identity,
     # so one re-emission may renumber dictionary entries. The invariant that
