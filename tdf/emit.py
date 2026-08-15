@@ -225,12 +225,25 @@ def _tdf_table(t: Table) -> list[str]:
 
     head = f"!T {len(rows)}" + (f" {_oneline(t.caption)}" if t.caption else "")
     out = [head]
-    if constants:
-        out.append("!F " + " ".join(f"{k}={_quote(v)}" for k, v in constants))
+    
+    f_line = "!F " + " ".join(f"{k}={_quote(v)}" for k, v in constants) if constants else None
+    if f_line:
+        out.append(f_line)
+        
     lines = body.split("\n")
     first = lines[0]
-    out.append("!C" + ("\t" if "\t" in first else " ") + first)
-    out.extend(lines[1:])
+    c_line = "!C" + ("\t" if "\t" in first else " ") + first
+    out.append(c_line)
+    
+    # Research Brief: Periodic header re-emission to counter long-context degradation
+    # Re-emit !C (and !F if present) every 50 rows
+    for i, line in enumerate(lines[1:]):
+        if i > 0 and i % 50 == 0:
+            if f_line:
+                out.append(f_line)
+            out.append(c_line)
+        out.append(line)
+        
     return out
 
 
@@ -262,10 +275,6 @@ def render_tdf(
     if arts["boilerplate"]:
         out.append("!R")
         out.extend(_escape_body(line) for line in arts["boilerplate"])
-    for book in codebooks or []:
-        out.append(f"!V {book.header}")
-        out.extend(f"{code} {val}" for code, val in book.mapping.items())
-
     for b in doc.blocks:
         if isinstance(b, Heading):
             # A heading embedding a newline whose second line looks like a
@@ -288,6 +297,11 @@ def render_tdf(
                 # isn't protected -- collapse it before that line can exist.
                 out.append(f"{i + 1} {_oneline(item)}" if b.ordered else f"- {_oneline(item)}")
         elif isinstance(b, Table):
+            # Emit codebooks specific to this table immediately before it
+            for book in codebooks or []:
+                if book.table is b:
+                    out.append(f"!V {book.header}")
+                    out.extend(f"{code} {val}" for code, val in book.mapping.items())
             out.extend(_tdf_table(b))
         elif isinstance(b, KV):
             out.append("!K" + (f" {_oneline(b.caption)}" if b.caption else ""))

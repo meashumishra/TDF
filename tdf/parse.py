@@ -185,7 +185,9 @@ def parse_tdf(text: str) -> Doc:
             i += 1
 
             constants: list[tuple[str, str]] = []
+            f_line = None
             if i < n and _is_sigil(lines[i].strip(), "F"):
+                f_line = lines[i]
                 for tok in _split(lines[i][3:], " "):
                     if "=" in tok:
                         k, _, v = tok.partition("=")
@@ -194,7 +196,9 @@ def parse_tdf(text: str) -> Doc:
 
             cols: list[str] = []
             sep = " "
+            c_line = None
             if i < n and _is_sigil(lines[i].strip(), "C"):
+                c_line = lines[i]
                 rest = lines[i][2:]
                 sep = "\t" if "\t" in rest else " "
                 # Exactly one separator character sits between "!C" and the
@@ -208,15 +212,22 @@ def parse_tdf(text: str) -> Doc:
 
             rows: list[list[str]] = []
             prev: list[str] | None = None
-            for _ in range(nrows):
+            added = 0
+            while added < nrows:
                 if i >= n:
                     break
+                # Skip periodic headers injected for context
+                if (c_line is not None and lines[i] == c_line) or (f_line is not None and lines[i] == f_line):
+                    i += 1
+                    continue
+                    
                 # The marker check runs on the *raw* split cell, before
                 # unquoting/unescaping: the emitter only ever produces a bare
                 # '^' for a genuine back-reference, since a literal all-caret
                 # value is always lengthened by one caret first (see
                 # emit._escape_caret_cell). So a bare '^' here is unambiguous.
                 split_cells = _split(lines[i], sep)
+                added += 1
                 row = []
                 for j, c in enumerate(split_cells):
                     if c == "^" and prev and j < len(prev):
@@ -266,6 +277,7 @@ def parse_tdf(text: str) -> Doc:
                             r[ci] = bk[r[ci]]
 
             doc.add(Table(out_cols, rows, caption=expand(caption)))
+            codebooks.clear()
             continue
 
         if _is_sigil(stripped, "K"):

@@ -1,116 +1,226 @@
 # TDF — Token-Dense Format
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Python 3.10+](https://img.shields.io/badge/python-3.10+-blue.svg)](https://www.python.org/downloads/)
-[![Tests](https://github.com/meashumishra/TDF/actions/workflows/ci.yml/badge.svg)](https://github.com/meashumishra/TDF/actions/workflows/ci.yml)
+Convert documents into a compact, reversible representation for LLM context.
 
-A document format and converter designed specifically for LLMs, with **100% distinct-content recall**. Savings scale with how structured the document is: **45–66%** below Markdown on table-heavy and boilerplate-heavy documents (PDFs, spreadsheets, HTML), dropping to **2–10%** on prose-and-code documentation where Markdown was already near-optimal — see [Benchmarks](#benchmarks). It includes a *skeleton mode* to map documents for **~99% fewer tokens**, and robust parsing backed by property-based fuzzing.
-
-```
-pdf docx xlsx pptx html md csv txt  ──►  TDF  ──►  your LLM
-```
-
-![tdf stats demo](docs/demo.gif)
-
-## The Problem
-
-Every LLM tool accepts document uploads. Under the hood, they convert the file to Markdown and paste it into the context window. That conversion is where the money and context window goes. Markdown was designed in 2004 for human readability, not token efficiency. 
-
-Pipes in tables (`|`), repeating header cells, and standard formatting drastically inflate token counts. For table-heavy documents, formatting overhead is almost half the total token cost.
-
-## Why TDF?
-
-TDF solves this by introducing a line-oriented, token-optimized, plain-text format specifically engineered for BPE tokenizers.
-
-* **Content Preservation:** Unlike prompt compression tools (like LLMLingua) that destructively discard entities and numbers, TDF's default mode achieves its compression through format optimization and dictionary coding. Tested round-trips on our benchmark corpus show 100% distinct-content recall, and ≥99.4% observed on out-of-corpus prose like PEP 8.
-* **Instant Conversion:** Runs instantly without requiring a GPU or a local LLM inference step.
-* **Advanced Table Handling:** Borderless PDF table detection, rectangular grid enforcement, and columnar dictionary coding (Parquet/ORC concepts applied to LLM tokens).
-* **Addressable Elision:** TDF can identify low-density structural boilerplate (like giant website nav trees) and replace it with a token-cheap `!E` marker. The LLM can retrieve the original if needed.
-* **Strict Validation:** A formal grammar and validator guarantee TDF outputs are structurally perfect. Malformed inputs result in safe fallbacks, never data loss.
-
-## Benchmarks
-
-We measured TDF against standard Markdown, MarkItDown (Microsoft's standard converter), and LLMLingua (a popular prompt compression model). 
-
-**Token Compression vs Markdown:**
-
-| Document | TDF Saving vs MD | TDF Saving vs MarkItDown | Recall (Fidelity) |
-|---|---|---|---|
-| operating_review.pdf | **65.7%** | **65.7%** | 100.0% |
-| services_agreement.docx | **47.0%** | **47.7%** | 100.0% |
-| orders.csv | **45.8%** | **45.8%** | 100.0% |
-| quarterly_deck.pptx | **37.3%** | **38.2%** | 100.0% |
-| handbook.html | **43.8%** | **43.8%** | 100.0% |
-| runbook.md | **27.8%** | **27.8%** | 100.0% |
-
-These are **synthetic** structured/table-heavy documents engineered to demonstrate TDF's optimizations, where gains are largest. On real-world, prose-heavy documents, savings are smaller because there's less table/boilerplate overhead to strip out and Markdown is already close to token-optimal for plain prose. 
-
-**Measured on real-world third-party documents:**
-
-| Document | Source | Saving vs Markdown |
-|---|---|---|
-| owid-co2-data (3k rows) | `owid/co2-data` | 53.5% |
-| numpy `absolute_beginners.rst` | `numpy/numpy` | 8.7% |
-| PEP 8 | `python/peps` | 5.6% |
-| `deployment.md` | `kubernetes/website` | 2.1% |
-
-**TDF vs LLMLingua (Content-Preserving vs Lossy):**
-
-TDF's numbers below use `--no-legend` mode (the fairest match to LLMLingua's raw compressed output, which has no self-describing header either); with the default legend-on output, `handbook.html` saves 43.8% instead of 48.5% (see table above).
-
-| Document | Markdown Tokens | TDF Tokens (Savings, no-legend) | LLMLingua Tokens (Savings) | LLMLingua CPU Time |
-|---|---|---|---|---|
-| sec_filing.html | 26,587 | 14,972 (43.7%) | 14,728 (44.6%) | 14.33s |
-| handbook.html | 4,732 | 2,435 (48.5%) | 3,084 (34.8%) | 1.94s |
-
-*LLMLingua destroys table structure, strips out rows randomly, merges columns, and drops critical values to achieve its compression. **TDF achieves similar or better compression (44-49%) natively during conversion with 100% distinct-content recall.***
-
-## Installation
+TDF removes the redundancy that document formats carry for humans — repeated table headers, per-page running headers, boilerplate clauses, markup scaffolding — and emits what's left in a structured, parseable form. On table- and boilerplate-heavy documents this cuts tokens roughly in half. On prose it does very little, and this README says exactly where the line falls.
 
 ```bash
 pip install tdf-converter
+tdf stats report.pdf
+tdf convert report.pdf --to tdf -o report.tdf
 ```
 
-Or install from source:
+---
+
+## Where TDF helps, and where it doesn't
+
+Measured against a Markdown rendering of the same parsed document, `o200k_base`, legend included. Source documents are third-party — none authored for this project.
+
+| Document | Source | Tokens saved |
+|---|---|---|
+| `owid-co2-data.csv` (3k rows) | owid/co2-data | **53.5%** |
+| `absolute_beginners.rst` | numpy/numpy | 8.7% |
+| PEP 8 | python/peps | 5.6% |
+| `deployment.md` | kubernetes/website | **2.1%** |
+
+The pattern is consistent and worth stating plainly: **TDF's savings come from structural redundancy.** Wide tables with repeating values, repeated legal or policy boilerplate, running page headers, and slide chrome all compress well. Prose and code documentation do not, because Markdown is already close to token-optimal for them and there is little redundancy left to remove.
+
+If your documents are mostly prose, TDF will not save you money. Use Markdown.
+
+Against a raw CSV — which is what most people actually paste into a model — the tabular win is smaller than the Markdown comparison suggests:
+
+| | vs Markdown table | vs raw CSV |
+|---|---|---|
+| `owid-co2-data.csv` | 53.5% | **15.0%** |
+| `orders.csv` | 45.8% | 39.2% |
+
+Both numbers are real. The Markdown comparison is the fair one if your pipeline renders tables to Markdown (most document converters do). The raw-CSV comparison is the fair one if you paste CSVs directly.
+
+<details>
+<summary>Synthetic benchmark corpus (higher numbers, but generated by this project)</summary>
+
+`bench/make_samples.py` generates seven documents that deliberately span the four redundancy patterns TDF targets. These numbers are reproducible (`python bench/make_samples.py && python bench/benchmark.py`) but the corpus was constructed to contain the redundancy being removed, so treat them as an illustration of the mechanism rather than as evidence of real-world savings.
+
+| File | Markdown | TDF | Saved |
+|---|---|---|---|
+| `operating_review.pdf` | 3,588 | 1,232 | 65.7% |
+| `services_agreement.docx` | 1,945 | 1,031 | 47.0% |
+| `orders.csv` | 16,982 | 9,196 | 45.8% |
+| `sales_report.xlsx` | 20,505 | 11,296 | 44.9% |
+| `handbook.html` | 4,732 | 2,660 | 43.8% |
+| `quarterly_deck.pptx` | 1,559 | 977 | 37.3% |
+| `runbook.md` | 1,355 | 978 | 27.8% |
+
+The Markdown baseline is not a strawman: MarkItDown independently produces token counts within ~1% of this project's own Markdown renderer on six of the seven files.
+
+</details>
+
+**Tokenizer-independent.** Savings differ by less than 0.5pp between `o200k_base` and `cl100k_base` on every file tested. The gains come from removing text, not from exploiting one tokenizer's quirks.
+
+---
+
+## Fidelity
+
+TDF is reversible. `tdf verify` parses the emitted output back into the document model and compares it against the original, reporting two numbers:
+
+- **`distinct_recall`** — fraction of distinct content words recovered.
+- **`occurrence_ratio`** — fraction of word *occurrences* recovered.
+
+Both are reported because they measure different things and the second is lower:
+
+| Document | `distinct_recall` | `occurrence_ratio` |
+|---|---|---|
+| `orders.csv` | 100.0% | 100.0% |
+| `services_agreement.docx` | 100.0% | 100.0% |
+| `owid-co2-data.csv` | 100.0% | 99.7% |
+| `operating_review.pdf` | 100.0% | 97.2% |
+| `handbook.html` | 100.0% | 93.7% |
+| `quarterly_deck.pptx` | 100.0% | 93.1% |
+| PEP 8 | **99.5%** | 95.6% |
+
+**The occurrence gap is mostly intentional.** A running page header repeated across 40 pages is emitted once under `!R`, and the parser cannot know how many times to repeat it. The information ("this string ran on every page") is preserved; the repetition is not. No lossy elision is active by default in any of the rows above.
+
+**The PEP 8 row is not intentional.** Eight distinct tokens are dropped, including identifiers appearing inside code samples. This is a known defect, not a design decision — see Known limitations.
+
+### What these metrics do not measure
+
+Both are bag-of-words comparisons. They are blind to ordering and to cell-to-row assignment. A table where two rows' values have been swapped scores 100% on both. **Do not treat a passing `tdf verify` as a guarantee of semantic correctness**, particularly for data where row alignment carries meaning.
+
+---
+
+## Skeleton mode and progressive loading
+
+Beyond compression, TDF can emit a navigable map of a document instead of its contents.
+
+```bash
+tdf convert large_report.pdf --to skeleton     # section index, ~1-3% of full tokens
+tdf expand 3 7 11                              # emit only the sections you want
+```
+
+With `--tier`, low-density regions are replaced by `!E` markers carrying an id, a kind, a token count and a one-line gist. An agent reads the map, decides what it needs, and requests regions by id:
+
+```bash
+tdf convert large_report.pdf --tier --to tdf   # elides index-like regions
+tdf expand-elided x1                           # resolve one region
+```
+
+This is the pointer-not-payload pattern applied at document-region granularity. It is the most differentiated capability here — no other document converter offers it — and it is also the least validated. See Known limitations.
+
+---
+
+## Usage
+
+```
+tdf convert <file> [--to tdf|md|skeleton] [-o OUT] [--no-legend] [--tier] [--raw]
+tdf stats   <file> [--json]        # token counts across all output modes
+tdf verify  <file> [--json]        # round-trip fidelity report
+tdf expand  <file> <section-ids>   # emit selected sections
+tdf expand-elided <file> <id>      # resolve an !E region
+tdf validate <file.tdf>            # check structural invariants
+```
+
+**Inputs:** `.pdf` `.docx` `.pptx` `.xlsx` `.xlsm` `.csv` `.tsv` `.html` `.md` `.txt` `.log`
+
+**`--no-legend`** omits the ~130-token syntax legend from each document. Use it when you can place the legend in your system prompt once instead of paying for it per document — the difference matters in RAG, where retrieving 20 chunks otherwise means paying for the legend 20 times.
+
+```python
+from tdf.readers import read
+from tdf.emit import render_tdf
+from tdf.columnar import encode_columns
+
+doc = read("report.pdf")
+books = encode_columns(doc)          # must run on the same doc object
+print(render_tdf(doc, codebooks=books))
+```
+
+---
+
+## Format
+
+```
+!T <n> <caption>      table declaration          !D  phrase dictionary
+!C <col> <col> ...    column header row          §n  dictionary reference
+!V <col>              column value codebook      ^   repeat cell above
+!R                    running header/footer       !P  page boundary
+!F key=value          constant field             !E  elided region
+```
+
+A table with coded columns:
+
+```
+!V product
+a Bearing Standard
+b Coupler XL
+!C order_id product region amount qty
+10382 a g 74974 21
+10315 a g 65256 38
+```
+
+Full grammar in [`docs/SPEC.md`](docs/SPEC.md). `tdf validate` checks any `.tdf` file against the structural invariants.
+
+---
+
+## How this compares
+
+| | TDF | LLMLingua / LongLLMLingua | Gist / soft prompts | Docling / Marker / MinerU |
+|---|---|---|---|---|
+| Mechanism | structural redundancy removal | perplexity-based token pruning | learned embeddings | layout extraction |
+| Reversible | yes | no | no | n/a |
+| Needs a model | no | small LM | training + embedding access | ML layout models |
+| Compression | ~1.5–2x on tables | 2–5x | up to 20–26x | n/a |
+| Runtime | milliseconds, CPU | GPU-assisted | GPU | GPU/CPU |
+
+**TDF is not a competitor to Docling, Marker or MinerU.** They extract structure from PDFs using trained layout models; TDF encodes an already-parsed document. Its built-in PDF reader is PyMuPDF-based heuristics and is not competitive with theirs on hard pages. Feeding TDF from one of those tools is the better pipeline: *they extract, TDF encodes.*
+
+Against the prompt-compression family, TDF occupies a different point: deterministic, reversible, and usable through any API with no model access. It compresses less. It also composes — structural compression first, semantic compression on top, if you need both.
+
+---
+
+## Known limitations
+
+**Accuracy impact is not yet measured.** This is the most important caveat in this README. TDF is validated for *token reduction* and *round-trip reversibility*. Whether an LLM answers questions as accurately from TDF as from Markdown has not been established.
+
+There is reason for genuine concern. Published work on table serialization consistently finds that redundancy *helps* comprehension — formats that repeat column names per row let models read each row independently instead of cross-referencing distant headers, and they outperform denser formats despite costing more tokens. TDF's `!V` codebooks and `§n` dictionaries increase that cross-reference distance further than any format in those studies. An evaluation is in progress; until it lands, treat compression as the only validated benefit and test on your own workload before deploying.
+
+**PEP 8 recall gap.** ~0.5% of distinct tokens are dropped on that document, concentrated in code samples. Under investigation.
+
+**Small documents can grow.** The legend is a fixed ~130-token cost. On a short prose document — `bench/samples_tables/prose_only.pdf` gains 115 tokens — TDF is a net loss. Use `--no-legend`, or use Markdown.
+
+**Fidelity metrics are order-blind.** See above.
+
+**No OCR.** Scanned PDFs yield nothing. Use MinerU or Marker upstream.
+
+**Elision honesty is unmeasured.** Whether models correctly *request* an elided region rather than fabricating an answer has not been quantified. Until it is, `--tier` should be considered experimental.
+
+---
+
+## Roadmap
+
+Not yet shipped. Listed so the gap between claims and code stays visible.
+
+- **Hybrid emission** — choose per block between Markdown and dense TDF, so output is never larger than Markdown and prose stays in its native form. This turns the range above into a floor guarantee.
+- **Accuracy harness** — token-vs-accuracy Pareto frontier across formats and models, with ablations isolating `!V`, `§n` and `^`. Mechanisms that cost accuracy will be disabled by default regardless of their compression contribution.
+- **`DoclingDocument` reader** — accept Docling output as input, inheriting its table detection and OCR.
+
+---
+
+## Development
 
 ```bash
 git clone https://github.com/meashumishra/TDF.git
 cd TDF
-pip install .
+pip install -e ".[bench]"
+python bench/make_samples.py        # required — without it 22 tests silently skip
+python bench/make_table_pdfs.py
+pytest tests/ -v
 ```
 
-## Usage
+Expected: 88 passed, 3 skipped.
 
-Use the CLI to convert your documents:
+`tiktoken` downloads its BPE tables on first use; in a sandboxed environment set `TIKTOKEN_CACHE_DIR` to a pre-populated cache.
 
-```bash
-# Convert a document to TDF
-tdf convert document.pdf --to tdf -o output.tdf
-
-# Get a high-level summary skeleton (~99% smaller)
-tdf convert large_report.docx --to skeleton
-
-# Validate a TDF file against structural invariants
-tdf validate output.tdf
-
-# Print tokens and format stats for a file
-tdf stats orders.csv
-```
-
-## How It Works
-
-For a deep dive into the research, algorithmic decisions (Token-cost-weighted Re-Pair, Addressable Elision, Sentence Density tiering), and the exhaustive bug-hunting campaigns that hardened TDF, read the [Architecture & Research Notes](ARCHITECTURE.md).
-
-## Known limitations
-
-- **Small documents can come out larger, and it's not just prose.** `prose_only.pdf` is 222 Markdown tokens but 337 by default, because the ~130-token self-describing legend dominates (`--no-legend` brings it to 113). The same effect hits small tables: `borderless_report.pdf` and `ruled_report.pdf` (9x5 tables, ~530 Markdown tokens) are 1.7% *larger* than Markdown at default settings, but save 40%+ under `--no-legend`. `tdf stats` shows both numbers for a given file before you commit to one — below roughly 500 tokens, check it rather than assuming.
-- **Scanned/image PDFs are not handled** — there is no OCR step. Pair with olmOCR or Chandra first.
-- **Dictionary substitution hurts raw prose readability.** `...at the start of §3 1.` expands losslessly but reads badly to humans.
-- **Fidelity metric is blind to word order.** "100% distinct-content recall" is a 'bag-of-words' metric. Reversing a sentence (e.g., "A > B" to "B > A") or swapping table columns still yields a 100% score despite destroying meaning.
-- **Elision is intentionally lossy.** Addressable Elision (`!E`) deliberately drops content to shrink context; it does not preserve the original text.
-- **LLM QA accuracy is insufficiently validated.** While TDF compresses structurally, we have not yet run an end-to-end LLM benchmark (e.g., GSM8K or RAG eval) to empirically prove that models can accurately reason over heavily compressed `!D` dictionaries without degradation.
-- **Tokenizer assumptions:** We have verified compression consistency (44-72% savings on structured docs) across OpenAI's `o200k_base` and `cl100k_base` tokenizers, but it remains untested on SentencePiece or Llama tokenizers.
+Issues and PRs: https://github.com/meashumishra/TDF
 
 ## License
 
-MIT License. See [LICENSE](LICENSE) for details.
+MIT
