@@ -41,6 +41,11 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
         "temperature": temperature,
         "top_p": float(os.environ.get("EVAL_TOP_P", "1")),
         "max_tokens": int(os.environ.get("EVAL_MAX_TOKENS", "256")),
+        # NOTE: gpt-oss-class REASONING models routinely need >>256 tokens
+        # (they think before answering); at the default, ~73% of runs in the
+        # first eval were truncated mid-reasoning, which systematically
+        # penalises harder representations. For v2+ set e.g.
+        # EVAL_MAX_TOKENS=2048 and record the value in the report provenance.
         "seed": seed,
     }
     

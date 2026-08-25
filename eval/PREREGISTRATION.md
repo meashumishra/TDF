@@ -8,6 +8,13 @@
   results** and its future numbers are **exploratory** — they are not part
   of the decision rules below, which were applied to the original eight arms
   only. The pre-registered verdict stands as published.
+- **`tdf_nocaret0` arm added after unblinding** (Phase-5 remediation
+  candidate): identical to `tdf_full` except caret-elision never touches
+  column 0 (the row anchor). Motivated by the failure analysis — the dominant
+  loss cluster (row_association : encoded_away, n=30) traces to lookup keys
+  caret-collapsed out of the wire. Exploratory like `hybrid`; a positive
+  result must additionally survive the token-cost comparison (the anchor
+  column is paid for literally).
 
 ## Decision Rules
 

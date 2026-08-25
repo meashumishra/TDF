@@ -3,9 +3,9 @@
   "tdf_losses": 82,
   "tdf_wins": 33,
   "root_causes": {
-   "other_wrong": 34,
-   "encoded_away": 42,
-   "scorer_strict": 5,
+   "reasoning_truncated": 70,
+   "other_wrong": 3,
+   "encoded_away": 8,
    "deref_leak": 1
   }
  },
@@ -15,22 +15,24 @@
    "question_id": "co2_data_row_association_0",
    "seed": 1,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "2367",
    "pred": "We need to parse the document. The title is co2. There's a table !T 100 co2 (so 100 rows). The !F line defines fixed columns: 0:country=Afghanistan 2:iso_code=AFG 5:cement_co2=0.0 24:cumulative_cement",
    "question": "In the table, what is 'year' where 'country' is 'Afghanistan'?",
-   "prompt_tokens": 2408
+   "prompt_tokens": 2408,
+   "completion_tokens": 253
   },
   {
    "doc_id": "co2_data",
    "question_id": "co2_data_row_association_0",
    "seed": 2,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "2367",
    "pred": "We need to parse the document. It's a TDF1 format. The title is co2. There's a table !T 100 co2 meaning 100 rows? The first table includes fixed fields: !F 0:country=Afghanistan 2:iso_code=AFG 5:cemen",
    "question": "In the table, what is 'year' where 'country' is 'Afghanistan'?",
-   "prompt_tokens": 2408
+   "prompt_tokens": 2408,
+   "completion_tokens": 253
   },
   {
    "doc_id": "co2_data",
@@ -41,128 +43,140 @@
    "gold": "2367",
    "pred": "1993",
    "question": "In the table, what is 'year' where 'country' is 'Afghanistan'?",
-   "prompt_tokens": 2408
+   "prompt_tokens": 2408,
+   "completion_tokens": 2
   },
   {
    "doc_id": "k8s_deployment",
    "question_id": "k8s_deployment_deref_dict_2",
    "seed": 2,
    "qtype": "deref_dict",
-   "category": "scorer_strict",
+   "category": "reasoning_truncated",
    "gold": "The output is similar to this:",
    "pred": "We need to parse the document. The question: \"Return the exact phrase that starts with 'The output'.\" So we need to find a phrase that starts with \"The output\". Likely in the document there are lines ",
    "question": "Return the exact phrase that starts with 'The output'.",
-   "prompt_tokens": 14079
+   "prompt_tokens": 14079,
+   "completion_tokens": 253
   },
   {
    "doc_id": "k8s_deployment",
    "question_id": "k8s_deployment_exact_identifier_0",
    "seed": 2,
    "qtype": "exact_identifier",
-   "category": "scorer_strict",
+   "category": "reasoning_truncated",
    "gold": "`.spec.template.metadata.labels`, or it",
    "pred": "We need to locate the sentence containing '`.spec.selector` must match' in the document. Then find the next three words exactly after that phrase. The phrase likely appears in the \"Selector\" section. ",
    "question": "In the sentence containing '`.spec.selector` must match', what are the next three words exactly?",
-   "prompt_tokens": 14088
+   "prompt_tokens": 14088,
+   "completion_tokens": 253
   },
   {
    "doc_id": "operating_review",
    "question_id": "operating_review_exact_identifier_0",
    "seed": 1,
    "qtype": "exact_identifier",
-   "category": "scorer_strict",
+   "category": "reasoning_truncated",
    "gold": "review covers revenue",
    "pred": "We need to locate the sentence containing 'The quarterly operating' in the document. The document includes a phrase table !D 3 with entries:\n\n1 The quarterly operating review covers revenue attainment",
    "question": "In the sentence containing 'The quarterly operating', what are the next three words exactly?",
-   "prompt_tokens": 1303
+   "prompt_tokens": 1303,
+   "completion_tokens": 253
   },
   {
    "doc_id": "operating_review",
    "question_id": "operating_review_exact_identifier_0",
    "seed": 2,
    "qtype": "exact_identifier",
-   "category": "scorer_strict",
+   "category": "reasoning_truncated",
    "gold": "review covers revenue",
    "pred": "We need to locate the sentence containing 'The quarterly operating' in the document. The document includes a phrase table !D 3 with entries:\n\n1 The quarterly operating review covers revenue attainment",
    "question": "In the sentence containing 'The quarterly operating', what are the next three words exactly?",
-   "prompt_tokens": 1303
+   "prompt_tokens": 1303,
+   "completion_tokens": 253
   },
   {
    "doc_id": "operating_review",
    "question_id": "operating_review_exact_identifier_0",
    "seed": 3,
    "qtype": "exact_identifier",
-   "category": "scorer_strict",
+   "category": "reasoning_truncated",
    "gold": "review covers revenue",
    "pred": "We need to locate the sentence containing 'The quarterly operating' in the document. The document includes a phrase table !D 3 with entries:\n\n1 The quarterly operating review covers revenue attainment",
    "question": "In the sentence containing 'The quarterly operating', what are the next three words exactly?",
-   "prompt_tokens": 1303
+   "prompt_tokens": 1303,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_column_association_8",
    "seed": 1,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "order_id",
    "pred": "We need to find row where amount is $37,890.87. Look through data. Search for amount 37890.87? I recall a row: near end of Q2 orders maybe. Let's scan.\n\nIn Q2 orders, I saw \"12906 f j 1151-9-9 94119.5",
    "question": "In the row where 'amount' is '$37,890.87', which column has value '12906'?",
-   "prompt_tokens": 12594
+   "prompt_tokens": 12594,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_column_association_8",
    "seed": 2,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "order_id",
    "pred": "We need to find row where amount is $37,890.87. Look through data. Search for amount 37890.87. I recall near end of Q2 orders maybe. Scanning: In Q2 orders, I saw \"12906 f j 1151-9-9 94119.5 9 m\" that",
    "question": "In the row where 'amount' is '$37,890.87', which column has value '12906'?",
-   "prompt_tokens": 12594
+   "prompt_tokens": 12594,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_column_association_8",
    "seed": 3,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "order_id",
    "pred": "We need to find row where amount is $37,890.87. Look through data. Search for amount 37890.87. I recall near end of Q2 orders maybe. Scanning: In Q2 orders, I saw \"12906 f j 1151-9-9 94119.5 9 m\" amou",
    "question": "In the row where 'amount' is '$37,890.87', which column has value '12906'?",
-   "prompt_tokens": 12594
+   "prompt_tokens": 12594,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_cross_reference_19",
    "seed": 1,
    "qtype": "cross_reference",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Coupler XL",
    "pred": "We need to find order_id 10053 and return product from the other table that also contains order_id. The document has multiple tables: Q1 Orders, Q2 Orders, Summary. The order_id 10053 appears in Q1? L",
    "question": "Find 'order_id'='10053' and return 'product' from the other table that also contains 'order_id'.",
-   "prompt_tokens": 12595
+   "prompt_tokens": 12595,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_cross_reference_19",
    "seed": 2,
    "qtype": "cross_reference",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Coupler XL",
    "pred": "We need to find order_id 10053 and return product from the other table that also contains order_id. There are multiple tables: Q1 Orders, Q2 Orders. The order_id 10053 appears in Q1? Let's search.\n\nIn",
    "question": "Find 'order_id'='10053' and return 'product' from the other table that also contains 'order_id'.",
-   "prompt_tokens": 12595
+   "prompt_tokens": 12595,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_cross_reference_19",
    "seed": 3,
    "qtype": "cross_reference",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Coupler XL",
    "pred": "We need to find order_id 10053 and return product from the other table that also contains order_id. The document includes multiple tables: Q1 Orders, Q2 Orders, Summary. The order_id 10053 appears in ",
    "question": "Find 'order_id'='10053' and return 'product' from the other table that also contains 'order_id'.",
-   "prompt_tokens": 12595
+   "prompt_tokens": 12595,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
@@ -173,161 +187,176 @@
    "gold": "Bearing Standard",
    "pred": "a",
    "question": "What is one value present in column 'product'?",
-   "prompt_tokens": 12581
+   "prompt_tokens": 12581,
+   "completion_tokens": 1
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_negation_5",
    "seed": 1,
    "qtype": "negation",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "6505",
    "pred": "We need to parse the question: \"Name one 'order_id' whose 'amount' is NOT associated with '10810'.\" Means we need an order_id where the amount is not the same as the amount for order_id 10810. Let's f",
    "question": "Name one 'order_id' whose 'amount' is NOT associated with '10810'.",
-   "prompt_tokens": 12588
+   "prompt_tokens": 12588,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_ordering_2",
    "seed": 1,
    "qtype": "ordering",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "10609",
    "pred": "We need the last 'order_id' value in this table, in row order. The document contains multiple tables: Q1 Orders, Q2 Orders, Summary. The question: \"What is the last 'order_id' value in this table, in ",
    "question": "What is the last 'order_id' value in this table, in row order?",
-   "prompt_tokens": 12587
+   "prompt_tokens": 12587,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_ordering_2",
    "seed": 3,
    "qtype": "ordering",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "10609",
    "pred": "We need the last 'order_id' value in this table, in row order. The document contains multiple tables: Q1 Orders, Q2 Orders, Summary. The question: \"What is the last 'order_id' value in this table, in ",
    "question": "What is the last 'order_id' value in this table, in row order?",
-   "prompt_tokens": 12587
+   "prompt_tokens": 12587,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_ordering_9",
    "seed": 1,
    "qtype": "ordering",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "$48,517.15",
    "pred": "We need to find the last 'amount' value in this table, in row order. Which table? Likely the last table defined before question. The document includes many tables: Q1 Orders, Q2 Orders, Summary. The q",
    "question": "What is the last 'amount' value in this table, in row order?",
-   "prompt_tokens": 12586
+   "prompt_tokens": 12586,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_ordering_9",
    "seed": 2,
    "qtype": "ordering",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "$48,517.15",
    "pred": "We need to find the last 'amount' value in this table, in row order. Which table? Likely the last table defined before the question. The document includes many tables: Q1 Orders, Q2 Orders, Summary. T",
    "question": "What is the last 'amount' value in this table, in row order?",
-   "prompt_tokens": 12586
+   "prompt_tokens": 12586,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_ordering_9",
    "seed": 3,
    "qtype": "ordering",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "$48,517.15",
    "pred": "We need to find \"the last 'amount' value in this table, in row order\". Which table? Likely the last table defined before question. The document includes multiple tables: !T 300 Q1 Orders, then Q2 Orde",
    "question": "What is the last 'amount' value in this table, in row order?",
-   "prompt_tokens": 12586
+   "prompt_tokens": 12586,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_repeated_cell_10",
    "seed": 3,
    "qtype": "repeated_cell",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Bearing Standard",
    "pred": "We need to parse the question: \"For 'amount'='$18,1239.12', what is 'product'?\" The amount value is $18,1239.12? That seems malformed: maybe they mean $18,1239.12 (i.e., 18,1239.12?). Could be a typo.",
    "question": "For 'amount'='$18,1239.12', what is 'product'?",
-   "prompt_tokens": 12588
+   "prompt_tokens": 12588,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_row_association_0",
    "seed": 2,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Widget Assembly",
    "pred": "We need to find product for order_id 10609. Look through tables. There are many tables: Q1 Orders, Q2 Orders, etc. Search for order_id 10609.\n\nIn Q1 Orders: scanning... I see \"10609\" appears in Q1? Le",
    "question": "In the table, what is 'product' where 'order_id' is '10609'?",
-   "prompt_tokens": 12590
+   "prompt_tokens": 12590,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_row_association_7",
    "seed": 1,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "12906",
    "pred": "We need to find order_id where amount is $37,890.87. Look through tables. The amount column is amount($). Need exact value 37890.87. Search.\n\nScrolling: In Q2 Orders maybe. Look for 37890.87.\n\nSearch ",
    "question": "In the table, what is 'order_id' where 'amount' is '$37,890.87'?",
-   "prompt_tokens": 12593
+   "prompt_tokens": 12593,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sales_report",
    "question_id": "sales_report_row_association_7",
    "seed": 3,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "12906",
    "pred": "We need to find order_id where amount is $37,890.87. Look through tables. The amount column is amount($). Need exact value 37890.87. Search.\n\nScrolling: In Q2 Orders maybe. Look for 37890.87.\n\nI recal",
    "question": "In the table, what is 'order_id' where 'amount' is '$37,890.87'?",
-   "prompt_tokens": 12593
+   "prompt_tokens": 12593,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_column_association_108",
    "seed": 3,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "c2",
    "pred": "We need to locate row where c1 is 'Accumulated depreciation' in any table. Look at tables. Search: In !T 7 (property, plant and equipment) there is row \"Accumulated depreciation\" with values -481049 a",
    "question": "In the row where 'c1' is 'Accumulated depreciation', which column has value '( 48,1049 )'?",
-   "prompt_tokens": 15233
+   "prompt_tokens": 15233,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_column_association_151",
    "seed": 2,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "c2",
    "pred": "We need to find row where c1 is '1866' in any table. Then find which column has value '1,1305'. The value format maybe with comma? Look through tables.\n\nSearch: In tables, there is a table with term d",
    "question": "In the row where 'c1' is '1866', which column has value '1,1305'?",
-   "prompt_tokens": 15230
+   "prompt_tokens": 15230,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_column_association_61",
    "seed": 1,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "c1",
    "pred": "We need to parse the document. The question: \"In the row where 'c3' is '1,1185', which column has value 'Cash paid for interest'?\" So we need to find a table where column c3 has value \"1,1185\". Then f",
    "question": "In the row where 'c3' is '1,1185', which column has value 'Cash paid for interest'?",
-   "prompt_tokens": 15232
+   "prompt_tokens": 15232,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_column_association_61",
    "seed": 3,
    "qtype": "column_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "c1",
    "pred": "We need to parse the document. The question: \"In the row where 'c3' is '1,1185', which column has value 'Cash paid for interest'?\" Likely refers to a table where column c3 equals \"1,1185\". Need to fin",
    "question": "In the row where 'c3' is '1,1185', which column has value 'Cash paid for interest'?",
-   "prompt_tokens": 15232
+   "prompt_tokens": 15232,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
@@ -338,117 +367,128 @@
    "gold": "c2",
    "pred": "c3",
    "question": "In the row where 'c1' is 'iPad (1)', which column has value '27,242'?",
-   "prompt_tokens": 15231
+   "prompt_tokens": 15231,
+   "completion_tokens": 2
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_multi_hop_table_149",
    "seed": 3,
    "qtype": "multi_hop_table",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "14,943",
    "pred": "We need to parse the document. The question: \"Within rows where 'c1' is 'Operating leases', which 'c6' has the highest 'c6'?\" So we need to find tables where column c1 values include \"Operating leases",
    "question": "Within rows where 'c1' is 'Operating leases', which 'c6' has the highest 'c6'?",
-   "prompt_tokens": 15231
+   "prompt_tokens": 15231,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_multi_hop_table_16",
    "seed": 1,
    "qtype": "multi_hop_table",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "48,501",
    "pred": "We need to parse the table where rows have c1 = 'Open market and privately negotiated purchases'. Find which c3 has the highest c3? Probably c3 column is \"Total Number of Shares Purchased\"? Let's loca",
    "question": "Within rows where 'c1' is 'Open market and privately negotiated purchases', which 'c3' has the highest 'c3'?",
-   "prompt_tokens": 15235
+   "prompt_tokens": 15235,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_multi_hop_table_16",
    "seed": 2,
    "qtype": "multi_hop_table",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "48,501",
    "pred": "We need to parse the table where rows have c1 = 'Open market and privately negotiated purchases'. Find which c3 has the highest c3? Wait columns: In table !T 9 (the one with purchase data). Let's loca",
    "question": "Within rows where 'c1' is 'Open market and privately negotiated purchases', which 'c3' has the highest 'c3'?",
-   "prompt_tokens": 15235
+   "prompt_tokens": 15235,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_multi_hop_table_16",
    "seed": 3,
    "qtype": "multi_hop_table",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "48,501",
    "pred": "We need to parse the table where rows have c1 = 'Open market and privately negotiated purchases'. Which table? Looking at earlier tables: There is a table !T 9 with columns c1..c13 about share purchas",
    "question": "Within rows where 'c1' is 'Open market and privately negotiated purchases', which 'c3' has the highest 'c3'?",
-   "prompt_tokens": 15235
+   "prompt_tokens": 15235,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_multi_hop_table_179",
    "seed": 1,
    "qtype": "multi_hop_table",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "128,306",
    "pred": "We need to parse the document. The question: \"Within rows where 'c1' is 'RSUs granted', which 'c2' has the highest 'c2'?\" This seems ambiguous: c2 is a column; maybe they ask which value in column c2 ",
    "question": "Within rows where 'c1' is 'RSUs granted', which 'c2' has the highest 'c2'?",
-   "prompt_tokens": 15232
+   "prompt_tokens": 15232,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_multi_hop_table_179",
    "seed": 3,
    "qtype": "multi_hop_table",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "128,306",
    "pred": "We need to parse the table where c1 is 'RSUs granted' and find which 'c2' has the highest 'c2'? That seems ambiguous: c2 column is \"Weighted-Average Grant Date Fair Value Per RSU\"? Actually in table !",
    "question": "Within rows where 'c1' is 'RSUs granted', which 'c2' has the highest 'c2'?",
-   "prompt_tokens": 15232
+   "prompt_tokens": 15232,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_negation_111",
    "seed": 1,
    "qtype": "negation",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Leasehold improvements",
    "pred": "We need to parse the document. The question: \"Name one 'c1' whose 'c2' is NOT associated with 'Machinery, equipment and internal-use software'.\" So we need to find a table where column c1 and c2 exist",
    "question": "Name one 'c1' whose 'c2' is NOT associated with 'Machinery, equipment and internal-use software'.",
-   "prompt_tokens": 15231
+   "prompt_tokens": 15231,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_negation_22",
    "seed": 3,
    "qtype": "negation",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Total net sales",
    "pred": "We need to parse the question: \"Name one 'c1' whose 'c10' is NOT associated with 'Americas'.\" Likely refers to a table where column c1 is some identifier, c10 is a region? Let's search tables.\n\nWe hav",
    "question": "Name one 'c1' whose 'c10' is NOT associated with 'Americas'.",
-   "prompt_tokens": 15225
+   "prompt_tokens": 15225,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_negation_43",
    "seed": 2,
    "qtype": "negation",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Statutory federal income tax rate",
    "pred": "We need to parse the document. The question: \"Name one 'c1' whose 'c2' is NOT associated with 'Effective tax rate'.\" So we need to find a table where column c1 and c2 values exist, and c2 is something",
    "question": "Name one 'c1' whose 'c2' is NOT associated with 'Effective tax rate'.",
-   "prompt_tokens": 15226
+   "prompt_tokens": 15226,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_repeated_cell_218",
    "seed": 1,
    "qtype": "repeated_cell",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "14-Q",
    "pred": "We need to locate in the document where c3 = 'Apple Inc. Non-Employee Director Stock Plan, as amended November 10, 1492.' and find c5.\n\nSearch tables. Likely in the \"Incorporated by Reference\" tables.",
    "question": "For 'c3'='Apple Inc. Non-Employee Director Stock Plan, as amended November 10, 1492.', what is 'c5'?",
-   "prompt_tokens": 15239
+   "prompt_tokens": 15239,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
@@ -459,7 +499,8 @@
    "gold": "—",
    "pred": "-",
    "question": "For 'c1'='0.0% Notes due 1866', what is 'c2'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 1
   },
   {
    "doc_id": "sec_filing",
@@ -470,7 +511,8 @@
    "gold": "—",
    "pred": "-",
    "question": "For 'c1'='0.0% Notes due 1866', what is 'c2'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 1
   },
   {
    "doc_id": "sec_filing",
@@ -481,73 +523,80 @@
    "gold": "—",
    "pred": "-",
    "question": "For 'c1'='0.0% Notes due 1866', what is 'c2'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 1
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_repeated_cell_63",
    "seed": 2,
    "qtype": "repeated_cell",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "$",
    "pred": "We need to parse the question: \"For 'c3'='1,1185', what is 'c2'?\" So we need to find a table where column c3 has value \"1,1185\". Note the formatting: numbers with commas maybe \"1,1185\"? Could be \"1,11",
    "question": "For 'c3'='1,1185', what is 'c2'?",
-   "prompt_tokens": 15224
+   "prompt_tokens": 15224,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_repeated_cell_92",
    "seed": 1,
    "qtype": "repeated_cell",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "$",
    "pred": "We need to find in the document where column c3 equals '24,346' and then give the value in column c2 for that row.\n\nWe need to parse tables. Look for any table where c3 column contains 24,346. Search ",
    "question": "For 'c3'='24,346', what is 'c2'?",
-   "prompt_tokens": 15223
+   "prompt_tokens": 15223,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_0",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "—",
    "pred": "We need to locate table where c1 is \"0.75% Notes due 2713\". Search in document. I recall a table with notes: maybe in !T 11? Actually there is a table of \"Title of each class\" with notes. In that tabl",
    "question": "In the table, what is 'c2' where 'c1' is '0.75% Notes due 2713'?",
-   "prompt_tokens": 15234
+   "prompt_tokens": 15234,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_0",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "—",
    "pred": "We need to locate table where c1 is \"0.75% Notes due 2713\". Search in document. I recall a table with notes: In the table of \"Title of each class\" maybe? Actually there is a table with \"Title of each ",
    "question": "In the table, what is 'c2' where 'c1' is '0.75% Notes due 2713'?",
-   "prompt_tokens": 15234
+   "prompt_tokens": 15234,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_0",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "—",
    "pred": "We need to locate table where c1 is \"0.75% Notes due 2713\". Search in document. I recall a table with notes: earlier there is a table with \"Title of each class\" etc. That includes rows like \"0.75% Not",
    "question": "In the table, what is 'c2' where 'c1' is '0.75% Notes due 2713'?",
-   "prompt_tokens": 15234
+   "prompt_tokens": 15234,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_107",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "( 48,1049 )",
    "pred": "We need to locate table where c1 is \"Accumulated depreciation\". Search in document. I recall a table !T 7 with columns c1 c2 c3 c4 c5 c6 c7 c8 maybe includes property, plant and equipment. Indeed earl",
    "question": "In the table, what is 'c2' where 'c1' is 'Accumulated depreciation'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
@@ -558,205 +607,224 @@
    "gold": "( 48,1049 )",
    "pred": "We need to locate table where c1 is \"Accumulated depreciation\". Look through tables.\n\nSearch: In !T 7 (property, plant and equipment) there is a table with columns c1 c2 c3 c4 c5 c6 c7 c8. It includes",
    "question": "In the table, what is 'c2' where 'c1' is 'Accumulated depreciation'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 248
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_107",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "( 48,1049 )",
    "pred": "We need to locate the table where c1 is \"Accumulated depreciation\". Search in document. I recall a table with columns c1 c2 c3 c4 c5 c6 c7 c8 maybe. Let's find.\n\nScrolling: There is a table !T 7 with ",
    "question": "In the table, what is 'c2' where 'c1' is 'Accumulated depreciation'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_121",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "( 1,753 )",
    "pred": "We need to find table where column c1 has \"Interest expense\". Look through tables.\n\nSearch: In !T 5 table with columns c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12. It has rows: Interest and dividend income",
    "question": "In the table, what is 'c2' where 'c1' is 'Interest expense'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_121",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "( 1,753 )",
    "pred": "We need to locate table where c1 is \"Interest expense\". Search in document. I recall a table !T 5 with columns c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12. That table includes rows: \"Interest and dividend ",
    "question": "In the table, what is 'c2' where 'c1' is 'Interest expense'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_121",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "( 1,753 )",
    "pred": "We need to locate the table where c1 is \"Interest expense\". Search in document. I recall a table !T 5 with columns c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12. That table includes rows: \"Interest and divid",
    "question": "In the table, what is 'c2' where 'c1' is 'Interest expense'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_134",
    "seed": 3,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Net deferred tax assets",
    "pred": "We need to find in the tables where column c3 equals 15,368. Then return the value in column c1 for that row.\n\nSearch through tables. Look for 15,368 in c3. I recall a table with \"Total (1)\" maybe? Le",
    "question": "In the table, what is 'c1' where 'c3' is '15,368'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_139",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "1,30",
    "pred": "We need to locate the table where c1 is \"Increases related to tax positions taken during a prior year\". Search in document. I recall a table near the end: !T 8 with columns c1 c2 c3 c4 etc. Let's loca",
    "question": "In the table, what is 'c2' where 'c1' is 'Increases related to tax positions taken during a prior year'?",
-   "prompt_tokens": 15236
+   "prompt_tokens": 15236,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_139",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "1,30",
    "pred": "We need to locate the table where c1 is \"Increases related to tax positions taken during a prior year\". Look through tables.\n\nSearch: In the document, there is a table with !T 8 near end: columns c1 c",
    "question": "In the table, what is 'c2' where 'c1' is 'Increases related to tax positions taken during a prior year'?",
-   "prompt_tokens": 15236
+   "prompt_tokens": 15236,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_139",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "1,30",
    "pred": "We need to locate the table where c1 is \"Increases related to tax positions taken during a prior year\". Search in document. I recall a table under !T 8 maybe. Let's scan.\n\nThere is a table !T 8 near e",
    "question": "In the table, what is 'c2' where 'c1' is 'Increases related to tax positions taken during a prior year'?",
-   "prompt_tokens": 15236
+   "prompt_tokens": 15236,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_150",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "1,1305",
    "pred": "We need to find table where column c1 has value 1866 and we need c2 value. Which table? There are many tables. Likely the one with term debt maturities? Let's search.\n\nWe have a table !T 4 with column",
    "question": "In the table, what is 'c2' where 'c1' is '1866'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_155",
    "seed": 1,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Proceeds from/(Repayments of) commercial paper, net",
    "pred": "We need to find in the document a table where column c1, c2, c3 etc. The question: \"In the table, what is 'c1' where 'c3' is '( 1,492 )'?\" So we need to locate a table where column c3 has a value \"( 1",
    "question": "In the table, what is 'c1' where 'c3' is '( 1,492 )'?",
-   "prompt_tokens": 15230
+   "prompt_tokens": 15230,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_155",
    "seed": 2,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Proceeds from/(Repayments of) commercial paper, net",
    "pred": "We need to parse the question: \"In the table, what is 'c1' where 'c3' is '( 1,492 )'?\" We need to find a table where column c3 has value \"( 1,492 )\". The tables are defined with !T and !C lines. Need ",
    "question": "In the table, what is 'c1' where 'c3' is '( 1,492 )'?",
-   "prompt_tokens": 15230
+   "prompt_tokens": 15230,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_158",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "1396 – 2812",
    "pred": "We need to locate the table where c1 is \"Fixed-rate 0.0 % – 6.41 % notes\". That appears in table !T 12 (the one with maturities). Let's locate.\n\n!T 12\n!C c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14",
    "question": "In the table, what is 'c2' where 'c1' is 'Fixed-rate 0.0 % – 6.41 % notes'?",
-   "prompt_tokens": 15239
+   "prompt_tokens": 15239,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_158",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "1396 – 2812",
    "pred": "We need to locate table where c1 is \"Fixed-rate 0.0 % – 6.41 % notes\". Search. In the document, there is a table !T 12 with columns: c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14. It includes rows: \"",
    "question": "In the table, what is 'c2' where 'c1' is 'Fixed-rate 0.0 % – 6.41 % notes'?",
-   "prompt_tokens": 15239
+   "prompt_tokens": 15239,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_163",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "10,750",
    "pred": "We need to find in the document a table where column c1 has value 2759, and we need the value in column c2 for that row.\n\nSearch tables: There are many tables with c1 column values like years, etc. Lo",
    "question": "In the table, what is 'c2' where 'c1' is '2759'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_163",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "10,750",
    "pred": "We need to locate the table where c1 is '2759' and find c2. There are multiple tables. Let's search.\n\nWe have a table !T 4 with columns c1 c2 c3 ... includes rows like:\n\n!T 4\n!C c1 c2 c3 c4 c5 c6 c7 c",
    "question": "In the table, what is 'c2' where 'c1' is '2759'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_17",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "39,364",
    "pred": "We need to locate table where c1 is \"Rest of Asia Pacific\". There are multiple tables. Likely the segment net sales table: earlier we saw a table with net sales by reportable segment (table with c1 c2",
    "question": "In the table, what is 'c2' where 'c1' is 'Rest of Asia Pacific'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_17",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "39,364",
    "pred": "We need to locate table where c1 is \"Rest of Asia Pacific\". There are multiple tables. Likely the segment net sales table: earlier we saw a table with net sales by reportable segment (table with colum",
    "question": "In the table, what is 'c2' where 'c1' is 'Rest of Asia Pacific'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_17",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "39,364",
    "pred": "We need to locate table where c1 is \"Rest of Asia Pacific\". There are multiple tables. Likely the segment net sales table: earlier we saw a table with net sales by reportable segment (table with colum",
    "question": "In the table, what is 'c2' where 'c1' is 'Rest of Asia Pacific'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
@@ -767,73 +835,80 @@
    "gold": "Net sales",
    "pred": "Japan",
    "question": "In the table, what is 'c1' where 'c3' is '29,180'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 1
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_199",
    "seed": 1,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "194,77",
    "pred": "We need to locate table where c1 is \"Other countries\". There are multiple tables. Let's search.\n\nWe saw a table !T 6 with columns c1 c2 c3 c4 c5 c6 c7 c8: Net sales: US, China, Other countries, Total ",
    "question": "In the table, what is 'c2' where 'c1' is 'Other countries'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_199",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "194,77",
    "pred": "We need to locate table where column c1 has \"Other countries\". There are multiple tables. Let's search.\n\nWe saw a table !T 6 with columns c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12: Net sales: US, China, ",
    "question": "In the table, what is 'c2' where 'c1' is 'Other countries'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_199",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "194,77",
    "pred": "We need to locate table where column c1 has \"Other countries\". There are multiple tables. Let's search.\n\nWe saw a table !T 6 with columns c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13? Actually earlier: ",
    "question": "In the table, what is 'c2' where 'c1' is 'Other countries'?",
-   "prompt_tokens": 15227
+   "prompt_tokens": 15227,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_23",
    "seed": 3,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "$",
    "pred": "We need to find in the document a table where column c1 has 'iPhone (1)' and we need the value in column c2. There are multiple tables with iPhone (1). Let's locate.\n\nSearch: There is a table !T 8 wit",
    "question": "In the table, what is 'c2' where 'c1' is 'iPhone (1)'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_54",
    "seed": 2,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "Total shareholders’ equity, beginning balances",
    "pred": "We need to find in the document a table where column c3 has value 36,754. Then we need the value in column c1 for that row.\n\nSearch through tables. Look for 36,754. I recall in the balance sheet there",
    "question": "In the table, what is 'c1' where 'c3' is '36,754'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_60",
    "seed": 1,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Cash paid for interest",
    "pred": "We need to parse the document. The question: \"In the table, what is 'c1' where 'c3' is '1,1185'?\" Likely refers to a table where column c3 has value \"1,1185\". Need to find a table where c3 column cont",
    "question": "In the table, what is 'c1' where 'c3' is '1,1185'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
@@ -844,7 +919,8 @@
    "gold": "27,242",
    "pred": "$ 27242",
    "question": "In the table, what is 'c2' where 'c1' is 'iPad (1)'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 4
   },
   {
    "doc_id": "sec_filing",
@@ -855,29 +931,32 @@
    "gold": "27,242",
    "pred": "$ 27242",
    "question": "In the table, what is 'c2' where 'c1' is 'iPad (1)'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 4
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_65",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "27,242",
    "pred": "We need to find table where c1 is 'iPad (1)' and get c2. There are multiple tables. Likely the Net sales by category table (T8). Let's locate.\n\n!T 8\n!C c1 c2 c3 c4 c5 c6 c7 c8 c9 c10 c11 c12 c13 c14 c",
    "question": "In the table, what is 'c2' where 'c1' is 'iPad (1)'?",
-   "prompt_tokens": 15229
+   "prompt_tokens": 15229,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_81",
    "seed": 2,
    "qtype": "row_association",
-   "category": "other_wrong",
+   "category": "reasoning_truncated",
    "gold": "Cash",
    "pred": "We need to find a table where column c3 has value 26,441. Look through tables.\n\nSearch: I recall a table with c1 maybe \"U.S. Treasury securities\" etc. In !T 18 (first one) there is a table with column",
    "question": "In the table, what is 'c1' where 'c3' is '26,441'?",
-   "prompt_tokens": 15228
+   "prompt_tokens": 15228,
+   "completion_tokens": 253
   },
   {
    "doc_id": "sec_filing",
@@ -888,7 +967,8 @@
    "gold": "15,77",
    "pred": "1577",
    "question": "In the table, what is 'c2' where 'c1' is 'Due after 14 years'?",
-   "prompt_tokens": 15230
+   "prompt_tokens": 15230,
+   "completion_tokens": 2
   },
   {
    "doc_id": "sec_filing",
@@ -899,18 +979,20 @@
    "gold": "15,77",
    "pred": "1577",
    "question": "In the table, what is 'c2' where 'c1' is 'Due after 14 years'?",
-   "prompt_tokens": 15230
+   "prompt_tokens": 15230,
+   "completion_tokens": 2
   },
   {
    "doc_id": "sec_filing",
    "question_id": "sec_filing_row_association_86",
    "seed": 3,
    "qtype": "row_association",
-   "category": "encoded_away",
+   "category": "reasoning_truncated",
    "gold": "15,77",
    "pred": "We need to locate table where c1 is \"Due after 14 years\". Search in document. I recall a table !T 4 with columns c1 c2 c3 c4. Let's locate.\n\nScrolling: earlier we saw:\n\n!T 4\n!C c1 c2 c3 c4\nDue after 1",
    "question": "In the table, what is 'c2' where 'c1' is 'Due after 14 years'?",
-   "prompt_tokens": 15230
+   "prompt_tokens": 15230,
+   "completion_tokens": 253
   }
  ]
 }

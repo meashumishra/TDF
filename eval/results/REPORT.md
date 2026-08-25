@@ -2,6 +2,16 @@
 
 *Generated 2026-08-24 from eval/results/raw.jsonl — real completions, no simulation.*
 
+> ## ⚠️ v1 methodology confound (read before citing these numbers)
+>
+> **73% of all completions were truncated at EVAL_MAX_TOKENS=256** —
+> gpt-oss-120b reasons before answering, and harder representations get less
+> thinking room (tdf_full cap-hit 90% vs md 76%). **85% of TDF-losses are
+> truncated runs**, so the −6.3pp headline measures *difficulty × budget*,
+> not representation quality alone. Only 12 non-truncated losses remain
+> attributable (~1.5pp). A v2 re-run with an adequate budget is required
+> before any verdict language is trusted. See reports/FAILURE_ANALYSIS.md.
+
 ## 0. Provenance & completeness
 
 - **Model:** openai/gpt-oss-120b (temperature 0.0, seeds 1-3)

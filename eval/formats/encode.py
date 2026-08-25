@@ -3,7 +3,7 @@ from tdf.ir import Doc
 from tdf.emit import render_markdown, render_tdf
 from tdf.fidelity import compare
 from tdf.parse import parse_tdf
-from tdf.optimize import optimize, elide_repeats
+from tdf.optimize import optimize, elide_repeats, elide_repeats_keep_anchor
 import tdf.emit
 import json
 import unittest.mock
@@ -76,6 +76,29 @@ def encode_tdf_nocaret(doc: Doc) -> str:
     return out
 
 
+def encode_tdf_nocaret0(doc: Doc) -> str:
+    """tdf_full, but caret-elision never touches column 0 (the row anchor).
+
+    Post-hoc ablation arm from the Phase-5 failure analysis: the dominant
+    loss cluster (row_association : encoded_away, n=30) traces to lookup
+    keys caret-collapsed out of the wire. Everything else matches tdf_full,
+    including the legend and the internal losslessness assertion."""
+    import unittest.mock
+
+    from tdf.columnar import encode_columns
+
+    d = copy.deepcopy(doc)
+    books = encode_columns(d)
+
+    def _keep_anchor(rows, marker="^"):
+        return elide_repeats_keep_anchor(rows, marker)
+
+    with unittest.mock.patch('tdf.emit.elide_repeats', _keep_anchor):
+        out = render_tdf(d, legend=True, codebooks=books)
+    _assert_lossless(doc, out)
+    return out
+
+
 def encode_hybrid(doc: Doc) -> str:
     """Per-block arbitration (emit.render_hybrid): prose stays Markdown,
     tables/KV/page-marks go dense only where they win. Floor-guaranteed
@@ -126,6 +149,7 @@ ARMS = {
     "tdf_nodict": encode_tdf_nodict,
     "tdf_nocodes": encode_tdf_nocodes,
     "tdf_nocaret": encode_tdf_nocaret,
+    "tdf_nocaret0": encode_tdf_nocaret0,
     # Added AFTER the first eval was unblinded (see PREREGISTRATION.md's
     # post-hoc note): hybrid is exploratory until it has its own run.
     "hybrid": encode_hybrid,

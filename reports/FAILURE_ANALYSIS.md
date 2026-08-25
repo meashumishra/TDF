@@ -3,6 +3,26 @@
 *Derived from eval/results/raw.jsonl (n=6,310) via scripts/analyze_failures.py;
 full categorized records in eval/results/failures.json (82 paired TDF-losses).*
 
+## ⚠️ Methodology confound found during this analysis (dominant)
+
+**85% of the TDF-loss bucket (70/82) are predictions truncated at the
+256-token completion cap.** gpt-oss-120b is a reasoning model: it spends
+completion tokens thinking before answering, and 73% of ALL runs hit the cap
+(tdf_full: 710/789 = 90%; md: 597/788 = 76%). A truncated prediction is an
+artifact of the budget, not evidence about the representation — harder
+representations get less thinking room, so the v1 accuracy comparison
+measures *representation difficulty × budget adequacy*, not representation
+quality alone.
+
+**Consequence:** the −6.3pp headline stands AS MEASURED under v1, but is
+CONFOUNDED. After separating truncated runs, only **12 losses remain
+potentially attributable to the representation** (≈1.5pp) — plus 55
+comprehension failures where content was recoverable and the model answered
+wrongly anyway. A budget-adequate re-run (v2) is required before verdict
+language ("marginal" or otherwise) can be trusted. Taxonomy below reflects
+the ORIGINAL v1 attribution, preserved per §29; truncation-separated numbers
+live in the regenerated failures.json (`reasoning_truncated: 70`).
+
 ## Headline
 
 Of 788 matched triples, TDF-full loses **82** and wins **45** against Markdown

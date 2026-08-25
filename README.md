@@ -197,7 +197,7 @@ Against the prompt-compression family, TDF occupies a different point: determini
 
 ## Known limitations
 
-**Accuracy cost: now measured — pre-registered verdict: *marginal*.** 263 adversarial questions × 8 encoding arms × 3 seeds (6,310 real completions from `openai/gpt-oss-120b`) put TDF at **−6.3pp vs Markdown (95% CI [−8.8, −3.7]) while sending 43% fewer prompt tokens**. The decision rules were written before any results existed ([PREREGISTRATION](eval/PREREGISTRATION.md)); they place this result in the *marginal* band: prefer Markdown for prose, use dense TDF where its token win is largest, and re-test — accuracy-neutrality is **not** yet claimed.
+**Accuracy cost: measured under v1 — CONFOUNDED by completion-budget truncation.** 263 adversarial questions × 8 encoding arms × 3 seeds (6,310 real completions from `openai/gpt-oss-120b`) put TDF at **−6.3pp vs Markdown (95% CI [−8.8, −3.7]) while sending 43% fewer prompt tokens** — but 73% of ALL completions were truncated at the 256-token cap, hitting TDF arms 90% vs md 76%, and 85% of TDF-losses are truncated runs. The −6.3pp therefore measures *representation difficulty × inadequate reasoning budget*, not representation quality alone; only ~12 losses (~1.5pp) survive outside truncation. A v2 re-run with an adequate budget (`EVAL_MAX_TOKENS≥2048`) is required before any verdict — including the earlier "marginal" framing — can be trusted. Details and failure taxonomy: [reports/FAILURE_ANALYSIS.md](reports/FAILURE_ANALYSIS.md).
 
 What the breakdown adds: the individual mechanisms are not the problem — removing `§n`, `!V` or `^` recovers ≤0.1pp each (the no-legend arm costs ~1.5pp, so keep the legend). TDF beats Markdown on dictionary-code resolution (`deref_dict` 66.7% vs 33.3%) and negation, is near-par on column association, and loses on exact identifiers, cross-references and row association. One caveat stands: a single SEC filing contributes 86% of the questions, so headline numbers lean heavily on financial-table content. Full tables, per-type matrix and the paired-bootstrap analysis: [eval/results/REPORT.md](eval/results/REPORT.md).
 
@@ -238,7 +238,7 @@ python bench/make_table_pdfs.py
 pytest tests/ -v
 ```
 
-Expected: 168 passed.
+Expected: 371 passed.
 
 ### MCP server (lazy context for agents)
 

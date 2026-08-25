@@ -213,6 +213,26 @@ def elide_repeats(rows: list[list[str]], marker: str = "^") -> list[list[str]]:
     return out
 
 
+def elide_repeats_keep_anchor(rows: list[list[str]], marker: str = "^") -> list[list[str]]:
+    """``elide_repeats``, but column 0 -- the conventional row anchor /
+    primary key -- always keeps its literal value.
+
+    Phase-5 failure analysis (reports/FAILURE_ANALYSIS.md): caret-eliding a
+    lookup KEY removed the row's identity anchor from the wire, producing the
+    dominant accuracy-loss cluster (row_association : encoded_away, n=30 --
+    the model cannot find the row whose key is no longer on the wire).
+    Interior columns still compress fully; only the anchor survives verbatim.
+    parse side needs no change: a literal first cell simply reads back
+    literally, so structural round-trip is unaffected.
+    """
+    anchor = [(r[0] if r else "") for r in rows]
+    out = elide_repeats(rows, marker)
+    for r, a in zip(out, anchor):
+        if r:
+            r[0] = a
+    return out
+
+
 # -------------------------------------------------------------- boilerplate
 
 def strip_boilerplate(doc: Doc, min_repeats: int = 3) -> list[str]:

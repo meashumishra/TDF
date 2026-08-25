@@ -105,7 +105,15 @@ for k, arms in sorted(by_key.items()):
         wire = wires.get((doc_id, 'tdf_full'), '')
         vis = gold_visible(gold, doc_id, wire)
         ng, np_ = norm(gold), norm(pred)
-        if not np_.strip():
+        # gpt-oss-120b is a REASONING model: it spends completion tokens
+        # thinking before answering. EVAL_MAX_TOKENS=256 truncates most runs
+        # (see REPORT.md caveat); a truncated prediction is an artifact of
+        # the budget, not evidence about the representation -- classify it
+        # separately so the confound is visible instead of laundered into
+        # 'other_wrong'.
+        if tf_r.get('completion_tokens', 0) >= 250:
+            cat = 'reasoning_truncated'
+        elif not np_.strip():
             cat = 'empty_pred'
         elif vis == 'absent':
             cat = 'encoded_away'
@@ -124,6 +132,7 @@ for k, arms in sorted(by_key.items()):
             'gold': gold[:120], 'pred': pred[:200],
             'question': meta_of[qid].get('question', '')[:160],
             'prompt_tokens': tf_r['prompt_tokens'],
+            'completion_tokens': tf_r['completion_tokens'],
         })
     elif tf_r['correct'] and not md_r['correct']:
         win_by_qtype[qtype] += 1
