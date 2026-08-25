@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 
-from .ir import Code, Doc, Elision, Figure, Heading, KV, ListBlock, PageMark, Para, Quote, Table
+from .ir import Code, Doc, Elision, Figure, Heading, KV, ListBlock, PageMark, Para, Quote, Table, Block  # noqa: F401
 from .optimize import drop_constant_columns, elide_repeats, hoist_units, optimize
 from .tokens import count
 
@@ -89,6 +89,19 @@ def _escape_body(text: str) -> str:
     return "!" + text if needs_escape(text) else text
 
 
+def _escape_kv_key(k: str) -> str:
+    """Protect the key/value separator inside a ``key: value`` pair.
+
+    parse._split_kv splits a !K continuation line on the first *unescaped*
+    colon, so a key that itself contains a colon ("Time: start") must have
+    every colon escaped -- and because the escape character is a backslash,
+    backslashes must be doubled first or a literal "\\:" could not be
+    represented. Keys without colons or backslashes pass through
+    byte-identical, so documents whose keys are plain words re-emit unchanged.
+    """
+    return k.replace("\\", "\\\\").replace(":", "\\:")
+
+
 # ------------------------------------------------------------------ Markdown
 
 def _md_table(t: Table) -> str:
@@ -138,6 +151,44 @@ def render_markdown(doc: Doc) -> str:
         elif isinstance(b, Elision):
             out.append(f"> *[{b.kind} omitted: {b.tokens} tokens, id {b.eid}]* {b.gist}\n")
     return "\n".join(out).strip() + "\n"
+
+
+def _md_block_parts(b: Block) -> list[str]:
+    """Exactly the lines render_markdown's loop appends for one block,
+    including any trailing blank spacer.
+
+    Duplicated on purpose rather than refactored out of render_markdown:
+    that function is the byte-level baseline every token claim in the README
+    is measured against, so its output must not drift by a single newline
+    while benchmarks are live. If you change a branch here, mirror it there.
+    """
+    if isinstance(b, Heading):
+        return ["#" * min(b.level, 6) + " " + b.text + "\n"]
+    if isinstance(b, Para):
+        return [b.text + "\n"]
+    if isinstance(b, Quote):
+        return ["> " + b.text.replace("\n", "\n> ") + "\n"]
+    if isinstance(b, ListBlock):
+        lines = [f"{i + 1}. {item}" if b.ordered else f"- {item}"
+                 for i, item in enumerate(b.items)]
+        lines.append("")
+        return lines
+    if isinstance(b, Table):
+        return [_md_table(b) + "\n"]
+    if isinstance(b, KV):
+        parts = [f"**{b.caption}**\n"] if b.caption else []
+        parts += [f"- **{k}:** {v}" for k, v in b.pairs]
+        parts.append("")
+        return parts
+    if isinstance(b, Figure):
+        return [f"![{b.desc}]()\n" if b.kind == "image" else f"*{b.desc}*\n"]
+    if isinstance(b, Code):
+        return [f"```{b.lang}\n{b.text}\n```\n"]
+    if isinstance(b, PageMark):
+        return ["\n---\n\n*Page " + str(b.number) + "*\n"]
+    if isinstance(b, Elision):
+        return [f"> *[{b.kind} omitted: {b.tokens} tokens, id {b.eid}]* {b.gist}\n"]
+    return []
 
 
 # ----------------------------------------------------------------------- TDF
@@ -334,7 +385,9 @@ def render_tdf(
             out.extend(_tdf_table(b))
         elif isinstance(b, KV):
             out.append("!K" + (f" {_oneline(b.caption)}" if b.caption else ""))
-            out.extend(_escape_body(f"{k}: {v}") for k, v in b.pairs)
+            out.extend(
+                _escape_body(f"{_escape_kv_key(k)}: {v}") for k, v in b.pairs
+            )
         elif isinstance(b, Figure):
             out.append("!G " + _oneline(b.desc))
         elif isinstance(b, Code):
@@ -354,6 +407,139 @@ def render_tdf(
             out.append(f"!E {b.eid} {b.kind} {b.tokens} {b.items} {_oneline(b.gist)}")
 
     return "\n".join(l for l in out if l is not None) + "\n"
+
+
+# --------------------------------------------------------------------- hybrid
+
+def _tdf_block_candidate(b: Block, codebooks: "list | None") -> str | None:
+    """The sigil form of blocks that have one; None for blocks whose Markdown
+    and TDF encodings essentially coincide (headings, paragraphs, unordered
+    lists, quotes, code), which therefore always stay in their native
+    Markdown form.
+
+    Tables bring their ``!V`` codebook lines with them so a chosen table is
+    self-contained; all table-level reductions (unit hoisting, constant-column
+    hoisting, caret repetition elision, periodic headers, separator choice)
+    come along via _tdf_table.
+    """
+    if isinstance(b, ListBlock) and b.ordered:
+        # TDF's ordered-item spelling drops the dot ("1 item"), and that is
+        # the only spelling parse_tdf can read back as an ordered list --
+        # Markdown's "1. item" degenerates into loose paragraphs there.
+        # Unordered lists are omitted here: their "- item" form is shared
+        # by both grammars, so they stay native Markdown.
+        return "\n".join(f"{i + 1} {_oneline(item)}"
+                         for i, item in enumerate(b.items))
+    if isinstance(b, Table):
+        lines = []
+        for book in codebooks or []:
+            if book.table is b:
+                lines.append(f"!V {book.header}")
+                lines.extend(f"{code} {val}"
+                             for code, val in book.mapping.items())
+        lines.extend(_tdf_table(b))
+        return "\n".join(lines)
+    if isinstance(b, KV):
+        lines = ["!K" + (f" {_oneline(b.caption)}" if b.caption else "")]
+        lines.extend(
+            _escape_body(f"{_escape_kv_key(k)}: {v}") for k, v in b.pairs
+        )
+        return "\n".join(lines)
+    if isinstance(b, Figure):
+        return "!G " + _oneline(b.desc)
+    if isinstance(b, PageMark):
+        return f"!P {b.number}"
+    if isinstance(b, Elision):
+        return f"!E {b.eid} {b.kind} {b.tokens} {b.items} {_oneline(b.gist)}"
+    return None
+
+
+def render_hybrid(doc: Doc, codebooks: "list | None" = None) -> str:
+    """Per-block format arbitration: prose stays in its native Markdown form,
+    while tables, KV runs and page furniture drop into dense sigils.
+
+    Two guarantees, enforced rather than assumed:
+
+    1. **Floor** -- never larger than ``render_markdown(doc)``. Arbitrated
+       fragments are admitted when they beat (or tie) their own Markdown
+       twin; if the fixed-cost legend would push the total past the Markdown
+       baseline, it is dropped -- its per-block wins stay, since they are
+       the side that is winning.
+    2. **Losslessness** -- ``parse_tdf(output)`` restores the original
+       blocks. This is why KV runs, page marks, elisions and ORDERED lists
+       are always emitted dense regardless of cost: their Markdown forms do
+       not reparse as themselves (a ``- **k:** v`` bullet comes back as a
+       ListBlock; ``1. item`` as loose paragraphs), so those classes have no
+       lossless Markdown representation at all. Pipe tables never appear for
+       the same reason -- parse_tdf has no grammar for them -- so tables
+       always arbitrate with their full reduction set and go dense whenever
+       they do not strictly lose.
+
+    Last resort for pathological documents where even the legend-free
+    assembly exceeds Markdown (reachable only through zero-content
+    containers): the pure-Markdown rendering is returned, matching what
+    plain Markdown conversion would have produced anyway -- content intact,
+    block typing degraded to the pre-hybrid status quo.
+
+    Does not mutate ``doc``. Dictionary (!D) and boilerplate (!R) passes are
+    deliberately out of scope: they rewrite prose, which hybrid keeps
+    native; tables get their full reduction set regardless.
+    """
+
+    def build(with_legend: bool) -> str:
+        parts: list[str] = []
+        used_sigil = False
+
+        for b in doc.blocks:
+            md_txt = "\n".join(_md_block_parts(b)).strip()
+            cand = _tdf_block_candidate(b, codebooks)
+            # KV / PageMark / Elision / ordered lists have no lossless
+            # Markdown form, so cost is not consulted for them -- dense is
+            # the only faithful encoding, exactly as render_tdf emits.
+            force = isinstance(b, (KV, PageMark, Elision)) or (
+                isinstance(b, ListBlock) and b.ordered
+            )
+            if cand is not None and (force or count(cand) <= count(md_txt)):
+                parts.append(cand)
+                used_sigil = True
+            elif md_txt.strip() not in ("", ">"):
+                # ">" is what an empty Quote degenerates to; parse_tdf cannot
+                # re-read a bare ">" as a Quote, so emitting it would break
+                # losslessness for a block that carries no content anyway.
+                parts.append(md_txt)
+
+        # Title spelling follows the assembly: "!H" reparses into doc.title
+        # exactly, but costs a token over "# Title", so documents where no
+        # sigil appears stay fully Markdown-native -- there the title
+        # follows plain Markdown conventions (parse_tdf maps "# x" to a
+        # level-1 Heading, which is Markdown's own round-trip semantics).
+        if doc.title:
+            title = ("!H " if used_sigil else "# ") + _oneline(doc.title)
+            parts.insert(0, title)
+
+        # Assembly mirrors render_markdown's mechanics exactly (each part
+        # carries its own trailing newline, single-\n join, strip, final \n)
+        # so that an all-Markdown selection is byte-identical to the
+        # baseline -- the floor then holds with equality, not slack.
+        head = [LEGEND] if (with_legend and used_sigil) else []
+        return "\n".join(p.rstrip("\n") + "\n"
+                         for p in head + parts if p.strip()).strip() + "\n"
+
+    md_baseline = render_markdown(doc)
+
+    final = build(with_legend=True)
+    if count(final) <= count(md_baseline):
+        return final
+
+    # The legend didn't amortise: shed it and keep the per-block wins, which
+    # are individually cheaper than (or equal to) their Markdown twins.
+    legendless = build(with_legend=False)
+    if count(legendless) <= count(md_baseline):
+        return legendless
+
+    # Pathological residue (zero-content containers whose dense forms cost
+    # more than the nothing Markdown gives them): match plain Markdown.
+    return md_baseline
 
 
 # ------------------------------------------------------------------ skeleton

@@ -232,18 +232,11 @@ def test_doc_structural_roundtrip(doc: Doc):
         isinstance(a, KV) and isinstance(b, Para) and ":" in b.text
         for a, b in zip(doc.blocks, doc.blocks[1:])
     ))
-    # A KV key containing its own colon breaks "key: value" splitting on the
-    # *first* colon (parse_tdf uses str.partition(":")): the key's own colon
-    # is indistinguishable from the key/value separator, so content shifts
-    # from key into value. This is a real content bug, not just whitespace --
-    # but fixing it means redesigning the split convention (rpartition alone
-    # doesn't work either, since values legitimately contain colons too), not
-    # a surgical patch, so it's documented as a known limitation rather than
-    # fixed here. See the audit report.
-    assume(not any(
-        isinstance(b, KV) and any(":" in k for k, v in b.pairs)
-        for b in doc.blocks
-    ))
+    # KV keys containing colons or backslashes USED to be excluded here:
+    # parse_tdf split "key: value" on the *first* colon, so a key like
+    # "Time: start" leaked its own colon into the value. Keys are now escaped
+    # on emit (emit._escape_kv_key) and split on the first unescaped colon
+    # (parse._split_kv), so they are deliberately generated and asserted.
     original = copy.deepcopy(doc)
     working = copy.deepcopy(doc)
 
@@ -336,10 +329,9 @@ def test_optimizer_structural_roundtrip(doc: Doc):
         isinstance(x, KV) and isinstance(y, Para) and ":" in y.text
         for x, y in zip(expected.blocks, expected.blocks[1:])
     ))
-    assume(not any(
-        isinstance(b, KV) and any(":" in k for k, v in b.pairs)
-        for b in expected.blocks
-    ))
+    # KV keys with colons/backslashes are no longer excluded here either --
+    # see the note on _escape_kv_key/_split_kv in the round-trip test above;
+    # this optimize()-on path asserts them under the full pipeline too.
     # strip_boilerplate() no longer runs here at all: optimize()'s
     # use_boilerplate defaults to False (see its docstring and the
     # independent audit's BUG-4 -- the heuristic fires on ordinary repeated

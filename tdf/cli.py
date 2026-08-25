@@ -8,7 +8,8 @@ import json
 import sys
 from pathlib import Path
 
-from .emit import extract_sections, render_markdown, render_skeleton, render_tdf
+from .emit import (extract_sections, render_hybrid, render_markdown,
+                   render_skeleton, render_tdf)
 from .fidelity import compare
 from .parse import parse_tdf
 from .readers import SUPPORTED, read
@@ -38,6 +39,14 @@ def cmd_convert(a) -> int:
         out = render_tdf(
             doc, legend=not a.no_legend, optimized=not a.raw, codebooks=books
         )
+    elif a.to == "hybrid":
+        # encode_columns must run on the same object render_hybrid sees:
+        # codebooks are matched to tables by identity (see cmd_stats).
+        if not a.raw:
+            books = encode_columns(doc)
+        else:
+            books = []
+        out = render_hybrid(doc, codebooks=books)
     else:
         raise SystemExit(f"unknown target {a.to}")
 
@@ -72,9 +81,15 @@ def cmd_stats(a) -> int:
     books_wl = encode_columns(doc_wl)
     tdf = render_tdf(doc_wl, legend=True, codebooks=books_wl)
 
+    doc_h = copy.deepcopy(doc)
+    books_h = encode_columns(doc_h)
+    hyb = render_hybrid(doc_h, codebooks=books_h)
+
     t_md, t_tdf, t_nl, t_sk = count(md), count(tdf), count(tdf_nl), count(skel)
+    t_hyb = count(hyb)
     rows = [
         ("markdown (baseline)", t_md, 0.0),
+        ("tdf hybrid", t_hyb, 100 * (1 - t_hyb / t_md) if t_md else 0),
         ("tdf (with legend)", t_tdf, 100 * (1 - t_tdf / t_md) if t_md else 0),
         ("tdf (no legend)", t_nl, 100 * (1 - t_nl / t_md) if t_md else 0),
         ("tdf skeleton only", t_sk, 100 * (1 - t_sk / t_md) if t_md else 0),
@@ -232,7 +247,9 @@ def main(argv=None) -> int:
         return sp
 
     c = common(sub.add_parser("convert", help="convert a document"))
-    c.add_argument("--to", choices=["tdf", "md", "skeleton"], default="tdf")
+    c.add_argument("--to", choices=["tdf", "md", "skeleton", "hybrid"], default="tdf",
+                   help="tdf=dense format, md=Markdown, skeleton=outline only, "
+                        "hybrid=per-block cheapest (never larger than md)")
     c.add_argument("-o", "--output")
     c.add_argument("--raw", action="store_true", help="skip reduction passes")
     c.set_defaults(func=cmd_convert)

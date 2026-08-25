@@ -25,6 +25,52 @@ def _unescape_caret_cell(v: str) -> str:
     return v[:-1] if len(v) >= 2 and set(v) == {"^"} else v
 
 
+# ---- GFM pipe tables --------------------------------------------------------
+# parse_tdf gains the ability to read GitHub-flavored Markdown pipe tables,
+# for two reasons: hybrid emission may hand back a block whose cheaper form
+# was the pipe rendering, and plain .md inputs containing real tables should
+# arrive as Tables -- not as a pile of paragraphs starting with "|".
+#
+# The grammar accepted here is the pragmatic GFM subset: a header row of
+# pipe-delimited cells, a delimiter row of ``---``/``:--:``-style cells, then
+# zero or more data rows. Escaped pipes ("\\|") survive cell splitting.
+
+_PIPE_DELIM_CELL = re.compile(r"^:?-+:?$")
+
+
+def _is_pipe_delimiter(line: str) -> bool:
+    """True for a GFM delimiter row like ``| --- | :---: | -- |``.
+
+    Requires a leading ``|``, matching the header-row gate above (which
+    also requires ``stripped.startswith("|")``) and how ``_md_table``
+    always emits its own tables. Without this, a bare single-cell body
+    like ``-`` is indistinguishable from an empty unordered list item's
+    ``- `` marker, and a preceding unrelated line starting with ``|``
+    would be misparsed as a table header.
+    """
+    body = line.strip()
+    if not body.startswith("|"):
+        return False
+    body = body[1:]
+    if body.endswith("|"):
+        body = body[:-1]
+    cells = [c.strip() for c in body.split("|")]
+    return bool(cells) and all(
+        c and _PIPE_DELIM_CELL.match(c) for c in cells
+    )
+
+
+def _split_pipe_row(line: str) -> list[str]:
+    """Split one pipe row into cells, honouring ``\\|`` escapes."""
+    s = line.strip()
+    if s.startswith("|"):
+        s = s[1:]
+    if s.endswith("|"):
+        s = s[:-1]
+    s = s.replace("\\|", "\x00")
+    return [c.strip().replace("\x00", "|") for c in s.split("|")]
+
+
 def _split(line: str, sep: str) -> list[str]:
     if sep == "\t":
         return line.split("\t")
@@ -100,6 +146,52 @@ def _int(text: str, default: int = 0) -> int:
 def _unescape(line: str) -> str:
     """Exact inverse of the emitter's leading-bang escape."""
     return line[1:] if line.startswith("!") and needs_escape(line[1:]) else line
+
+
+def _unescape_kv_key(s: str) -> str:
+    """Exact inverse of emit._escape_kv_key for the sequences it produces
+    ("\\\\\\\\" -> "\\\\", "\\\\:" -> ":"); any other backslash sequence is preserved
+    verbatim, which is what lets legacy documents whose keys contain bare
+    backslash runs (e.g. Windows-style paths) keep parsing unchanged."""
+    out: list[str] = []
+    i, n = 0, len(s)
+    while i < n:
+        if s[i] == "\\" and i + 1 < n and s[i + 1] in ("\\", ":"):
+            out.append(s[i + 1])
+            i += 2
+        else:
+            out.append(s[i])
+            i += 1
+    return "".join(out)
+
+
+def _split_kv(line: str) -> tuple[str, str] | None:
+    """Split a ``key: value`` line on the first *unescaped* colon.
+
+    The emitter escapes keys via emit._escape_kv_key (backslashes doubled
+    first, then colons backslash-escaped), so every backslash in an emitted
+    line quotes the character after it. Scanning left to right and skipping
+    each backslash plus its quoted character therefore lands exactly on the
+    separating colon; the key side is then decoded. Returns None when the line
+    has no unescaped colon at all.
+
+    Legacy documents written before key escaping existed keep working: a line
+    with no colon parses exactly as before (the caller stops consuming), a raw
+    legacy key containing a bare backslash ("a\\b") still splits at its real
+    colon and survives _unescape_kv_key untouched, and keys containing a
+    literal "\\:" were already mis-split by the old first-colon parser, so no
+    previously-correct parse changes behaviour.
+    """
+    i, n = 0, len(line)
+    while i < n:
+        ch = line[i]
+        if ch == "\\" and i + 1 < n:
+            i += 2  # a backslash always quotes the next character; the
+            continue  # separator can never sit inside an escape pair
+        if ch == ":":
+            return _unescape_kv_key(line[:i]), line[i + 1:]
+        i += 1
+    return None
 
 
 def parse_tdf(text: str) -> Doc:
@@ -342,9 +434,10 @@ def parse_tdf(text: str) -> Doc:
                 or lines[i].startswith(("- ", "> ", "```"))
                 or re.match(r"^\d+\s", lines[i])
             ):
-                k, sepc, v = _unescape(lines[i].strip()).partition(":")
-                if not sepc:
+                kv = _split_kv(_unescape(lines[i].strip()))
+                if kv is None:
                     break
+                k, v = kv
                 pairs.append((expand(k.strip()), expand(v.strip())))
                 i += 1
             doc.add(KV(pairs, caption))
@@ -384,6 +477,19 @@ def parse_tdf(text: str) -> Doc:
             lvl, txt = len(m.group(1)), expand(m.group(2))
             doc.add(Heading(lvl, txt))
             i += 1
+            continue
+
+        # GFM pipe tables (helpers above). Requires a delimiter row on the
+        # next line, so prose that merely opens with a pipe stays prose.
+        if stripped.startswith("|") and i + 1 < n \
+                and _is_pipe_delimiter(lines[i + 1]):
+            cols = _split_pipe_row(stripped)
+            i += 2  # consume header + delimiter
+            rows = []
+            while i < n and lines[i].lstrip().startswith("|"):
+                rows.append(_split_pipe_row(lines[i]))
+                i += 1
+            doc.add(Table(cols=cols, rows=rows))
             continue
 
         if stripped.startswith("- "):

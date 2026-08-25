@@ -8,3 +8,5 @@ bench/*_llmlingua.txt
 samples/
 samples_real/
 samples_tables/
+.DS_Store
+eval/runner/.cache/

@@ -4,9 +4,11 @@ Each test reproduces one confirmed bug via the actual emit/parse pipeline
 (not a synthetic check of internal helpers) and asserts the fix. See the
 audit report for root-cause analysis, false positives, and the handful of
 genuine format-level ambiguities that were documented rather than "fixed"
-(adjacent same-line-marker blocks, KV keys containing their own colon, and
-other degenerate empty-content cases -- all covered by targeted `assume()`
-filters in test_properties.py with inline rationale).
+(adjacent same-line-marker blocks and other degenerate empty-content cases
+-- all covered by targeted `assume()` filters in test_properties.py with
+inline rationale). The KV-keys-containing-colons bug was originally in that
+documented-not-fixed list; it has since been fixed via key escaping -- see
+the KV tests at the bottom of this file and `docs/SPEC.md`.
 
 Run: .venv/bin/python -m pytest tests/test_regressions.py -q
 """
@@ -882,3 +884,85 @@ def test_all_constant_table_has_no_phantom_column():
     assert table.cols == ["a", "b"], f"phantom column present:\n{out}"
     assert (len(table.rows), len(table.cols)) == (4, 2), f"wrong dims:\n{out}"
     assert table.rows == [["1", "2"]] * 4, f"row values corrupted:\n{out}"
+
+
+# ------------------------------------------ KV keys containing their own colon
+
+
+def test_kv_key_containing_colon_roundtrips():
+    """The README's known-limitation repro: parse_tdf split "key: value" on
+    the FIRST colon, so KV([("Time: start", "10:00")]) read back as
+    [("Time", "start: 10:00")] -- content shifted from key into value. Keys
+    are now backslash-escaped on emit (_escape_kv_key) and the line is split
+    on the first *unescaped* colon on parse (_split_kv)."""
+    doc = Doc(blocks=[KV([("Time: start", "10:00")])])
+    out, parsed, original = roundtrip(doc)
+
+    kv = parsed.blocks[0]
+    assert isinstance(kv, KV), f"KV block lost:\n{out}"
+    assert kv.pairs == [("Time: start", "10:00")], f"key/value corrupted:\n{out}"
+    assert canonicalize(original) == canonicalize(parsed), out
+
+
+def test_kv_keys_with_multiple_trailing_and_leading_colons_roundtrip():
+    doc = Doc(blocks=[KV([("a:b:c", "x"), ("note:", ""), (":lead", "v")])])
+    out, parsed, original = roundtrip(doc)
+
+    assert parsed.blocks[0].pairs == [
+        ("a:b:c", "x"), ("note:", ""), (":lead", "v")
+    ], f"colon edge cases corrupted:\n{out}"
+
+
+def test_kv_values_keep_their_colons_verbatim():
+    """Only the KEY side is escaped and decoded; values must survive
+    byte-exact, including multiple colons (timestamps, times, URLs)."""
+    pairs = [
+        ("window", "10:00 - 11:30"),
+        ("url", "https://example.com/x?a:1"),
+        ("duration", "00:00:20"),
+    ]
+    doc = Doc(blocks=[KV(pairs)])
+    out, parsed, original = roundtrip(doc)
+
+    assert parsed.blocks[0].pairs == pairs, f"values corrupted:\n{out}"
+
+
+def test_kv_keys_with_backslashes_roundtrip():
+    """Because backslash is the escape character it must be doubled FIRST on
+    emit; each shape here either mis-split under the old parser or would
+    corrupt under a naive colon-only escape."""
+    pairs = [
+        ("a\\b", "v"),       # bare backslash inside the key
+        ("a\\:b", "w"),      # literal backslash-colon sequence in the key
+        ("a\\", "x"),        # key ending in one backslash
+        ("end\\\\", "y"),    # consecutive trailing backslashes
+        ("C:\\path", "z"),   # windows-style path used as a key
+    ]
+    doc = Doc(blocks=[KV(pairs)])
+    out, parsed, original = roundtrip(doc)
+
+    assert parsed.blocks[0].pairs == pairs, f"backslash keys corrupted:\n{out}"
+
+
+def test_kv_colon_key_document_passes_validate():
+    """The structural validator must accept what the fixed emitter produces."""
+    doc = Doc(blocks=[KV([("Time: start", "10:00"), ("a\\b", "v")])])
+    working = copy.deepcopy(doc)
+    books = encode_columns(working)
+    out = render_tdf(working, legend=False, codebooks=books)
+
+    val = validate(out)
+    assert val.ok, f"validator rejects escaped-key document:\n{out}\n{val.violations}"
+
+
+def test_legacy_tdf_raw_backslash_keys_still_parse():
+    """Documents emitted before key escaping existed carry raw keys. The new
+    scanner must split them at the same colon str.partition(":") chose and
+    must leave unknown escapes like \\b intact (conservative decoding), so
+    no previously-correct parse changes behaviour."""
+    text = "%TDF1\n!K meta\na\\b: v1\nplain: v2\n"
+    parsed = parse_tdf(text)
+
+    kv = parsed.blocks[0]
+    assert isinstance(kv, KV), f"KV block lost:\n{text}"
+    assert kv.pairs == [("a\\b", "v1"), ("plain", "v2")], f"legacy parse changed:\n{text}"
