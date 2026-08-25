@@ -54,6 +54,18 @@ adversarial phase: §n collision with literal `§` user text, `!E` id squatting,
 delimiter-row false positives on prose like `| --- |` poetry, CJK width
 characters inside cells, RTL text ordering through `_split`.
 
+### Phase-4 outcomes (tests/test_adversarial.py, 194 cases)
+
+| Surface | Verdict |
+|---|---|
+| Sigil-shaped body text (`!T 5 fake`, `%TDF1 rogue`, ...) | **RESOLVED** — bang-escaped on emit; round-trips as content in both emitters |
+| Literal `§N` vs dictionary numbering | **ALREADY HARDENED** — `_reserved_section_refs` scans every expand surface; regression test added (dictionary skips reserved numbers; literal survives) |
+| Pipe-led prose + delimiter-lookalike (new risk from GFM reader) | **RESOLVED at two layers** — emitter bang-escapes single-line marker-less fragments starting with `\|`; parser additionally requires a non-empty header cell or ≥1 data row |
+| Fullwidth/homoglyph sigils (`！Ｔ`), CJK, Arabic RTL | **SAFE by construction** — sigil detection is ASCII-exact; all round-trip clean |
+| Resource bombs (100 KB line, 20k caret run, 5k fence run, 3k blocks) | **BOUNDED** — linear handling, all round-trip exact, worst case < 30 s |
+| Malformed/truncated wire (21 shapes) | **DEGRADES SAFELY** — never raises; partial structures returned |
+| Known-inherent (documented, not fixed) | KV-followed-by-colon-Para adjacency; empty Para/Quote/Heading/list-item/blank-container wire forms (canonicalize normalizes both sides) |
+
 ## Claim inventory (seed for Phase 13)
 
 | Claim (location) | Status |

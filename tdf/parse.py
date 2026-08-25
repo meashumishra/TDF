@@ -480,17 +480,25 @@ def parse_tdf(text: str) -> Doc:
             continue
 
         # GFM pipe tables (helpers above). Requires a delimiter row on the
-        # next line, so prose that merely opens with a pipe stays prose.
+        # next line, so prose that merely opens with a pipe stays prose --
+        # and a two-line prose coincidence ("| x" then "| ---") cannot steal
+        # either paragraph unless the shape is table-like: the header must
+        # carry at least one non-empty cell, or at least one data row must
+        # follow. (Emitter-side, body text opening with a pipe is bang-
+        # escaped, so well-formed hybrid/TDF wires never hit this ambiguity
+        # in the first place -- see _STRUCTURAL.)
         if stripped.startswith("|") and i + 1 < n \
                 and _is_pipe_delimiter(lines[i + 1]):
             cols = _split_pipe_row(stripped)
-            i += 2  # consume header + delimiter
-            rows = []
-            while i < n and lines[i].lstrip().startswith("|"):
-                rows.append(_split_pipe_row(lines[i]))
-                i += 1
-            doc.add(Table(cols=cols, rows=rows))
-            continue
+            j = i + 2
+            data = []
+            while j < n and lines[j].lstrip().startswith("|"):
+                data.append(_split_pipe_row(lines[j]))
+                j += 1
+            if any(c for c in cols) or data:
+                doc.add(Table(cols=cols, rows=data))
+                i = j
+                continue
 
         if stripped.startswith("- "):
             items.append(expand(stripped[2:])); i += 1; continue

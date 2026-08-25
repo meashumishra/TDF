@@ -57,6 +57,11 @@ _STRUCTURAL = re.compile(r"""
     | `{3,}             # code fence opener; parse_tdf matches any line
                         # starting with 3+ backticks, not just real code blocks
     | %TDF              # magic header
+    | \|                # pipe-led line: harmless alone, but a pipe-led line
+                        # followed by a delimiter-lookalike would be re-read
+                        # as a GFM table by the pipe parser (see parse_tdf),
+                        # stealing both paragraphs -- so body text that opens
+                        # with a pipe must ride behind a bang, same as sigils.
 """, re.VERBOSE)
 
 
@@ -503,10 +508,23 @@ def render_hybrid(doc: Doc, codebooks: "list | None" = None) -> str:
                 parts.append(cand)
                 used_sigil = True
             elif md_txt.strip() not in ("", ">"):
-                # ">" is what an empty Quote degenerates to; parse_tdf cannot
-                # re-read a bare ">" as a Quote, so emitting it would break
-                # losslessness for a block that carries no content anyway.
-                parts.append(md_txt)
+                # Escape SINGLE-LINE marker-less fragments that would be
+                # re-read as structure (bare pipe-led lines meeting the
+                # pipe-table rule, sigil-shaped text, digit-led sentences).
+                # Fragments opening with their own protective marker --
+                # "- item", "> quote", "# heading", "```" -- must NOT be
+                # banged: the leading bang would cancel that marker and
+                # demote the block to plain text. Multi-line fragments stay
+                # native regardless: their grammars self-delimit on re-parse
+                # (fence close, "> " continuation, delimiter row + data
+                # rows), and a bang covers only the first physical line.
+                markerless = not md_txt.startswith(("-", "> ", "#", "`"))
+                needs_bang = (
+                    "\n" not in md_txt
+                    and needs_escape(md_txt)
+                    and markerless
+                )
+                parts.append("!" + md_txt if needs_bang else md_txt)
 
         # Title spelling follows the assembly: "!H" reparses into doc.title
         # exactly, but costs a token over "# Title", so documents where no
