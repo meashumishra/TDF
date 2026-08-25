@@ -1,0 +1,12 @@
+{
+  "distinct_recall": 1.0,
+  "distinct_original": 95,
+  "distinct_missing": 0,
+  "missing_sample": [],
+  "occurrences_original": 767,
+  "occurrences_restored": 767,
+  "occurrence_ratio": 1.0,
+  "input": "samples/runbook.md",
+  "tokens_tdf": 1011,
+  "tokens_markdown": 1355
+}

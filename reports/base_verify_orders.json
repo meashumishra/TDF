@@ -1,0 +1,12 @@
+{
+  "distinct_recall": 1.0,
+  "distinct_original": 1079,
+  "distinct_missing": 0,
+  "missing_sample": [],
+  "occurrences_original": 6648,
+  "occurrences_restored": 6648,
+  "occurrence_ratio": 1.0,
+  "input": "samples/orders.csv",
+  "tokens_tdf": 10412,
+  "tokens_markdown": 16982
+}

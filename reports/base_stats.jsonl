@@ -1,0 +1,68 @@
+{
+  "input": "samples/runbook.md",
+  "tokens": {
+    "markdown (baseline)": 1355,
+    "tdf hybrid": 1156,
+    "tdf (with legend)": 1011,
+    "tdf (no legend)": 782,
+    "tdf skeleton only": 156
+  },
+  "reduction_pct": {
+    "markdown (baseline)": 0.0,
+    "tdf hybrid": 14.7,
+    "tdf (with legend)": 25.4,
+    "tdf (no legend)": 42.3,
+    "tdf skeleton only": 88.5
+  }
+}
+{
+  "input": "samples/orders.csv",
+  "tokens": {
+    "markdown (baseline)": 16982,
+    "tdf hybrid": 10412,
+    "tdf (with legend)": 10412,
+    "tdf (no legend)": 10183,
+    "tdf skeleton only": 52
+  },
+  "reduction_pct": {
+    "markdown (baseline)": 0.0,
+    "tdf hybrid": 38.7,
+    "tdf (with legend)": 38.7,
+    "tdf (no legend)": 40.0,
+    "tdf skeleton only": 99.7
+  }
+}
+{
+  "input": "samples_real/sec_filing.html",
+  "tokens": {
+    "markdown (baseline)": 26587,
+    "tdf hybrid": 15642,
+    "tdf (with legend)": 15204,
+    "tdf (no legend)": 14975,
+    "tdf skeleton only": 274
+  },
+  "reduction_pct": {
+    "markdown (baseline)": 0.0,
+    "tdf hybrid": 41.2,
+    "tdf (with legend)": 42.8,
+    "tdf (no legend)": 43.7,
+    "tdf skeleton only": 99.0
+  }
+}
+{
+  "input": "samples_real/kubernetes_docs.html",
+  "tokens": {
+    "markdown (baseline)": 36945,
+    "tdf hybrid": 36879,
+    "tdf (with legend)": 28523,
+    "tdf (no legend)": 28294,
+    "tdf skeleton only": 733
+  },
+  "reduction_pct": {
+    "markdown (baseline)": 0.0,
+    "tdf hybrid": 0.2,
+    "tdf (with legend)": 22.8,
+    "tdf (no legend)": 23.4,
+    "tdf skeleton only": 98.0
+  }
+}
