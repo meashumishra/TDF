@@ -182,9 +182,9 @@ Against the prompt-compression family, TDF occupies a different point: determini
 
 ## Known limitations
 
-**Accuracy impact is not yet measured.** This is the most important caveat in this README. TDF is validated for *token reduction* and *round-trip reversibility*. Whether an LLM answers questions as accurately from TDF as from Markdown has not been established.
+**Accuracy cost: now measured — pre-registered verdict: *marginal*.** 263 adversarial questions × 8 encoding arms × 3 seeds (6,310 real completions from `openai/gpt-oss-120b`) put TDF at **−6.3pp vs Markdown (95% CI [−8.8, −3.7]) while sending 43% fewer prompt tokens**. The decision rules were written before any results existed ([PREREGISTRATION](eval/PREREGISTRATION.md)); they place this result in the *marginal* band: prefer Markdown for prose, use dense TDF where its token win is largest, and re-test — accuracy-neutrality is **not** yet claimed.
 
-There is reason for genuine concern. Published work on table serialization consistently finds that redundancy *helps* comprehension — formats that repeat column names per row let models read each row independently instead of cross-referencing distant headers, and they outperform denser formats despite costing more tokens. TDF's `!V` codebooks and `§n` dictionaries increase that cross-reference distance further than any format in those studies. An evaluation is in progress; until it lands, treat compression as the only validated benefit and test on your own workload before deploying.
+What the breakdown adds: the individual mechanisms are not the problem — removing `§n`, `!V` or `^` recovers ≤0.1pp each (the no-legend arm costs ~1.5pp, so keep the legend). TDF beats Markdown on dictionary-code resolution (`deref_dict` 66.7% vs 33.3%) and negation, is near-par on column association, and loses on exact identifiers, cross-references and row association. One caveat stands: a single SEC filing contributes 86% of the questions, so headline numbers lean heavily on financial-table content. Full tables, per-type matrix and the paired-bootstrap analysis: [eval/results/REPORT.md](eval/results/REPORT.md).
 
 **PEP 8 recall gap.** ~0.5% of distinct tokens are dropped on that document, concentrated in code samples. Under investigation.
 
@@ -192,7 +192,7 @@ There is reason for genuine concern. Published work on table serialization consi
 
 **Fidelity metrics are order-blind.** See above.
 
-**A KV key containing its own colon loses content.** `parse_tdf` splits a `key: value` line on the *first* colon, so a key like `"Time: start"` in `KV([("Time: start", "10:00")])` reads back as `[("Time", "start: 10:00")]` — the key's own colon is indistinguishable from the key/value separator, and content shifts from the key into the value. This is a genuine content bug, not just formatting; fixing it needs a different key/value line convention (a trailing `rpartition` alone doesn't work either, since values legitimately contain colons too). Avoid colons in KV keys until this is addressed.
+**KV keys containing colons are now escaped, not mangled.** This list previously carried a known bug: `parse_tdf` split a `key: value` line on the *first* colon, so a key like `"Time: start"` read back as `"Time"` with its remaining content shifted into the value. Keys are now escaped on emit (`\` → `\\` first, then `:` → `\:`) and the line is split on the first *unescaped* colon on parse. Keys without colons or backslashes re-emit byte-identical, so existing documents and token counts are unaffected; values were always taken verbatim after the first colon and still are. See `docs/SPEC.md` for the convention.
 
 **No OCR.** Scanned PDFs yield nothing. Use MinerU or Marker upstream.
 
@@ -204,8 +204,10 @@ There is reason for genuine concern. Published work on table serialization consi
 
 Not yet shipped. Listed so the gap between claims and code stays visible.
 
-- **Hybrid emission** — choose per block between Markdown and dense TDF, so output is never larger than Markdown and prose stays in its native form. This turns the range above into a floor guarantee.
-- **Accuracy harness** — token-vs-accuracy Pareto frontier across formats and models, with ablations isolating `!V`, `§n` and `^`. Mechanisms that cost accuracy will be disabled by default regardless of their compression contribution.
+- ~~**Hybrid emission**~~ — **shipped (0.2.1).** `tdf convert --to hybrid` arbitrates per block: prose keeps native Markdown, dense sigils only where they win, and the floor is enforced — output is never larger than Markdown (on `samples_real/kubernetes_docs.html`, a list-heavy doc where density can't pay, hybrid lands at −0.2%; on `orders.csv` it takes −38.7%). Requires the pipe-table parser added to `parse_tdf`, which also means plain `.md` files with GFM tables now convert with their tables intact.
+- ~~**Accuracy harness**~~ — **shipped.** Token-vs-accuracy Pareto across 8 arms with ablations isolating `!V`, `§n`, `^`: see [eval/results/REPORT.md](eval/results/REPORT.md). Outcome: no mechanism hit the disable-by-default threshold; the format-level −6.3pp motivates hybrid emission instead.
+- **Hybrid × accuracy** — the `hybrid` arm is now registered in the harness (`eval/formats/encode.py`, post-hoc & exploratory per [PREREGISTRATION.md](eval/PREREGISTRATION.md)); its cells collect on the next API run. Corpus preview: hybrid matches full-TDF density on table-heavy docs (sales_report 12,558 vs 12,555 tokens) while holding the Markdown floor everywhere (k8s_deployment −0.1% where prose dominates).
+- **Elision track** — a multi-turn protocol where the model requests `!E` regions by id (the MCP server provides the machinery); elision accuracy is excluded from the current report until that runner exists.
 - **`DoclingDocument` reader** — accept Docling output as input, inheriting its table detection and OCR.
 
 ---
@@ -221,7 +223,22 @@ python bench/make_table_pdfs.py
 pytest tests/ -v
 ```
 
-Expected: 88 passed, 3 skipped.
+Expected: 165 passed.
+
+### MCP server (lazy context for agents)
+
+Instead of pasting whole documents into context, an agent can navigate them:
+`open_document` returns the skeleton plus declared `!E` omissions with exact
+token costs; `read_section` / `expand_region` fetch only what is needed;
+`diff_documents` sends a structural delta between versions. On
+`samples/runbook.md` that means opening at 156 tokens instead of 1,355, and
+pulling one section for 139.
+
+```bash
+pip install -e ".[mcp]"
+tdf-mcp                             # stdio transport; register in your MCP client
+python scripts/smoke_mcp.py samples/runbook.md   # end-to-end wire test
+```
 
 `tiktoken` downloads its BPE tables on first use; in a sandboxed environment set `TIKTOKEN_CACHE_DIR` to a pre-populated cache.
 
