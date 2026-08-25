@@ -222,6 +222,8 @@ Shipped items are struck through; the rest is ordered by priority.
 - ~~**Hybrid emission**~~ — **shipped (0.2.1).** `tdf convert --to hybrid` arbitrates per block: prose keeps native Markdown, dense sigils only where they win, and the floor is enforced — output is never larger than Markdown (on `samples_real/kubernetes_docs.html`, a list-heavy doc where density can't pay, hybrid lands at −0.2%; on `orders.csv` it takes −38.7%). Requires the pipe-table parser added to `parse_tdf`, which also means plain `.md` files with GFM tables now convert with their tables intact.
 - ~~**Accuracy harness**~~ — **shipped.** Token-vs-accuracy Pareto across 8 arms with ablations isolating `!V`, `§n`, `^`: see [eval/results/REPORT.md](eval/results/REPORT.md). Outcome: no mechanism hit the disable-by-default threshold; the format-level −6.3pp motivates hybrid emission instead.
 - **Hybrid × accuracy** — the `hybrid` arm is now registered in the harness (`eval/formats/encode.py`, post-hoc & exploratory per [PREREGISTRATION.md](eval/PREREGISTRATION.md)); its cells collect on the next API run. Corpus preview: hybrid matches full-TDF density on table-heavy docs (sales_report 12,558 vs 12,555 tokens) while holding the Markdown floor everywhere (k8s_deployment −0.1% where prose dominates).
+- ~~**Automatic representation selection**~~ — **shipped (0.2.1).** `tdf/selector.py` measures Markdown / Hybrid / Skeleton on the actual document and returns the §20-style decision dict (`optimize_context(doc, objective=...)`). Skeleton requires an explicit navigation request — it is a retrieval format, not compression.
+- **Selector × accuracy** — once v2 accuracy exists (adequate budget), validate that hybrid-selected documents show no comprehension penalty vs Markdown at equal token floors.
 - **Elision track** — a multi-turn protocol where the model requests `!E` regions by id (the MCP server provides the machinery); elision accuracy is excluded from the current report until that runner exists.
 - **`DoclingDocument` reader** — accept Docling output as input, inheriting its table detection and OCR.
 
@@ -238,7 +240,7 @@ python bench/make_table_pdfs.py
 pytest tests/ -v
 ```
 
-Expected: 371 passed.
+Expected: 378 passed.
 
 ### MCP server (lazy context for agents)
 
