@@ -18,12 +18,19 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
         with open(cache_file, "r") as f:
             return json.load(f)["response"]
             
-    api_key = os.environ.get("OPENAI_API_KEY")
+    openai_key = os.environ.get("OPENAI_API_KEY")
+    nvidia_key = os.environ.get("NVIDIA_API_KEY")
+    api_key = openai_key or nvidia_key
     if not api_key:
-        # Require API key instead of silently inventing fake results
-        raise RuntimeError("OPENAI_API_KEY environment variable is required to run the evaluation.")
-        
-    url = "https://api.openai.com/v1/chat/completions"
+        raise RuntimeError(
+            "OPENAI_API_KEY or NVIDIA_API_KEY environment variable is required to run the evaluation."
+        )
+
+    default_base = "https://api.openai.com/v1"
+    if nvidia_key and not openai_key:
+        default_base = "https://integrate.api.nvidia.com/v1"
+    base_url = os.environ.get("LLM_BASE_URL", default_base).rstrip("/")
+    url = f"{base_url}/chat/completions"
     headers = {
         "Content-Type": "application/json",
         "Authorization": f"Bearer {api_key}"
@@ -32,22 +39,53 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
-        "seed": seed
+        "top_p": float(os.environ.get("EVAL_TOP_P", "1")),
+        "max_tokens": int(os.environ.get("EVAL_MAX_TOKENS", "256")),
+        "seed": seed,
     }
     
+    timeout_sec = int(os.environ.get("LLM_HTTP_TIMEOUT_SEC", "60"))
     req = request.Request(url, data=json.dumps(data).encode("utf-8"), headers=headers)
+    tried_without_seed = False
     for attempt in range(3):
         try:
-            with request.urlopen(req) as resp:
+            with request.urlopen(req, timeout=timeout_sec) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
-                answer = resp_data["choices"][0]["message"]["content"]
+                msg = (resp_data.get("choices") or [{}])[0].get("message", {}) or {}
+                answer = msg.get("content")
+                if answer is None:
+                    # Some providers/models may emit reasoning_content with empty content.
+                    answer = msg.get("reasoning_content")
+                if answer is None:
+                    answer = ""
                 
                 with open(cache_file, "w") as f:
                     json.dump({"response": answer}, f)
                     
                 return answer
         except error.HTTPError as e:
+            body = ""
+            try:
+                body = e.read().decode("utf-8", errors="ignore")
+            except Exception:
+                pass
+            if (
+                not tried_without_seed
+                and e.code in (400, 422)
+                and "seed" in body.lower()
+            ):
+                tried_without_seed = True
+                data.pop("seed", None)
+                req = request.Request(
+                    url, data=json.dumps(data).encode("utf-8"), headers=headers
+                )
+                continue
             if e.code == 429: # Rate limit
+                time.sleep(2 ** attempt)
+            else:
+                raise
+        except error.URLError:
+            if attempt < 2:
                 time.sleep(2 ** attempt)
             else:
                 raise

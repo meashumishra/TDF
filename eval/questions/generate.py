@@ -1,77 +1,264 @@
 import json
 import pickle
 import random
+import re
 from pathlib import Path
-from tdf.ir import Doc, Table, Para, Heading
+
 from tdf.columnar import encode_columns
+from tdf.ir import Doc, Para, Table
 from tdf.optimize import build_dictionary
 
-def generate_questions(doc: Doc, doc_id: str):
-    questions = []
-    
-    # Generate prose questions
-    paras = [b for b in doc.blocks if isinstance(b, Para)]
-    if paras:
-        for p in random.sample(paras, min(3, len(paras))):
-            words = p.text.split()
-            if len(words) > 5:
-                q = f"What text contains the phrase '{' '.join(words[:3])}'?"
-                questions.append({
-                    "id": f"{doc_id}_prose_{len(questions)}",
-                    "type": "prose",
-                    "question": q,
-                    "answer": p.text
-                })
-                
-    # Generate table questions
-    tables = [b for b in doc.blocks if isinstance(b, Table) and len(b.rows) > 0 and len(b.cols) > 0]
-    for t in tables:
-        # Lookup
-        row_idx = random.randint(0, len(t.rows) - 1)
-        col_idx = random.randint(0, len(t.cols) - 1)
-        # Avoid empty cols/rows
-        if t.cols[col_idx] and t.rows[row_idx][col_idx]:
-            # Use another column as key if possible
-            key_col = (col_idx + 1) % len(t.cols)
-            if t.rows[row_idx][key_col]:
-                q = f"In the table containing '{t.cols[col_idx]}', what is the value of '{t.cols[col_idx]}' where '{t.cols[key_col]}' is '{t.rows[row_idx][key_col]}'?"
-                questions.append({
-                    "id": f"{doc_id}_lookup_{len(questions)}",
-                    "type": "lookup",
-                    "question": q,
-                    "answer": t.rows[row_idx][col_idx]
-                })
+NUM_RE = re.compile(r"^-?\d+(?:\.\d+)?$")
 
-    # Find deref_code and deref_dict
-    books = encode_columns(doc)
-    dict_phrases = build_dictionary(doc)
-    
-    if books:
-        for book in books:
-            for code, value in book.mapping.items():
-                if value and len(value) > 2:
-                    q = f"What is one of the decoded values in the column '{book.header}'?"
-                    questions.append({
-                        "id": f"{doc_id}_deref_code_{len(questions)}",
-                        "type": "deref_code",
-                        "question": q,
-                        "answer": value
-                    })
+
+def _to_num(s: str):
+    s = s.strip().replace(",", "")
+    if not s:
+        return None
+    if s.startswith("(") and s.endswith(")"):
+        s = "-" + s[1:-1]
+    s = re.sub(r"[$€£¥%]", "", s)
+    return float(s) if NUM_RE.match(s) else None
+
+
+def _add_q(questions: list[dict], doc_id: str, qtype: str, question: str, answer: str):
+    questions.append(
+        {
+            "id": f"{doc_id}_{qtype}_{len(questions)}",
+            "type": qtype,
+            "question": question,
+            "answer": str(answer),
+        }
+    )
+
+
+def _unique_col_idx(t: Table):
+    for ci, _ in enumerate(t.cols):
+        vals = [r[ci] for r in t.rows if ci < len(r) and r[ci]]
+        if vals and len(vals) == len(set(vals)):
+            return ci
+    return None
+
+
+def generate_questions(doc: Doc, doc_id: str):
+    questions: list[dict] = []
+    tables = [b for b in doc.blocks if isinstance(b, Table) and b.rows and b.cols]
+    paras = [b for b in doc.blocks if isinstance(b, Para) and b.text.strip()]
+
+    # Short prose exact extraction prompts (avoid long free-form answers).
+    for p in random.sample(paras, min(2, len(paras))):
+        words = p.text.split()
+        if len(words) >= 8:
+            phrase = " ".join(words[:3])
+            answer = " ".join(words[3:6])
+            _add_q(
+                questions,
+                doc_id,
+                "exact_identifier",
+                f"In the sentence containing '{phrase}', what are the next three words exactly?",
+                answer,
+            )
+
+    for t in tables:
+        if len(t.cols) < 2:
+            continue
+        key_ci = _unique_col_idx(t)
+        if key_ci is None:
+            key_ci = 0
+        val_ci = 1 if key_ci == 0 else 0
+        usable_rows = [r for r in t.rows if key_ci < len(r) and val_ci < len(r) and r[key_ci] and r[val_ci]]
+        if not usable_rows:
+            continue
+
+        row = random.choice(usable_rows)
+        key_col = t.cols[key_ci]
+        val_col = t.cols[val_ci]
+        key_val = row[key_ci]
+        val = row[val_ci]
+
+        # Row association
+        _add_q(
+            questions,
+            doc_id,
+            "row_association",
+            f"In the table, what is '{val_col}' where '{key_col}' is '{key_val}'?",
+            val,
+        )
+
+        # Column association
+        _add_q(
+            questions,
+            doc_id,
+            "column_association",
+            f"In the row where '{key_col}' is '{key_val}', which column has value '{val}'?",
+            val_col,
+        )
+
+        # Ordering
+        first = next((r[key_ci] for r in t.rows if key_ci < len(r) and r[key_ci]), None)
+        last = next((r[key_ci] for r in reversed(t.rows) if key_ci < len(r) and r[key_ci]), None)
+        if first and last:
+            _add_q(
+                questions,
+                doc_id,
+                "ordering",
+                f"What is the last '{key_col}' value in this table, in row order?",
+                last,
+            )
+
+        # Repeated-cell stress (^ path in TDF)
+        for ci, cname in enumerate(t.cols):
+            for ri in range(1, len(t.rows)):
+                prev = t.rows[ri - 1][ci] if ci < len(t.rows[ri - 1]) else ""
+                cur = t.rows[ri][ci] if ci < len(t.rows[ri]) else ""
+                if prev and prev == cur and key_ci < len(t.rows[ri]) and t.rows[ri][key_ci]:
+                    _add_q(
+                        questions,
+                        doc_id,
+                        "repeated_cell",
+                        f"For '{key_col}'='{t.rows[ri][key_ci]}', what is '{cname}'?",
+                        cur,
+                    )
                     break
-                    
-    if dict_phrases:
-        phrases = [p[0] for p in dict_phrases]
-        for p in random.sample(phrases, min(3, len(phrases))):
-            words = p.split()
-            if len(words) > 2:
-                q = f"What phrase contains '{words[0]} {words[1]}'?"
-                questions.append({
-                    "id": f"{doc_id}_deref_dict_{len(questions)}",
-                    "type": "deref_dict",
-                    "question": q,
-                    "answer": p
-                })
-                
+            else:
+                continue
+            break
+
+        # Leading-zero values
+        for ri, r in enumerate(t.rows):
+            for ci, cell in enumerate(r):
+                if re.match(r"^0\d+$", cell):
+                    _add_q(
+                        questions,
+                        doc_id,
+                        "leading_zero",
+                        f"Return the exact value in column '{t.cols[ci]}' for row index {ri + 1}. Keep leading zeros.",
+                        cell,
+                    )
+                    break
+            else:
+                continue
+            break
+
+        # Numeric comparison + negation + multi-hop
+        numeric_cols = []
+        for ci, cname in enumerate(t.cols):
+            nums = []
+            for r in t.rows:
+                if ci < len(r):
+                    n = _to_num(r[ci])
+                    if n is not None:
+                        nums.append((r, n))
+            if len(nums) >= 3:
+                numeric_cols.append((ci, cname, nums))
+
+        if numeric_cols:
+            ci_num, cname_num, nums = random.choice(numeric_cols)
+            best_r, _ = max(nums, key=lambda x: x[1])
+            if key_ci < len(best_r):
+                _add_q(
+                    questions,
+                    doc_id,
+                    "numeric_comparison",
+                    f"Which '{key_col}' has the largest '{cname_num}'?",
+                    best_r[key_ci],
+                )
+
+            # negation: pick one key and ask for value that is NOT it.
+            keys = [r[key_ci] for r, _ in nums if key_ci < len(r) and r[key_ci]]
+            if len(set(keys)) >= 2:
+                ban = keys[0]
+                alt = next(k for k in keys if k != ban)
+                _add_q(
+                    questions,
+                    doc_id,
+                    "negation",
+                    f"Name one '{key_col}' whose '{cname_num}' is NOT associated with '{ban}'.",
+                    alt,
+                )
+
+            # Multi-hop: among rows with a categorical filter, pick max numeric
+            cat_cols = [ci for ci in range(len(t.cols)) if ci != ci_num]
+            if cat_cols:
+                cci = cat_cols[0]
+                groups = {}
+                for r, n in nums:
+                    if cci < len(r) and r[cci]:
+                        groups.setdefault(r[cci], []).append((r, n))
+                group_items = [(g, vals) for g, vals in groups.items() if len(vals) >= 2]
+                if group_items:
+                    gname, gvals = random.choice(group_items)
+                    best_g, _ = max(gvals, key=lambda x: x[1])
+                    if key_ci < len(best_g):
+                        _add_q(
+                            questions,
+                            doc_id,
+                            "multi_hop_table",
+                            f"Within rows where '{t.cols[cci]}' is '{gname}', which '{key_col}' has the highest '{cname_num}'?",
+                            best_g[key_ci],
+                        )
+
+    # Cross-table reference (same key column name across tables).
+    if len(tables) >= 2:
+        for t1 in tables:
+            for t2 in tables:
+                if t1 is t2:
+                    continue
+                shared = [c for c in t1.cols if c in t2.cols]
+                if not shared:
+                    continue
+                k = shared[0]
+                c1 = t1.cols.index(k)
+                c2 = t2.cols.index(k)
+                vals1 = {r[c1] for r in t1.rows if c1 < len(r) and r[c1]}
+                vals2 = {r[c2] for r in t2.rows if c2 < len(r) and r[c2]}
+                inter = sorted(vals1 & vals2)
+                if not inter:
+                    continue
+                kv = inter[0]
+                target_ci = 0 if c2 != 0 else (1 if len(t2.cols) > 1 else None)
+                if target_ci is None:
+                    continue
+                target_row = next((r for r in t2.rows if c2 < len(r) and r[c2] == kv and target_ci < len(r) and r[target_ci]), None)
+                if target_row:
+                    _add_q(
+                        questions,
+                        doc_id,
+                        "cross_reference",
+                        f"Find '{k}'='{kv}' and return '{t2.cols[target_ci]}' from the other table that also contains '{k}'.",
+                        target_row[target_ci],
+                    )
+                    break
+            else:
+                continue
+            break
+
+    # Dictionary/codebook stress categories (still answerable by all arms).
+    books = encode_columns(doc)
+    for book in books[:2]:
+        vals = [v for v in book.mapping.values() if v]
+        if vals:
+            target = vals[0]
+            _add_q(
+                questions,
+                doc_id,
+                "deref_code",
+                f"What is one value present in column '{book.header}'?",
+                target,
+            )
+
+    dict_phrases = [p[0] for p in build_dictionary(doc) if p and p[0]]
+    for phrase in random.sample(dict_phrases, min(2, len(dict_phrases))):
+        parts = phrase.split()
+        if len(parts) >= 3:
+            _add_q(
+                questions,
+                doc_id,
+                "deref_dict",
+                f"Return the exact phrase that starts with '{parts[0]} {parts[1]}'.",
+                phrase,
+            )
+
     return questions
 
 def main():

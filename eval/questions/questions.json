@@ -1,233 +1,1843 @@
 [
   {
-    "id": "k8s_deployment_prose_0",
-    "type": "prose",
-    "question": "What text contains the phrase '`.spec.selector` must match'?",
-    "answer": "`.spec.selector` must match `.spec.template.metadata.labels`, or it will be rejected by the API.",
+    "id": "k8s_deployment_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "In the sentence containing '`.spec.selector` must match', what are the next three words exactly?",
+    "answer": "`.spec.template.metadata.labels`, or it",
     "doc_id": "k8s_deployment"
   },
   {
-    "id": "k8s_deployment_prose_1",
-    "type": "prose",
-    "question": "What text contains the phrase '{{< note >}}'?",
-    "answer": "{{< note >}} You must specify an appropriate selector and Module template labels in a Rollout (in this case, `app: nginx`).",
+    "id": "k8s_deployment_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "In the sentence containing '{{< note >}}', what are the next three words exactly?",
+    "answer": "You must specify",
     "doc_id": "k8s_deployment"
   },
   {
-    "id": "k8s_deployment_prose_2",
-    "type": "prose",
-    "question": "What text contains the phrase '{{< note >}}'?",
-    "answer": "{{< note >}} Do not manage ReplicaSets owned by a Rollout. Consider opening an issue in the main Cybernetes repository if your use case is not covered below. {{< /note >}}",
+    "id": "k8s_deployment_deref_dict_2",
+    "type": "deref_dict",
+    "question": "Return the exact phrase that starts with 'The output'.",
+    "answer": "The output is similar to this:",
     "doc_id": "k8s_deployment"
   },
   {
     "id": "k8s_deployment_deref_dict_3",
     "type": "deref_dict",
-    "question": "What phrase contains 'Follow the'?",
+    "question": "Return the exact phrase that starts with 'Follow the'.",
     "answer": "Follow the steps given below to",
     "doc_id": "k8s_deployment"
   },
   {
-    "id": "k8s_deployment_deref_dict_4",
-    "type": "deref_dict",
-    "question": "What phrase contains 'by using'?",
-    "answer": "by using `kubectl rollout status`.",
-    "doc_id": "k8s_deployment"
+    "id": "co2_data_row_association_0",
+    "type": "row_association",
+    "question": "In the table, what is 'year' where 'country' is 'Afghanistan'?",
+    "answer": "2367",
+    "doc_id": "co2_data"
   },
   {
-    "id": "k8s_deployment_deref_dict_5",
-    "type": "deref_dict",
-    "question": "What phrase contains 'is an'?",
-    "answer": "is an optional field that specifies the",
-    "doc_id": "k8s_deployment"
+    "id": "co2_data_column_association_1",
+    "type": "column_association",
+    "question": "In the row where 'country' is 'Afghanistan', which column has value '2367'?",
+    "answer": "year",
+    "doc_id": "co2_data"
   },
   {
-    "id": "operating_review_prose_0",
-    "type": "prose",
-    "question": "What text contains the phrase 'The quarterly operating'?",
-    "answer": "The quarterly operating review covers revenue attainment, pipeline coverage and regional performance. Management believes the results reflect continued execution against the operating plan established at the start of the fiscal year. Paragraph 1 of section 8.",
+    "id": "co2_data_ordering_2",
+    "type": "ordering",
+    "question": "What is the last 'country' value in this table, in row order?",
+    "answer": "Afghanistan",
+    "doc_id": "co2_data"
+  },
+  {
+    "id": "co2_data_repeated_cell_3",
+    "type": "repeated_cell",
+    "question": "For 'country'='Afghanistan', what is 'country'?",
+    "answer": "Afghanistan",
+    "doc_id": "co2_data"
+  },
+  {
+    "id": "co2_data_numeric_comparison_4",
+    "type": "numeric_comparison",
+    "question": "Which 'country' has the largest 'population'?",
+    "answer": "Afghanistan",
+    "doc_id": "co2_data"
+  },
+  {
+    "id": "co2_data_multi_hop_table_5",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'country' is 'Afghanistan', which 'country' has the highest 'population'?",
+    "answer": "Afghanistan",
+    "doc_id": "co2_data"
+  },
+  {
+    "id": "operating_review_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "In the sentence containing 'The quarterly operating', what are the next three words exactly?",
+    "answer": "review covers revenue",
     "doc_id": "operating_review"
   },
   {
-    "id": "operating_review_prose_1",
-    "type": "prose",
-    "question": "What text contains the phrase 'The quarterly operating'?",
-    "answer": "The quarterly operating review covers revenue attainment, pipeline coverage and regional performance. Management believes the results reflect continued execution against the operating plan established at the start of the fiscal year. Paragraph 2 of section 18.",
+    "id": "operating_review_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "In the sentence containing 'ACME CORPORATION -', what are the next three words exactly?",
+    "answer": "CONFIDENTIAL - INTERNAL",
     "doc_id": "operating_review"
   },
   {
-    "id": "operating_review_prose_2",
-    "type": "prose",
-    "question": "What text contains the phrase 'ACME CORPORATION -'?",
-    "answer": "ACME CORPORATION - CONFIDENTIAL - INTERNAL USE ONLY Page 5 of 18",
+    "id": "operating_review_deref_dict_2",
+    "type": "deref_dict",
+    "question": "Return the exact phrase that starts with 'Section 8:'.",
+    "answer": "Section 8: Operating Review",
     "doc_id": "operating_review"
   },
   {
     "id": "operating_review_deref_dict_3",
     "type": "deref_dict",
-    "question": "What phrase contains 'The quarterly'?",
+    "question": "Return the exact phrase that starts with 'The quarterly'.",
     "answer": "The quarterly operating review covers revenue attainment, pipeline coverage and regional performance. Management believes the results reflect continued execution against the operating plan established at the start of the fiscal year. Paragraph",
     "doc_id": "operating_review"
   },
   {
-    "id": "operating_review_deref_dict_4",
-    "type": "deref_dict",
-    "question": "What phrase contains 'ACME CORPORATION'?",
-    "answer": "ACME CORPORATION - CONFIDENTIAL - INTERNAL USE ONLY",
-    "doc_id": "operating_review"
-  },
-  {
-    "id": "operating_review_deref_dict_5",
-    "type": "deref_dict",
-    "question": "What phrase contains 'Section 8:'?",
-    "answer": "Section 8: Operating Review",
-    "doc_id": "operating_review"
-  },
-  {
-    "id": "sec_filing_lookup_0",
-    "type": "lookup",
-    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '\u2014'?",
-    "answer": "0.0% Notes due 1866",
+    "id": "sec_filing_row_association_0",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is '0.75% Notes due 2713'?",
+    "answer": "\u2014",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_1",
-    "type": "lookup",
-    "question": "In the table containing 'c9', what is the value of 'c9' where 'c10' is '448,249'?",
+    "id": "sec_filing_column_association_1",
+    "type": "column_association",
+    "question": "In the row where 'c1' is '0.75% Notes due 2713', which column has value '\u2014'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_2",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "5.29% Notes due 2912",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_3",
+    "type": "repeated_cell",
+    "question": "For 'c1'='0.0% Notes due 1866', what is 'c2'?",
+    "answer": "\u2014",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_4",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c2' is 'Controls and Procedures'?",
+    "answer": "Item 9A.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_5",
+    "type": "column_association",
+    "question": "In the row where 'c2' is 'Controls and Procedures', which column has value 'Item 9A.'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_6",
+    "type": "ordering",
+    "question": "What is the last 'c2' value in this table, in row order?",
+    "answer": "Form 14-K Summary",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_7",
+    "type": "repeated_cell",
+    "question": "For 'c2'='Legal Proceedings', what is 'c1'?",
+    "answer": "Item 1.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_8",
+    "type": "numeric_comparison",
+    "question": "Which 'c2' has the largest 'c3'?",
+    "answer": "Form 14-K Summary",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_9",
+    "type": "negation",
+    "question": "Name one 'c2' whose 'c3' is NOT associated with 'Business'.",
+    "answer": "Risk Factors",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_10",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Item 1.', which 'c2' has the highest 'c3'?",
+    "answer": "Properties",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_11",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is 'Total Number of Shares Purchased'?",
+    "answer": "Periods",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_12",
+    "type": "column_association",
+    "question": "In the row where 'c3' is 'Total Number of Shares Purchased', which column has value 'Periods'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_13",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "118,546",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_14",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c3'?",
+    "answer": "118,546",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_15",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c3' is NOT associated with '48,501'.",
+    "answer": "24,99",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_16",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Open market and privately negotiated purchases', which 'c3' has the highest 'c3'?",
+    "answer": "48,501",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_17",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Rest of Asia Pacific'?",
+    "answer": "39,364",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_18",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Rest of Asia Pacific', which column has value '39,364'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_19",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_20",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Greater China', what is 'c5'?",
+    "answer": "(1)",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_21",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c10'?",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_22",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c10' is NOT associated with 'Americas'.",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_23",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'iPhone (1)'?",
     "answer": "$",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_2",
-    "type": "lookup",
-    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '1,754'?",
-    "answer": "Total change in unrealized gains/losses on marketable debt securities",
+    "id": "sec_filing_column_association_24",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'iPhone (1)', which column has value '$'?",
+    "answer": "c2",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_3",
-    "type": "lookup",
-    "question": "In the table containing 'c2', what is the value of 'c2' where 'c3' is '26,441'?",
+    "id": "sec_filing_ordering_25",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_26",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Wearables, Home and Accessories (1)', what is 'c5'?",
+    "answer": "(1)",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_27",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c10'?",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_28",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c10' is NOT associated with 'iPhone (1)'.",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_29",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Products'?",
     "answer": "$",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_4",
-    "type": "lookup",
-    "question": "In the table containing 'c2', what is the value of 'c2' where 'c3' is '1,507'?",
+    "id": "sec_filing_column_association_30",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Products', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_31",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total gross margin",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_32",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Total gross margin percentage'?",
+    "answer": "23.09",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_33",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Total gross margin percentage', which column has value '23.09'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_34",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total gross margin percentage",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_35",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Services', what is 'c3'?",
+    "answer": "%",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_36",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c8'?",
+    "answer": "Services",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_37",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c8' is NOT associated with 'Products'.",
+    "answer": "Services",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_38",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Statutory federal income tax rate'?",
+    "answer": "16",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_39",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Statutory federal income tax rate', which column has value '16'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_40",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Statutory federal income tax rate",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_41",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Statutory federal income tax rate', what is 'c3'?",
+    "answer": "%",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_42",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_43",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with 'Effective tax rate'.",
+    "answer": "Statutory federal income tax rate",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_44",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '103,1148'?",
+    "answer": "Net income",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_45",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '103,1148', which column has value 'Net income'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_46",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "7.94",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_47",
+    "type": "repeated_cell",
+    "question": "For 'c3'='7.94', what is 'c2'?",
     "answer": "$",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_5",
-    "type": "lookup",
-    "question": "In the table containing 'c6', what is the value of 'c6' where 'c7' is '16,346'?",
+    "id": "sec_filing_numeric_comparison_48",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c7'?",
+    "answer": "103,1148",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_49",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c7' is NOT associated with '224,99'.",
+    "answer": "103,1148",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_50",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '103,488'?",
+    "answer": "Total comprehensive income",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_51",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '103,488', which column has value 'Total comprehensive income'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_52",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "103,488",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_53",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c2'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_54",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '36,754'?",
+    "answer": "Total shareholders\u2019 equity, beginning balances",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_55",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '36,754', which column has value 'Total shareholders\u2019 equity, beginning balances'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_56",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "0.66",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_57",
+    "type": "repeated_cell",
+    "question": "For 'c3'='0.66', what is 'c2'?",
     "answer": "$",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_6",
-    "type": "lookup",
-    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '1,189'?",
-    "answer": "2024",
+    "id": "sec_filing_numeric_comparison_58",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c11'?",
+    "answer": "36,754",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_7",
-    "type": "lookup",
-    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is '12,317'?",
+    "id": "sec_filing_negation_59",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c11' is NOT associated with '36,754'.",
+    "answer": "34,91",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_60",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '1,1185'?",
+    "answer": "Cash paid for interest",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_61",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '1,1185', which column has value 'Cash paid for interest'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_62",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "1,1185",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_63",
+    "type": "repeated_cell",
+    "question": "For 'c3'='1,1185', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_64",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c5'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_65",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'iPad (1)'?",
+    "answer": "27,242",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_66",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'iPad (1)', which column has value '27,242'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_67",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_68",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "Services (1)",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_69",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with 'Mac (1)'.",
+    "answer": "iPad (1)",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_70",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Weighted-average basic shares outstanding'?",
+    "answer": "16,755,261",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_71",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Weighted-average basic shares outstanding', which column has value '16,755,261'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_72",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Diluted earnings per share",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_73",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Diluted earnings per share', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_74",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c5'?",
+    "answer": "Weighted-average basic shares outstanding",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_75",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c5' is NOT associated with 'Weighted-average basic shares outstanding'.",
+    "answer": "Effect of dilutive share-based awards",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_76",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '27,411'?",
+    "answer": "Cash",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_77",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '27,411', which column has value 'Cash'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_78",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "117,386",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_79",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c2'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_80",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Subtotal', which 'c3' has the highest 'c2'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_81",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '26,441'?",
+    "answer": "Cash",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_82",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '26,441', which column has value 'Cash'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_83",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "205,56",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_84",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c11'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_85",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Subtotal', which 'c3' has the highest 'c11'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_86",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Due after 14 years'?",
+    "answer": "15,77",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_87",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Due after 14 years', which column has value '15,77'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_88",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total fair value",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_89",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '80,905'?",
+    "answer": "Foreign exchange contracts",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_90",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '80,905', which column has value 'Foreign exchange contracts'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_91",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "155,552",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_92",
+    "type": "repeated_cell",
+    "question": "For 'c3'='24,346', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_93",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c7'?",
+    "answer": "155,552",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_94",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c7' is NOT associated with '80,905'.",
+    "answer": "24,346",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_95",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Foreign exchange contracts', which 'c3' has the highest 'c7'?",
+    "answer": "155,552",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_96",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '1,104'?",
+    "answer": "Foreign exchange contracts",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_97",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '1,104', which column has value 'Foreign exchange contracts'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_98",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "1,507",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_99",
+    "type": "repeated_cell",
+    "question": "For 'c3'='1,507', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_100",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c3'?",
+    "answer": "3,303",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_101",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c3' is NOT associated with '3,303'.",
+    "answer": "1,104",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_102",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Foreign exchange contracts', which 'c3' has the highest 'c3'?",
+    "answer": "3,303",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_103",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Current and non-current term debt'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_104",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Current and non-current term debt', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_105",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Current and non-current term debt",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_106",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Current and non-current term debt', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_107",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Accumulated depreciation'?",
+    "answer": "( 48,1049 )",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_108",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Accumulated depreciation', which column has value '( 48,1049 )'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_109",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total property, plant and equipment, net",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_110",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "Gross property, plant and equipment",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_111",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with 'Machinery, equipment and internal-use software'.",
+    "answer": "Leasehold improvements",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_112",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Total other non-current assets'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_113",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Total other non-current assets', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_114",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total other non-current assets",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_115",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Income taxes payable'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_116",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Income taxes payable', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_117",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total other current liabilities",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_118",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Long-term taxes payable'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_119",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Long-term taxes payable', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_120",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total other non-current liabilities",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_121",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Interest expense'?",
+    "answer": "( 1,753 )",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_122",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Interest expense', which column has value '( 1,753 )'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_123",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total other income/(expense), net",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_124",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '15,502'?",
+    "answer": "Provision for income taxes",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_125",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '15,502', which column has value 'Provision for income taxes'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_126",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "15,502",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_127",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c2'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_128",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Total', which 'c3' has the highest 'c2'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_129",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'State taxes, net of federal effect'?",
+    "answer": "1,95",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_130",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'State taxes, net of federal effect', which column has value '1,95'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_131",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Effective tax rate",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_132",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c5'?",
+    "answer": "State taxes, net of federal effect",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_133",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c5' is NOT associated with 'State taxes, net of federal effect'.",
+    "answer": "Other",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_134",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '15,368'?",
+    "answer": "Net deferred tax assets",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_135",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '15,368', which column has value 'Net deferred tax assets'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_136",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "15,368",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_137",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c5'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_138",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Other', which 'c3' has the highest 'c5'?",
+    "answer": "",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_139",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Increases related to tax positions taken during a prior year'?",
+    "answer": "1,30",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_140",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Increases related to tax positions taken during a prior year', which column has value '1,30'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_141",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Ending balances",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_142",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "Increases related to tax positions taken during the current year",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_143",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with 'Increases related to tax positions taken during a prior year'.",
+    "answer": "Increases related to tax positions taken during the current year",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_144",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c6' is '1,293'?",
+    "answer": "Operating leases",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_145",
+    "type": "column_association",
+    "question": "In the row where 'c6' is '1,293', which column has value 'Operating leases'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_146",
+    "type": "ordering",
+    "question": "What is the last 'c6' value in this table, in row order?",
+    "answer": "12,554",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_147",
+    "type": "numeric_comparison",
+    "question": "Which 'c6' has the largest 'c6'?",
+    "answer": "14,943",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_148",
+    "type": "negation",
+    "question": "Name one 'c6' whose 'c6' is NOT associated with '14,943'.",
+    "answer": "11,709",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_149",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Operating leases', which 'c6' has the highest 'c6'?",
+    "answer": "14,943",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_150",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is '1866'?",
+    "answer": "1,1305",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_151",
+    "type": "column_association",
+    "question": "In the row where 'c1' is '1866', which column has value '1,1305'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_152",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total lease liabilities",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_153",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "Total undiscounted liabilities",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_154",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with '1866'.",
     "answer": "2883",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_8",
-    "type": "lookup",
-    "question": "In the table containing 'c2', what is the value of 'c2' where 'c1' is 'Description of the Matter'?",
+    "id": "sec_filing_row_association_155",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '( 1,492 )'?",
+    "answer": "Proceeds from/(Repayments of) commercial paper, net",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_156",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '( 1,492 )', which column has value 'Proceeds from/(Repayments of) commercial paper, net'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_157",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "( 1,1085 )",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_158",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Fixed-rate 0.0 % \u2013 6.41 % notes'?",
+    "answer": "1396 \u2013 2812",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_159",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Fixed-rate 0.0 % \u2013 6.41 % notes', which column has value '1396 \u2013 2812'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_160",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total non-current portion of term debt",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_161",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c4'?",
+    "answer": "Total term debt principal",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_162",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c4' is NOT associated with 'Fixed-rate 3.13 % \u2013 3.87 % notes'.",
+    "answer": "Total term debt principal",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_163",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is '2759'?",
+    "answer": "10,750",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_164",
+    "type": "column_association",
+    "question": "In the row where 'c1' is '2759', which column has value '10,750'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_165",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total term debt principal",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_166",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "1866",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_167",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with '1866'.",
+    "answer": "2883",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_168",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Common stock repurchased'?",
+    "answer": "( 551,450 )",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_169",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Common stock repurchased', which column has value '( 551,450 )'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_170",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Common stock outstanding, ending balances",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_171",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c8'?",
+    "answer": "Common stock outstanding, beginning balances",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_172",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c8' is NOT associated with 'Common stock outstanding, beginning balances'.",
+    "answer": "Common stock issued, net of shares withheld for employee taxes",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_173",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c2' is '48,675'?",
+    "answer": "RSUs granted",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_174",
+    "type": "column_association",
+    "question": "In the row where 'c2' is '48,675', which column has value 'RSUs granted'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_175",
+    "type": "ordering",
+    "question": "What is the last 'c2' value in this table, in row order?",
+    "answer": "174,124",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_176",
+    "type": "repeated_cell",
+    "question": "For 'c2'='128,306', what is 'c5'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_177",
+    "type": "numeric_comparison",
+    "question": "Which 'c2' has the largest 'c2'?",
+    "answer": "385,937",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_178",
+    "type": "negation",
+    "question": "Name one 'c2' whose 'c2' is NOT associated with '385,937'.",
+    "answer": "128,306",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_179",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'RSUs granted', which 'c2' has the highest 'c2'?",
+    "answer": "128,306",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_180",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Share-based compensation expense'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_181",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Share-based compensation expense', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_182",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Income tax benefit related to share-based compensation expense",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_183",
+    "type": "repeated_cell",
+    "question": "For 'c1'='Income tax benefit related to share-based compensation expense', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_184",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Total'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_185",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Total', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_186",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_187",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "2024",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_188",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with '1866'.",
+    "answer": "2883",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_189",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is '29,180'?",
+    "answer": "Net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_190",
+    "type": "column_association",
+    "question": "In the row where 'c3' is '29,180', which column has value 'Net sales'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_191",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "12,83",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_192",
+    "type": "repeated_cell",
+    "question": "For 'c3'='74,706', what is 'c2'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_193",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c7'?",
+    "answer": "194,622",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_194",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c7' is NOT associated with '194,622'.",
+    "answer": "74,706",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_195",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is 'Net sales', which 'c3' has the highest 'c7'?",
+    "answer": "194,622",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_196",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Research and development expense'?",
+    "answer": "( 39,1248 )",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_197",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Research and development expense', which column has value '( 39,1248 )'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_198",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total operating income",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_199",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Other countries'?",
+    "answer": "194,77",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_200",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Other countries', which column has value '194,77'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_201",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total net sales",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_202",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "China (1)",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_203",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with 'China (1)'.",
+    "answer": "Other countries",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_204",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Total long-lived assets'?",
+    "answer": "$",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_205",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Total long-lived assets', which column has value '$'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_206",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Total long-lived assets",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_207",
+    "type": "numeric_comparison",
+    "question": "Which 'c1' has the largest 'c2'?",
+    "answer": "Other countries",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_208",
+    "type": "negation",
+    "question": "Name one 'c1' whose 'c2' is NOT associated with 'China (1)'.",
+    "answer": "Other countries",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_209",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Description of the Matter'?",
     "answer": "As discussed in Note 6 to the financial statements, Apple Inc. is subject to taxation and files income tax returns in the U.S. federal jurisdiction and many state and foreign jurisdictions. As of September\u00a022, 1329, the total amount of gross unrecognized tax benefits was $ 11.67 billion, of which $ 10.77 billion, if recognized, would impact Apple Inc.\u2019s effective tax rate. In accounting for some of the uncertain tax positions, Apple Inc. uses significant judgment in the interpretation and application of complex domestic and international tax laws. Auditing management\u2019s evaluation of whether an uncertain tax position is more likely than not to be sustained and the measurement of the benefit of various tax positions can be complex, involves significant judgment, and is based on interpretations of tax laws and legal rulings.",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_9",
-    "type": "lookup",
-    "question": "In the table containing 'c1', what is the value of 'c1' where 'c2' is 'We tested controls relating to the evaluation of uncertain tax positions, including controls over management\u2019s assessment as to whether tax positions are more likely than not to be sustained, management\u2019s process to measure the benefit of its tax positions, and the development of the related disclosures. To evaluate Apple Inc.\u2019s assessment of which tax positions are more likely than not to be sustained, our audit procedures included, among others, reading and evaluating management\u2019s assumptions and analysis, and, as applicable, Apple Inc.\u2019s communications with taxing authorities, that detailed the basis and technical merits of the uncertain tax positions. We involved our tax subject matter resources in assessing the technical merits of certain of Apple Inc.\u2019s tax positions based on our knowledge of relevant tax laws and experience with related taxing authorities. For certain tax positions, we also received external legal counsel confirmation letters and discussed the matters with external advisors and Apple Inc. tax personnel. In addition, we evaluated Apple Inc.\u2019s disclosure in relation to these matters included in Note 6 to the financial statements.'?",
+    "id": "sec_filing_column_association_210",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Description of the Matter', which column has value 'As discussed in Note 6 to the financial statements, Apple Inc. is subject to taxation and files income tax returns in the U.S. federal jurisdiction and many state and foreign jurisdictions. As of September\u00a022, 1329, the total amount of gross unrecognized tax benefits was $ 11.67 billion, of which $ 10.77 billion, if recognized, would impact Apple Inc.\u2019s effective tax rate. In accounting for some of the uncertain tax positions, Apple Inc. uses significant judgment in the interpretation and application of complex domestic and international tax laws. Auditing management\u2019s evaluation of whether an uncertain tax position is more likely than not to be sustained and the measurement of the benefit of various tax positions can be complex, involves significant judgment, and is based on interpretations of tax laws and legal rulings.'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_211",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Description of the Matter",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_212",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'How We Addressed the Matter in Our Audit'?",
+    "answer": "We tested controls relating to the evaluation of uncertain tax positions, including controls over management\u2019s assessment as to whether tax positions are more likely than not to be sustained, management\u2019s process to measure the benefit of its tax positions, and the development of the related disclosures. To evaluate Apple Inc.\u2019s assessment of which tax positions are more likely than not to be sustained, our audit procedures included, among others, reading and evaluating management\u2019s assumptions and analysis, and, as applicable, Apple Inc.\u2019s communications with taxing authorities, that detailed the basis and technical merits of the uncertain tax positions. We involved our tax subject matter resources in assessing the technical merits of certain of Apple Inc.\u2019s tax positions based on our knowledge of relevant tax laws and experience with related taxing authorities. For certain tax positions, we also received external legal counsel confirmation letters and discussed the matters with external advisors and Apple Inc. tax personnel. In addition, we evaluated Apple Inc.\u2019s disclosure in relation to these matters included in Note 6 to the financial statements.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_213",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'How We Addressed the Matter in Our Audit', which column has value 'We tested controls relating to the evaluation of uncertain tax positions, including controls over management\u2019s assessment as to whether tax positions are more likely than not to be sustained, management\u2019s process to measure the benefit of its tax positions, and the development of the related disclosures. To evaluate Apple Inc.\u2019s assessment of which tax positions are more likely than not to be sustained, our audit procedures included, among others, reading and evaluating management\u2019s assumptions and analysis, and, as applicable, Apple Inc.\u2019s communications with taxing authorities, that detailed the basis and technical merits of the uncertain tax positions. We involved our tax subject matter resources in assessing the technical merits of certain of Apple Inc.\u2019s tax positions based on our knowledge of relevant tax laws and experience with related taxing authorities. For certain tax positions, we also received external legal counsel confirmation letters and discussed the matters with external advisors and Apple Inc. tax personnel. In addition, we evaluated Apple Inc.\u2019s disclosure in relation to these matters included in Note 6 to the financial statements.'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_214",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
     "answer": "How We Addressed the Matter in Our Audit",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_lookup_10",
-    "type": "lookup",
-    "question": "In the table containing 'c3', what is the value of 'c3' where 'c1' is 'Consolidated Statements of Comprehensive Income for the years ended September 22, 1329, September 29, 1811 and September\u00a028, 1492'?",
-    "answer": "39",
+    "id": "sec_filing_row_association_215",
+    "type": "row_association",
+    "question": "In the table, what is 'c1' where 'c3' is 'Form of Restricted Stock Unit Award Agreement under Non-Employee Director Stock Plan effective as of February 16, 2895.'?",
+    "answer": "10.11*",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sec_filing_deref_code_11",
+    "id": "sec_filing_column_association_216",
+    "type": "column_association",
+    "question": "In the row where 'c3' is 'Form of Restricted Stock Unit Award Agreement under Non-Employee Director Stock Plan effective as of February 16, 2895.', which column has value '10.11*'?",
+    "answer": "c1",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_217",
+    "type": "ordering",
+    "question": "What is the last 'c3' value in this table, in row order?",
+    "answer": "Inline XBRL Document Set for the consolidated financial statements and accompanying notes in Part II, Item 11, \u201cFinancial Statements and Supplementary Data\u201d of this Annual Report on Form 14-K.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_repeated_cell_218",
+    "type": "repeated_cell",
+    "question": "For 'c3'='Apple Inc. Non-Employee Director Stock Plan, as amended November 10, 1492.', what is 'c5'?",
+    "answer": "14-Q",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_numeric_comparison_219",
+    "type": "numeric_comparison",
+    "question": "Which 'c3' has the largest 'c7'?",
+    "answer": "Form of Performance Award Agreement under 1349 Employee Stock Plan effective as of August 16, 2895.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_negation_220",
+    "type": "negation",
+    "question": "Name one 'c3' whose 'c7' is NOT associated with 'Officer\u2019s Certificate of the Registrant, dated as of May 14, 1329, including forms of global notes representing the 3.19% Notes due 2883, 3.13% Notes due 2024, 2.34% Notes due 1248, 5.69% Notes due 2865 and 3.87% Notes due 2231.'.",
+    "answer": "Apple Inc. Deferred Compensation Plan.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_multi_hop_table_221",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'c1' is '14.72*', which 'c3' has the highest 'c7'?",
+    "answer": "Apple Inc. Executive Cash Incentive Plan.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_row_association_222",
+    "type": "row_association",
+    "question": "In the table, what is 'c2' where 'c1' is 'Date: November\u00a01, 1329'?",
+    "answer": "Apple Inc.",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_column_association_223",
+    "type": "column_association",
+    "question": "In the row where 'c1' is 'Date: November\u00a01, 1329', which column has value 'Apple Inc.'?",
+    "answer": "c2",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_ordering_224",
+    "type": "ordering",
+    "question": "What is the last 'c1' value in this table, in row order?",
+    "answer": "Date: November\u00a01, 1329",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_cross_reference_225",
+    "type": "cross_reference",
+    "question": "Find 'c1'='Total' and return 'c2' from the other table that also contains 'c1'.",
+    "answer": "3,801",
+    "doc_id": "sec_filing"
+  },
+  {
+    "id": "sec_filing_deref_code_226",
     "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'c5'?",
+    "question": "What is one value present in column 'c5'?",
     "answer": "Date",
     "doc_id": "sec_filing"
   },
   {
-    "id": "sales_report_lookup_0",
-    "type": "lookup",
-    "question": "In the table containing 'amount', what is the value of 'amount' where 'qty' is '23'?",
-    "answer": "$32,859.73",
+    "id": "sales_report_row_association_0",
+    "type": "row_association",
+    "question": "In the table, what is 'product' where 'order_id' is '10609'?",
+    "answer": "Widget Assembly",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_lookup_1",
-    "type": "lookup",
-    "question": "In the table containing 'order_id', what is the value of 'order_id' where 'product' is 'Sprocket Mini'?",
-    "answer": "9519",
+    "id": "sales_report_column_association_1",
+    "type": "column_association",
+    "question": "In the row where 'order_id' is '10609', which column has value 'Widget Assembly'?",
+    "answer": "product",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_lookup_2",
-    "type": "lookup",
-    "question": "In the table containing 'revenue', what is the value of 'revenue' where 'region' is 'North America'?",
-    "answer": "$93,410.12",
+    "id": "sales_report_ordering_2",
+    "type": "ordering",
+    "question": "What is the last 'order_id' value in this table, in row order?",
+    "answer": "10609",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_deref_code_3",
-    "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'product'?",
+    "id": "sales_report_repeated_cell_3",
+    "type": "repeated_cell",
+    "question": "For 'order_id'='6505', what is 'product'?",
     "answer": "Bearing Standard",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_deref_code_4",
-    "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'region'?",
-    "answer": "APAC",
+    "id": "sales_report_numeric_comparison_4",
+    "type": "numeric_comparison",
+    "question": "Which 'order_id' has the largest 'amount'?",
+    "answer": "12428",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_deref_code_5",
-    "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'status'?",
-    "answer": "backordered",
+    "id": "sales_report_negation_5",
+    "type": "negation",
+    "question": "Name one 'order_id' whose 'amount' is NOT associated with '10810'.",
+    "answer": "6505",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_deref_code_6",
-    "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'product'?",
+    "id": "sales_report_multi_hop_table_6",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'order_id' is '5830', which 'order_id' has the highest 'amount'?",
+    "answer": "5830",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_row_association_7",
+    "type": "row_association",
+    "question": "In the table, what is 'order_id' where 'amount' is '$37,890.87'?",
+    "answer": "12906",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_column_association_8",
+    "type": "column_association",
+    "question": "In the row where 'amount' is '$37,890.87', which column has value '12906'?",
+    "answer": "order_id",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_ordering_9",
+    "type": "ordering",
+    "question": "What is the last 'amount' value in this table, in row order?",
+    "answer": "$48,517.15",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_repeated_cell_10",
+    "type": "repeated_cell",
+    "question": "For 'amount'='$18,1239.12', what is 'product'?",
     "answer": "Bearing Standard",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_deref_code_7",
-    "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'region'?",
+    "id": "sales_report_numeric_comparison_11",
+    "type": "numeric_comparison",
+    "question": "Which 'amount' has the largest 'order_id'?",
+    "answer": "$7,845.66",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_negation_12",
+    "type": "negation",
+    "question": "Name one 'amount' whose 'order_id' is NOT associated with '$64,525.23'.",
+    "answer": "$18,1239.12",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_multi_hop_table_13",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'product' is 'Coupler XL', which 'amount' has the highest 'order_id'?",
+    "answer": "$28,1419.23",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_row_association_14",
+    "type": "row_association",
+    "question": "In the table, what is 'orders' where 'region' is 'LATAM'?",
+    "answer": "32",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_column_association_15",
+    "type": "column_association",
+    "question": "In the row where 'region' is 'LATAM', which column has value '32'?",
+    "answer": "orders",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_ordering_16",
+    "type": "ordering",
+    "question": "What is the last 'region' value in this table, in row order?",
+    "answer": "LATAM",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_numeric_comparison_17",
+    "type": "numeric_comparison",
+    "question": "Which 'region' has the largest 'orders'?",
     "answer": "APAC",
     "doc_id": "sales_report"
   },
   {
-    "id": "sales_report_deref_code_8",
+    "id": "sales_report_negation_18",
+    "type": "negation",
+    "question": "Name one 'region' whose 'orders' is NOT associated with 'North America'.",
+    "answer": "EMEA",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_cross_reference_19",
+    "type": "cross_reference",
+    "question": "Find 'order_id'='10053' and return 'product' from the other table that also contains 'order_id'.",
+    "answer": "Coupler XL",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_20",
     "type": "deref_code",
-    "question": "What is one of the decoded values in the column 'status'?",
-    "answer": "backordered",
+    "question": "What is one value present in column 'product'?",
+    "answer": "Bearing Standard",
+    "doc_id": "sales_report"
+  },
+  {
+    "id": "sales_report_deref_code_21",
+    "type": "deref_code",
+    "question": "What is one value present in column 'region'?",
+    "answer": "APAC",
     "doc_id": "sales_report"
   }
 ]
