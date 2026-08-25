@@ -75,6 +75,19 @@ def encode_tdf_nocaret(doc: Doc) -> str:
     _assert_lossless(doc, out)
     return out
 
+
+def encode_hybrid(doc: Doc) -> str:
+    """Per-block arbitration (emit.render_hybrid): prose stays Markdown,
+    tables/KV/page-marks go dense only where they win. Floor-guaranteed
+    never-larger-than-Markdown; see docs/SPEC.md 'Hybrid mode'."""
+    from tdf.emit import render_hybrid
+    from tdf.columnar import encode_columns
+    d = copy.deepcopy(doc)
+    books = encode_columns(d)
+    out = render_hybrid(d, codebooks=books)
+    _assert_lossless(doc, out)
+    return out
+
 def _assert_lossless(original: Doc, encoded: str):
     parsed = parse_tdf(encoded)
     res = compare(original, parsed)
@@ -113,6 +126,9 @@ ARMS = {
     "tdf_nodict": encode_tdf_nodict,
     "tdf_nocodes": encode_tdf_nocodes,
     "tdf_nocaret": encode_tdf_nocaret,
+    # Added AFTER the first eval was unblinded (see PREREGISTRATION.md's
+    # post-hoc note): hybrid is exploratory until it has its own run.
+    "hybrid": encode_hybrid,
 }
 
 if __name__ == "__main__":
