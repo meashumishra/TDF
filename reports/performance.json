@@ -1,0 +1,56 @@
+{
+ "results": [
+  {
+   "target_bytes": 1000,
+   "wire_bytes": 825,
+   "tokens": 314,
+   "encode_seconds": 0.1154,
+   "decode_seconds": 0.0003,
+   "markdown_seconds": 0.0,
+   "encode_bytes_per_sec": 7146,
+   "decode_bytes_per_sec": 2683293,
+   "encode_tokens_per_sec": 2719,
+   "peak_encode_memory_mb": 0.04,
+   "blocks": 5
+  },
+  {
+   "target_bytes": 10000,
+   "wire_bytes": 2461,
+   "tokens": 1420,
+   "encode_seconds": 0.0112,
+   "decode_seconds": 0.0003,
+   "markdown_seconds": 0.0,
+   "encode_bytes_per_sec": 218848,
+   "decode_bytes_per_sec": 9123262,
+   "encode_tokens_per_sec": 126276,
+   "peak_encode_memory_mb": 0.1,
+   "blocks": 17
+  },
+  {
+   "target_bytes": 100000,
+   "wire_bytes": 18268,
+   "tokens": 10332,
+   "encode_seconds": 0.0881,
+   "decode_seconds": 0.002,
+   "markdown_seconds": 0.0003,
+   "encode_bytes_per_sec": 207329,
+   "decode_bytes_per_sec": 9083848,
+   "encode_tokens_per_sec": 117261,
+   "peak_encode_memory_mb": 0.89,
+   "blocks": 157
+  },
+  {
+   "target_bytes": 1024000,
+   "wire_bytes": 175226,
+   "tokens": 98732,
+   "encode_seconds": 0.9091,
+   "decode_seconds": 0.0194,
+   "markdown_seconds": 0.003,
+   "encode_bytes_per_sec": 192741,
+   "decode_bytes_per_sec": 9010882,
+   "encode_tokens_per_sec": 108601,
+   "peak_encode_memory_mb": 8.99,
+   "blocks": 1589
+  }
+ ]
+}
