@@ -38,5 +38,131 @@
     "type": "xlsx",
     "sha256": "33b5f1be9972a77b617f088d6951cbf0ffb221abc599b6fc9afec14bddec55e4",
     "path": "eval/corpus/raw/sales_report.xlsx"
+  },
+  {
+    "id": "k8s_services",
+    "family": "kubernetes_docs",
+    "url": "https://raw.githubusercontent.com/kubernetes/website/main/content/en/docs/concepts/services-networking/service.md",
+    "filename": "kubernetes_docs/service.md",
+    "type": "md",
+    "sha256": "124a280dfbc2dad83498c579e960e5d199ca612b727033e2a88da1103e1acb51",
+    "path": "eval/corpus/raw/kubernetes_docs/service.md"
+  },
+  {
+    "id": "k8s_configmap",
+    "family": "kubernetes_docs",
+    "url": "https://raw.githubusercontent.com/kubernetes/website/main/content/en/docs/concepts/configuration/configmap.md",
+    "filename": "kubernetes_docs/configmap.md",
+    "type": "md",
+    "sha256": "2e3860f6aeb7d86e6d2dd8f32493dbc1d52ce1c54606cb08455107b297a63a2a",
+    "path": "eval/corpus/raw/kubernetes_docs/configmap.md"
+  },
+  {
+    "id": "rfc2616_http",
+    "family": "rfc_technical",
+    "url": "https://www.rfc-editor.org/rfc/rfc2616.txt",
+    "filename": "rfc_technical/rfc2616.txt",
+    "type": "txt",
+    "sha256": "10211d2885196b97b1c78e1672f3f68ae97c294596ef2b7fd890cbd30a3427bf",
+    "path": "eval/corpus/raw/rfc_technical/rfc2616.txt"
+  },
+  {
+    "id": "rfc1035_dns",
+    "family": "rfc_technical",
+    "url": "https://www.rfc-editor.org/rfc/rfc1035.txt",
+    "filename": "rfc_technical/rfc1035.txt",
+    "type": "txt",
+    "sha256": "d14ae809fc9b41bbcae26bb38c937c9515808b944f3252b00de9fe0e95f4fdfb",
+    "path": "eval/corpus/raw/rfc_technical/rfc1035.txt"
+  },
+  {
+    "id": "alice_prose",
+    "family": "prose_books",
+    "url": "https://www.gutenberg.org/files/11/11-0.txt",
+    "filename": "prose_books/alice.txt",
+    "type": "txt",
+    "sha256": "a3a27f8edbf7fcd9b8ba8435494440e24952deaa3e2f2d65192d4cb7ca403754",
+    "path": "eval/corpus/raw/prose_books/alice.txt"
+  },
+  {
+    "id": "frankenstein_prose",
+    "family": "prose_books",
+    "url": "https://www.gutenberg.org/files/84/84-0.txt",
+    "filename": "prose_books/frankenstein.txt",
+    "type": "txt",
+    "sha256": "06c37d2c52d208d3d81eb12c3b10b5edbd7728b73554325ddceadbe2fb427e77",
+    "path": "eval/corpus/raw/prose_books/frankenstein.txt"
+  },
+  {
+    "id": "pride_prose",
+    "family": "prose_books",
+    "url": "https://www.gutenberg.org/files/1342/1342-0.txt",
+    "filename": "prose_books/pride.txt",
+    "type": "txt",
+    "sha256": "a5666f87abf2cbfdaa27ea8c73bd284da9649b9a2ab27b4e6c8f6aeab1bd1c88",
+    "path": "eval/corpus/raw/prose_books/pride.txt"
+  },
+  {
+    "id": "readme_requests",
+    "family": "md_readmes",
+    "url": "https://raw.githubusercontent.com/psf/requests/main/README.md",
+    "filename": "md_readmes/readme_requests.md",
+    "type": "md",
+    "sha256": "2a9268c9be5f4dc9abe9105740be7c5234babc3dd2b25eb11ca376c538a0c67b",
+    "path": "eval/corpus/raw/md_readmes/readme_requests.md"
+  },
+  {
+    "id": "readme_fastapi",
+    "family": "md_readmes",
+    "url": "https://raw.githubusercontent.com/fastapi/fastapi/master/README.md",
+    "filename": "md_readmes/readme_fastapi.md",
+    "type": "md",
+    "sha256": "63efc8b172d4ec8d06568e303032bfbf729587124e3ebdc60df5548ba3c30642",
+    "path": "eval/corpus/raw/md_readmes/readme_fastapi.md"
+  },
+  {
+    "id": "access_log",
+    "family": "logs_synthetic",
+    "url": "generate:logs",
+    "filename": "logs_synthetic/access.log",
+    "type": "log",
+    "sha256": "d44511b15781d285d2e64959b9a6ccf9f3b9d18e2b072fdcbb20efc9ad8caf93",
+    "path": "eval/corpus/raw/logs_synthetic/access.log"
+  },
+  {
+    "id": "code_doc_dataclasses",
+    "family": "code_documentation",
+    "url": "generate:code_docs/dataclasses",
+    "filename": "code_documentation/dataclasses_api.md",
+    "type": "md",
+    "sha256": "140b325302a65bf77a43b89bb9099dd28a25ef10e29ceb9697c1c904993abb06",
+    "path": "eval/corpus/raw/code_documentation/dataclasses_api.md"
+  },
+  {
+    "id": "code_doc_decimal",
+    "family": "code_documentation",
+    "url": "generate:code_docs/decimal",
+    "filename": "code_documentation/decimal_api.md",
+    "type": "md",
+    "sha256": "eee6209413cf5ed251fdf775891438ebbf4b50873ee791512c6122170f25cb8d",
+    "path": "eval/corpus/raw/code_documentation/decimal_api.md"
+  },
+  {
+    "id": "github_terms",
+    "family": "legal_policy",
+    "url": "https://raw.githubusercontent.com/github/site-policy/main/Policies/github-terms/github-terms-of-service.md",
+    "filename": "legal_policy/github_terms.md",
+    "type": "md",
+    "sha256": "b99f61303568322df9cd36b94e7293c71cc16fb06f8035837d4c44af895874cf",
+    "path": "eval/corpus/raw/legal_policy/github_terms.md"
+  },
+  {
+    "id": "petstore_openapi",
+    "family": "api_spec",
+    "url": "https://raw.githubusercontent.com/OAI/OpenAPI-Specification/3.1.0/examples/v3.0/petstore.json",
+    "filename": "api_spec/petstore.json",
+    "type": "json",
+    "sha256": "9ca6f5471cd45b0f17d48965a8303b790093444017ee5f8f703398e1ee5151b3",
+    "path": "eval/corpus/raw/api_spec/petstore.json"
   }
 ]

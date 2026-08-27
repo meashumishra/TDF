@@ -68,8 +68,12 @@ def main():
     
     for m in manifest:
         print(f"Perturbing {m['id']}...")
-        doc = read(Path(m['path']))
-        
+        try:
+            doc = read(Path(m['path']))
+        except ValueError as e:
+            print(f"  SKIP {m['id']}: {e}")
+            continue
+
         # If it's the co2 dataset, it's huge, maybe trim it to 100 rows for eval speed
         if m['id'] == 'co2_data':
             for b in doc.blocks:

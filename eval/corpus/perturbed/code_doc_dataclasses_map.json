@@ -1,0 +1,13 @@
+{
+  "entity_map": {
+    "Kubernetes": "Cybernetes",
+    "Pod": "Module",
+    "Deployment": "Rollout",
+    "Company": "CorpInc",
+    "Revenue": "Income"
+  },
+  "num_map": {
+    "585": "712",
+    "3119": "1928"
+  }
+}
