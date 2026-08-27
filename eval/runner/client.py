@@ -9,8 +9,14 @@ CACHE_DIR = Path("eval/runner/.cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
 def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, seed: int = 1) -> str:
-    # Use sha256 of prompt+model+seed for caching
-    key_input = f"{prompt}|{model}|{seed}".encode("utf-8")
+    # Cache key must cover every request parameter that can change the
+    # response. It previously omitted max_tokens/temperature/top_p, so a
+    # re-run with a different EVAL_MAX_TOKENS silently replayed responses
+    # generated (and truncated) under the OLD budget instead of calling the
+    # API -- corrupting exactly the token-budget re-run this knob exists for.
+    max_tokens = int(os.environ.get("EVAL_MAX_TOKENS", "256"))
+    top_p = float(os.environ.get("EVAL_TOP_P", "1"))
+    key_input = f"{prompt}|{model}|{seed}|{max_tokens}|{temperature}|{top_p}".encode("utf-8")
     cache_key = hashlib.sha256(key_input).hexdigest()
     cache_file = CACHE_DIR / f"{cache_key}.json"
     
@@ -39,8 +45,8 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
         "model": model,
         "messages": [{"role": "user", "content": prompt}],
         "temperature": temperature,
-        "top_p": float(os.environ.get("EVAL_TOP_P", "1")),
-        "max_tokens": int(os.environ.get("EVAL_MAX_TOKENS", "256")),
+        "top_p": top_p,
+        "max_tokens": max_tokens,
         # NOTE: gpt-oss-class REASONING models routinely need >>256 tokens
         # (they think before answering); at the default, ~73% of runs in the
         # first eval were truncated mid-reasoning, which systematically
