@@ -1,6 +1,7 @@
 import hashlib
 import json
 import os
+import socket
 import time
 from pathlib import Path
 from urllib import request, error
@@ -95,7 +96,13 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
                 time.sleep(2 ** attempt)
             else:
                 raise
-        except error.URLError:
+        except (error.URLError, socket.timeout, TimeoutError):
+            # A read timeout on request.urlopen() raises socket.timeout
+            # (== TimeoutError, not a URLError subclass), so it previously
+            # skipped this retry/backoff path entirely and went straight to
+            # a permanent skip on the first slow response -- exactly the
+            # failure mode a busy shared endpoint under concurrency hits
+            # routinely, silently shrinking the eval's effective sample.
             if attempt < 2:
                 time.sleep(2 ** attempt)
             else:
