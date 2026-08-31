@@ -96,6 +96,22 @@ def test_constant_column_factoring_is_always_zero_risk():
     assert ccf[0].token_savings > 0
 
 
+def test_explain_includes_semantic_tree_grouping_report():
+    """tdf/tree.py (Phase 17) plugs into explain() as just another report
+    source -- confirm the wiring, not tree.py's own detection logic (that's
+    tests/test_tree.py's job)."""
+    doc = Doc(blocks=[Table(
+        cols=["country", "year", "value"],
+        rows=[["India", "2024", "100"], ["India", "2025", "120"],
+              ["India", "2026", "150"], ["Brazil", "2020", "90"],
+              ["Brazil", "2021", "95"]],
+    )])
+    reports = explain(doc)
+    tree_reports = [r for r in reports if r.name.startswith("semantic_tree_grouping")]
+    assert len(tree_reports) == 1
+    assert tree_reports[0].token_savings > 0
+
+
 def test_score_combines_savings_and_risk_with_explicit_lambdas():
     from tdf.reasoning import TransformReport
     r = TransformReport(

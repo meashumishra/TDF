@@ -214,10 +214,17 @@ def explain(doc: Doc) -> list[TransformReport]:
     caller's document) and return every report produced. This is the
     single entry point a caller -- or a future scored optimizer -- should
     use; it does not change what render_tdf/tdf convert emit."""
+    from .tree import group_savings_report  # local: tree.py imports TransformReport from here
+
     reports: list[TransformReport] = []
     reports.extend(report_constant_column_factoring(deepcopy(doc)))
     reports.extend(report_caret_elision(deepcopy(doc)))
     dict_report = report_dictionary(deepcopy(doc))
     if dict_report is not None:
         reports.append(dict_report)
+    for b in doc.blocks:
+        if isinstance(b, Table) and b.rows:
+            tree_report = group_savings_report(list(b.cols), [list(r) for r in b.rows])
+            if tree_report is not None:
+                reports.append(tree_report)
     return reports
