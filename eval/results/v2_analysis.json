@@ -1,0 +1,2330 @@
+{
+  "512": {
+    "arm_stats": {
+      "json": {
+        "n": 257,
+        "accuracy": 0.5214007782101168,
+        "cap_hit_rate": 0.4396887159533074,
+        "avg_prompt_tokens": 48228.023346303504
+      },
+      "md": {
+        "n": 259,
+        "accuracy": 0.5135135135135135,
+        "cap_hit_rate": 0.42084942084942084,
+        "avg_prompt_tokens": 25442.783783783783
+      },
+      "toon": {
+        "n": 259,
+        "accuracy": 0.525096525096525,
+        "cap_hit_rate": 0.3861003861003861,
+        "avg_prompt_tokens": 15629.1583011583
+      },
+      "tdf_nodict": {
+        "n": 258,
+        "accuracy": 0.3953488372093023,
+        "cap_hit_rate": 0.5852713178294574,
+        "avg_prompt_tokens": 14516.18992248062
+      },
+      "hybrid": {
+        "n": 259,
+        "accuracy": 0.49034749034749037,
+        "cap_hit_rate": 0.5868725868725869,
+        "avg_prompt_tokens": 14924.749034749035
+      },
+      "tdf_nocaret": {
+        "n": 257,
+        "accuracy": 0.44357976653696496,
+        "cap_hit_rate": 0.5797665369649806,
+        "avg_prompt_tokens": 14649.167315175097
+      },
+      "tdf_nocaret0": {
+        "n": 259,
+        "accuracy": 0.4247104247104247,
+        "cap_hit_rate": 0.6756756756756757,
+        "avg_prompt_tokens": 14476.996138996139
+      },
+      "tdf_full": {
+        "n": 255,
+        "accuracy": 0.43529411764705883,
+        "cap_hit_rate": 0.5647058823529412,
+        "avg_prompt_tokens": 14473.04705882353
+      },
+      "tdf_hoist": {
+        "n": 253,
+        "accuracy": 0.4031620553359684,
+        "cap_hit_rate": 0.5770750988142292,
+        "avg_prompt_tokens": 14227.640316205534
+      },
+      "tdf_nocodes": {
+        "n": 258,
+        "accuracy": 0.4069767441860465,
+        "cap_hit_rate": 0.49224806201550386,
+        "avg_prompt_tokens": 14529.790697674418
+      }
+    },
+    "paired_vs_md": {
+      "json": {
+        "n_paired": 254,
+        "mean_diff_pp": 0.7874015748031495,
+        "ci_lo_pp": -2.7559055118110236,
+        "ci_hi_pp": 4.330708661417323
+      },
+      "toon": {
+        "n_paired": 255,
+        "mean_diff_pp": 2.3529411764705883,
+        "ci_lo_pp": -2.3529411764705883,
+        "ci_hi_pp": 7.0588235294117645
+      },
+      "tdf_nodict": {
+        "n_paired": 254,
+        "mean_diff_pp": -12.204724409448819,
+        "ci_lo_pp": -17.716535433070867,
+        "ci_hi_pp": -7.480314960629922
+      },
+      "hybrid": {
+        "n_paired": 255,
+        "mean_diff_pp": -2.7450980392156863,
+        "ci_lo_pp": -8.235294117647058,
+        "ci_hi_pp": 2.3529411764705883
+      },
+      "tdf_nocaret": {
+        "n_paired": 253,
+        "mean_diff_pp": -7.905138339920949,
+        "ci_lo_pp": -13.043478260869565,
+        "ci_hi_pp": -2.766798418972332
+      },
+      "tdf_nocaret0": {
+        "n_paired": 255,
+        "mean_diff_pp": -10.196078431372548,
+        "ci_lo_pp": -15.294117647058824,
+        "ci_hi_pp": -5.098039215686274
+      },
+      "tdf_full": {
+        "n_paired": 252,
+        "mean_diff_pp": -8.73015873015873,
+        "ci_lo_pp": -14.285714285714285,
+        "ci_hi_pp": -3.1746031746031744
+      },
+      "tdf_hoist": {
+        "n_paired": 250,
+        "mean_diff_pp": -11.200000000000001,
+        "ci_lo_pp": -16.400000000000002,
+        "ci_hi_pp": -6.0
+      },
+      "tdf_nocodes": {
+        "n_paired": 254,
+        "mean_diff_pp": -11.811023622047244,
+        "ci_lo_pp": -17.322834645669293,
+        "ci_hi_pp": -6.692913385826772
+      }
+    },
+    "by_type": {
+      "json": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          43,
+          49
+        ],
+        "column_association": [
+          45,
+          47
+        ],
+        "ordering": [
+          3,
+          50
+        ],
+        "repeated_cell": [
+          20,
+          20
+        ],
+        "multi_hop_table": [
+          6,
+          14
+        ],
+        "numeric_comparison": [
+          4,
+          36
+        ],
+        "negation": [
+          6,
+          29
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          0,
+          1
+        ]
+      },
+      "md": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "ordering": [
+          3,
+          50
+        ],
+        "repeated_cell": [
+          20,
+          20
+        ],
+        "column_association": [
+          46,
+          48
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "multi_hop_table": [
+          6,
+          15
+        ],
+        "row_association": [
+          40,
+          49
+        ],
+        "negation": [
+          9,
+          29
+        ],
+        "cross_reference": [
+          1,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "toon": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          1,
+          4
+        ],
+        "row_association": [
+          43,
+          48
+        ],
+        "column_association": [
+          45,
+          48
+        ],
+        "ordering": [
+          2,
+          50
+        ],
+        "repeated_cell": [
+          17,
+          20
+        ],
+        "numeric_comparison": [
+          6,
+          36
+        ],
+        "multi_hop_table": [
+          8,
+          15
+        ],
+        "negation": [
+          10,
+          29
+        ],
+        "cross_reference": [
+          1,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "tdf_nodict": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          1,
+          4
+        ],
+        "row_association": [
+          25,
+          48
+        ],
+        "column_association": [
+          44,
+          48
+        ],
+        "ordering": [
+          2,
+          50
+        ],
+        "repeated_cell": [
+          14,
+          20
+        ],
+        "numeric_comparison": [
+          2,
+          36
+        ],
+        "multi_hop_table": [
+          3,
+          15
+        ],
+        "negation": [
+          7,
+          29
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          0,
+          1
+        ]
+      },
+      "hybrid": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          38,
+          50
+        ],
+        "column_association": [
+          42,
+          47
+        ],
+        "ordering": [
+          2,
+          50
+        ],
+        "repeated_cell": [
+          17,
+          20
+        ],
+        "numeric_comparison": [
+          4,
+          35
+        ],
+        "multi_hop_table": [
+          8,
+          15
+        ],
+        "negation": [
+          11,
+          29
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          0,
+          2
+        ]
+      },
+      "tdf_nocaret": {
+        "deref_dict": [
+          4,
+          4
+        ],
+        "row_association": [
+          26,
+          47
+        ],
+        "column_association": [
+          48,
+          50
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          14,
+          20
+        ],
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "multi_hop_table": [
+          3,
+          14
+        ],
+        "numeric_comparison": [
+          4,
+          36
+        ],
+        "negation": [
+          8,
+          28
+        ],
+        "cross_reference": [
+          1,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "tdf_nocaret0": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "row_association": [
+          25,
+          49
+        ],
+        "column_association": [
+          47,
+          50
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          15,
+          20
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "deref_dict": [
+          3,
+          4
+        ],
+        "multi_hop_table": [
+          3,
+          14
+        ],
+        "negation": [
+          8,
+          28
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          0,
+          2
+        ]
+      },
+      "tdf_full": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "row_association": [
+          26,
+          48
+        ],
+        "column_association": [
+          44,
+          48
+        ],
+        "ordering": [
+          2,
+          48
+        ],
+        "repeated_cell": [
+          15,
+          20
+        ],
+        "deref_dict": [
+          4,
+          4
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          4,
+          14
+        ],
+        "negation": [
+          9,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          2
+        ]
+      },
+      "tdf_hoist": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          3,
+          4
+        ],
+        "row_association": [
+          25,
+          48
+        ],
+        "column_association": [
+          44,
+          47
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          13,
+          19
+        ],
+        "numeric_comparison": [
+          2,
+          34
+        ],
+        "multi_hop_table": [
+          2,
+          15
+        ],
+        "negation": [
+          8,
+          28
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "tdf_nocodes": {
+        "deref_dict": [
+          4,
+          4
+        ],
+        "row_association": [
+          23,
+          47
+        ],
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "column_association": [
+          44,
+          50
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          16,
+          20
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          2,
+          15
+        ],
+        "negation": [
+          7,
+          28
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      }
+    }
+  },
+  "1024": {
+    "arm_stats": {
+      "tdf_hoist": {
+        "n": 241,
+        "accuracy": 0.36099585062240663,
+        "cap_hit_rate": 0.3112033195020747,
+        "avg_prompt_tokens": 14297.215767634854
+      },
+      "tdf_full": {
+        "n": 245,
+        "accuracy": 0.39591836734693875,
+        "cap_hit_rate": 0.3346938775510204,
+        "avg_prompt_tokens": 14537.567346938775
+      },
+      "tdf_nocodes": {
+        "n": 241,
+        "accuracy": 0.4315352697095436,
+        "cap_hit_rate": 0.34439834024896265,
+        "avg_prompt_tokens": 14594.995850622407
+      },
+      "tdf_nocaret": {
+        "n": 241,
+        "accuracy": 0.38589211618257263,
+        "cap_hit_rate": 0.31950207468879666,
+        "avg_prompt_tokens": 14718.39419087137
+      },
+      "tdf_nocaret0": {
+        "n": 239,
+        "accuracy": 0.38493723849372385,
+        "cap_hit_rate": 0.3263598326359833,
+        "avg_prompt_tokens": 14545.083682008368
+      },
+      "toon": {
+        "n": 240,
+        "accuracy": 0.4875,
+        "cap_hit_rate": 0.24166666666666667,
+        "avg_prompt_tokens": 15586.220833333333
+      },
+      "tdf_nodict": {
+        "n": 245,
+        "accuracy": 0.3836734693877551,
+        "cap_hit_rate": 0.3224489795918367,
+        "avg_prompt_tokens": 14573.979591836734
+      },
+      "md": {
+        "n": 242,
+        "accuracy": 0.5,
+        "cap_hit_rate": 0.2603305785123967,
+        "avg_prompt_tokens": 25491.028925619834
+      },
+      "json": {
+        "n": 238,
+        "accuracy": 0.4831932773109244,
+        "cap_hit_rate": 0.37815126050420167,
+        "avg_prompt_tokens": 48198.08403361344
+      },
+      "hybrid": {
+        "n": 244,
+        "accuracy": 0.45081967213114754,
+        "cap_hit_rate": 0.30327868852459017,
+        "avg_prompt_tokens": 14940.602459016394
+      }
+    },
+    "paired_vs_md": {
+      "tdf_hoist": {
+        "n_paired": 236,
+        "mean_diff_pp": -14.83050847457627,
+        "ci_lo_pp": -20.76271186440678,
+        "ci_hi_pp": -9.322033898305085
+      },
+      "tdf_full": {
+        "n_paired": 238,
+        "mean_diff_pp": -10.504201680672269,
+        "ci_lo_pp": -15.966386554621847,
+        "ci_hi_pp": -5.042016806722689
+      },
+      "tdf_nocodes": {
+        "n_paired": 236,
+        "mean_diff_pp": -7.627118644067797,
+        "ci_lo_pp": -13.983050847457626,
+        "ci_hi_pp": -1.694915254237288
+      },
+      "tdf_nocaret": {
+        "n_paired": 235,
+        "mean_diff_pp": -11.914893617021278,
+        "ci_lo_pp": -17.872340425531917,
+        "ci_hi_pp": -6.382978723404255
+      },
+      "tdf_nocaret0": {
+        "n_paired": 233,
+        "mean_diff_pp": -12.446351931330472,
+        "ci_lo_pp": -18.4549356223176,
+        "ci_hi_pp": -6.437768240343347
+      },
+      "toon": {
+        "n_paired": 235,
+        "mean_diff_pp": -0.851063829787234,
+        "ci_lo_pp": -5.106382978723404,
+        "ci_hi_pp": 3.404255319148936
+      },
+      "tdf_nodict": {
+        "n_paired": 239,
+        "mean_diff_pp": -11.715481171548117,
+        "ci_lo_pp": -17.573221757322173,
+        "ci_hi_pp": -6.2761506276150625
+      },
+      "json": {
+        "n_paired": 235,
+        "mean_diff_pp": -0.851063829787234,
+        "ci_lo_pp": -5.106382978723404,
+        "ci_hi_pp": 3.404255319148936
+      },
+      "hybrid": {
+        "n_paired": 238,
+        "mean_diff_pp": -5.46218487394958,
+        "ci_lo_pp": -10.504201680672269,
+        "ci_hi_pp": -0.42016806722689076
+      }
+    },
+    "by_type": {
+      "tdf_hoist": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          3,
+          4
+        ],
+        "row_association": [
+          22,
+          44
+        ],
+        "column_association": [
+          37,
+          45
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "repeated_cell": [
+          13,
+          19
+        ],
+        "multi_hop_table": [
+          3,
+          14
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "negation": [
+          4,
+          26
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "tdf_full": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          4,
+          4
+        ],
+        "row_association": [
+          27,
+          47
+        ],
+        "column_association": [
+          41,
+          44
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "repeated_cell": [
+          13,
+          19
+        ],
+        "multi_hop_table": [
+          4,
+          14
+        ],
+        "ordering": [
+          1,
+          49
+        ],
+        "negation": [
+          2,
+          26
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "tdf_nocodes": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          4,
+          4
+        ],
+        "row_association": [
+          24,
+          45
+        ],
+        "column_association": [
+          42,
+          45
+        ],
+        "repeated_cell": [
+          12,
+          18
+        ],
+        "multi_hop_table": [
+          4,
+          12
+        ],
+        "numeric_comparison": [
+          4,
+          36
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "negation": [
+          10,
+          27
+        ],
+        "deref_code": [
+          0,
+          1
+        ],
+        "cross_reference": [
+          0,
+          1
+        ]
+      },
+      "tdf_nocaret": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          3,
+          4
+        ],
+        "row_association": [
+          24,
+          44
+        ],
+        "column_association": [
+          39,
+          45
+        ],
+        "repeated_cell": [
+          16,
+          19
+        ],
+        "numeric_comparison": [
+          2,
+          34
+        ],
+        "multi_hop_table": [
+          3,
+          13
+        ],
+        "ordering": [
+          1,
+          49
+        ],
+        "negation": [
+          2,
+          27
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "tdf_nocaret0": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          4,
+          4
+        ],
+        "row_association": [
+          24,
+          44
+        ],
+        "repeated_cell": [
+          14,
+          18
+        ],
+        "numeric_comparison": [
+          1,
+          34
+        ],
+        "column_association": [
+          34,
+          45
+        ],
+        "ordering": [
+          1,
+          49
+        ],
+        "multi_hop_table": [
+          3,
+          13
+        ],
+        "negation": [
+          9,
+          26
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "toon": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          1,
+          4
+        ],
+        "column_association": [
+          40,
+          45
+        ],
+        "row_association": [
+          41,
+          44
+        ],
+        "repeated_cell": [
+          17,
+          18
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "multi_hop_table": [
+          9,
+          14
+        ],
+        "ordering": [
+          1,
+          49
+        ],
+        "negation": [
+          5,
+          25
+        ],
+        "deref_code": [
+          0,
+          1
+        ],
+        "cross_reference": [
+          0,
+          1
+        ]
+      },
+      "tdf_nodict": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          24,
+          46
+        ],
+        "column_association": [
+          39,
+          45
+        ],
+        "repeated_cell": [
+          12,
+          18
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          4,
+          14
+        ],
+        "ordering": [
+          1,
+          49
+        ],
+        "negation": [
+          6,
+          27
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "md": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          38,
+          44
+        ],
+        "column_association": [
+          39,
+          44
+        ],
+        "ordering": [
+          3,
+          50
+        ],
+        "numeric_comparison": [
+          5,
+          36
+        ],
+        "multi_hop_table": [
+          7,
+          14
+        ],
+        "repeated_cell": [
+          17,
+          18
+        ],
+        "negation": [
+          8,
+          26
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "json": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          1,
+          4
+        ],
+        "column_association": [
+          42,
+          44
+        ],
+        "row_association": [
+          35,
+          42
+        ],
+        "repeated_cell": [
+          18,
+          19
+        ],
+        "multi_hop_table": [
+          6,
+          14
+        ],
+        "numeric_comparison": [
+          4,
+          34
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "negation": [
+          5,
+          25
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      },
+      "hybrid": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          35,
+          45
+        ],
+        "column_association": [
+          39,
+          46
+        ],
+        "ordering": [
+          2,
+          50
+        ],
+        "repeated_cell": [
+          15,
+          18
+        ],
+        "numeric_comparison": [
+          2,
+          34
+        ],
+        "multi_hop_table": [
+          5,
+          14
+        ],
+        "negation": [
+          7,
+          27
+        ],
+        "cross_reference": [
+          0,
+          1
+        ],
+        "deref_code": [
+          0,
+          1
+        ]
+      }
+    }
+  },
+  "2048": {
+    "arm_stats": {
+      "json": {
+        "n": 240,
+        "accuracy": 0.49583333333333335,
+        "cap_hit_rate": 0.11666666666666667,
+        "avg_prompt_tokens": 48579.325
+      },
+      "tdf_full": {
+        "n": 240,
+        "accuracy": 0.3625,
+        "cap_hit_rate": 0.17083333333333334,
+        "avg_prompt_tokens": 14563.8
+      },
+      "tdf_nodict": {
+        "n": 239,
+        "accuracy": 0.3682008368200837,
+        "cap_hit_rate": 0.17573221757322174,
+        "avg_prompt_tokens": 14624.63179916318
+      },
+      "tdf_nocodes": {
+        "n": 238,
+        "accuracy": 0.35714285714285715,
+        "cap_hit_rate": 0.226890756302521,
+        "avg_prompt_tokens": 14664.151260504203
+      },
+      "md": {
+        "n": 240,
+        "accuracy": 0.4875,
+        "cap_hit_rate": 0.15416666666666667,
+        "avg_prompt_tokens": 25610.408333333333
+      },
+      "toon": {
+        "n": 239,
+        "accuracy": 0.497907949790795,
+        "cap_hit_rate": 0.09623430962343096,
+        "avg_prompt_tokens": 15671.836820083681
+      },
+      "tdf_nocaret": {
+        "n": 240,
+        "accuracy": 0.39166666666666666,
+        "cap_hit_rate": 0.15416666666666667,
+        "avg_prompt_tokens": 14793.420833333334
+      },
+      "hybrid": {
+        "n": 238,
+        "accuracy": 0.3865546218487395,
+        "cap_hit_rate": 0.1722689075630252,
+        "avg_prompt_tokens": 15085.079831932773
+      },
+      "tdf_hoist": {
+        "n": 239,
+        "accuracy": 0.33472803347280333,
+        "cap_hit_rate": 0.18828451882845187,
+        "avg_prompt_tokens": 14320.92468619247
+      },
+      "tdf_nocaret0": {
+        "n": 242,
+        "accuracy": 0.3884297520661157,
+        "cap_hit_rate": 0.19421487603305784,
+        "avg_prompt_tokens": 14618.595041322315
+      }
+    },
+    "paired_vs_md": {
+      "json": {
+        "n_paired": 237,
+        "mean_diff_pp": 1.2658227848101267,
+        "ci_lo_pp": -2.9535864978902953,
+        "ci_hi_pp": 5.063291139240507
+      },
+      "tdf_full": {
+        "n_paired": 237,
+        "mean_diff_pp": -12.236286919831224,
+        "ci_lo_pp": -17.72151898734177,
+        "ci_hi_pp": -6.751054852320674
+      },
+      "tdf_nodict": {
+        "n_paired": 235,
+        "mean_diff_pp": -11.48936170212766,
+        "ci_lo_pp": -17.02127659574468,
+        "ci_hi_pp": -6.382978723404255
+      },
+      "tdf_nocodes": {
+        "n_paired": 234,
+        "mean_diff_pp": -11.965811965811966,
+        "ci_lo_pp": -17.52136752136752,
+        "ci_hi_pp": -6.837606837606838
+      },
+      "toon": {
+        "n_paired": 236,
+        "mean_diff_pp": 1.2711864406779663,
+        "ci_lo_pp": -2.5423728813559325,
+        "ci_hi_pp": 5.084745762711865
+      },
+      "tdf_nocaret": {
+        "n_paired": 236,
+        "mean_diff_pp": -8.898305084745763,
+        "ci_lo_pp": -14.40677966101695,
+        "ci_hi_pp": -4.23728813559322
+      },
+      "hybrid": {
+        "n_paired": 233,
+        "mean_diff_pp": -9.44206008583691,
+        "ci_lo_pp": -15.021459227467812,
+        "ci_hi_pp": -3.862660944206009
+      },
+      "tdf_hoist": {
+        "n_paired": 235,
+        "mean_diff_pp": -14.893617021276595,
+        "ci_lo_pp": -20.851063829787233,
+        "ci_hi_pp": -9.361702127659575
+      },
+      "tdf_nocaret0": {
+        "n_paired": 236,
+        "mean_diff_pp": -9.745762711864407,
+        "ci_lo_pp": -15.254237288135593,
+        "ci_hi_pp": -4.661016949152542
+      }
+    },
+    "by_type": {
+      "json": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          1,
+          2
+        ],
+        "row_association": [
+          36,
+          43
+        ],
+        "column_association": [
+          39,
+          42
+        ],
+        "ordering": [
+          4,
+          49
+        ],
+        "numeric_comparison": [
+          8,
+          36
+        ],
+        "repeated_cell": [
+          17,
+          17
+        ],
+        "multi_hop_table": [
+          7,
+          14
+        ],
+        "negation": [
+          4,
+          28
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "tdf_full": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          2
+        ],
+        "row_association": [
+          21,
+          43
+        ],
+        "column_association": [
+          34,
+          40
+        ],
+        "ordering": [
+          2,
+          48
+        ],
+        "repeated_cell": [
+          12,
+          19
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          4,
+          15
+        ],
+        "negation": [
+          5,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          1,
+          2
+        ]
+      },
+      "tdf_nodict": {
+        "exact_identifier": [
+          2,
+          3
+        ],
+        "deref_dict": [
+          1,
+          2
+        ],
+        "row_association": [
+          23,
+          42
+        ],
+        "column_association": [
+          35,
+          41
+        ],
+        "repeated_cell": [
+          13,
+          18
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          3,
+          15
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "negation": [
+          5,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          1,
+          2
+        ]
+      },
+      "tdf_nocodes": {
+        "exact_identifier": [
+          2,
+          3
+        ],
+        "deref_dict": [
+          2,
+          2
+        ],
+        "row_association": [
+          19,
+          41
+        ],
+        "column_association": [
+          33,
+          41
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          14,
+          18
+        ],
+        "numeric_comparison": [
+          4,
+          36
+        ],
+        "multi_hop_table": [
+          2,
+          15
+        ],
+        "negation": [
+          5,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          2
+        ]
+      },
+      "md": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          0,
+          2
+        ],
+        "row_association": [
+          38,
+          43
+        ],
+        "ordering": [
+          3,
+          48
+        ],
+        "repeated_cell": [
+          18,
+          18
+        ],
+        "column_association": [
+          39,
+          42
+        ],
+        "multi_hop_table": [
+          8,
+          14
+        ],
+        "numeric_comparison": [
+          1,
+          36
+        ],
+        "negation": [
+          5,
+          28
+        ],
+        "cross_reference": [
+          1,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "toon": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          0,
+          2
+        ],
+        "row_association": [
+          39,
+          42
+        ],
+        "ordering": [
+          3,
+          48
+        ],
+        "column_association": [
+          37,
+          41
+        ],
+        "repeated_cell": [
+          18,
+          18
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          7,
+          15
+        ],
+        "negation": [
+          8,
+          29
+        ],
+        "cross_reference": [
+          1,
+          2
+        ],
+        "deref_code": [
+          2,
+          2
+        ]
+      },
+      "tdf_nocaret": {
+        "exact_identifier": [
+          2,
+          3
+        ],
+        "deref_dict": [
+          2,
+          2
+        ],
+        "row_association": [
+          23,
+          42
+        ],
+        "column_association": [
+          37,
+          42
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          15,
+          18
+        ],
+        "numeric_comparison": [
+          6,
+          36
+        ],
+        "multi_hop_table": [
+          3,
+          15
+        ],
+        "negation": [
+          3,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          1,
+          2
+        ]
+      },
+      "hybrid": {
+        "exact_identifier": [
+          0,
+          2
+        ],
+        "deref_dict": [
+          0,
+          2
+        ],
+        "column_association": [
+          32,
+          42
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "row_association": [
+          31,
+          42
+        ],
+        "repeated_cell": [
+          11,
+          18
+        ],
+        "numeric_comparison": [
+          4,
+          36
+        ],
+        "multi_hop_table": [
+          6,
+          15
+        ],
+        "negation": [
+          5,
+          28
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          1,
+          2
+        ]
+      },
+      "tdf_hoist": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          2,
+          2
+        ],
+        "row_association": [
+          18,
+          42
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "column_association": [
+          31,
+          40
+        ],
+        "repeated_cell": [
+          14,
+          18
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          4,
+          15
+        ],
+        "negation": [
+          3,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          1,
+          2
+        ]
+      },
+      "tdf_nocaret0": {
+        "exact_identifier": [
+          2,
+          3
+        ],
+        "deref_dict": [
+          2,
+          2
+        ],
+        "row_association": [
+          22,
+          42
+        ],
+        "column_association": [
+          41,
+          44
+        ],
+        "ordering": [
+          2,
+          49
+        ],
+        "repeated_cell": [
+          13,
+          18
+        ],
+        "numeric_comparison": [
+          3,
+          36
+        ],
+        "multi_hop_table": [
+          3,
+          15
+        ],
+        "negation": [
+          4,
+          29
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          2
+        ]
+      }
+    }
+  },
+  "4096": {
+    "arm_stats": {
+      "tdf_hoist": {
+        "n": 239,
+        "accuracy": 0.301255230125523,
+        "cap_hit_rate": 0.058577405857740586,
+        "avg_prompt_tokens": 14429.146443514644
+      },
+      "md": {
+        "n": 238,
+        "accuracy": 0.4579831932773109,
+        "cap_hit_rate": 0.029411764705882353,
+        "avg_prompt_tokens": 25567.323529411766
+      },
+      "tdf_nocaret0": {
+        "n": 239,
+        "accuracy": 0.3723849372384937,
+        "cap_hit_rate": 0.08368200836820083,
+        "avg_prompt_tokens": 14761.828451882846
+      },
+      "json": {
+        "n": 239,
+        "accuracy": 0.502092050209205,
+        "cap_hit_rate": 0.08368200836820083,
+        "avg_prompt_tokens": 48031.92050209205
+      },
+      "tdf_nodict": {
+        "n": 240,
+        "accuracy": 0.35,
+        "cap_hit_rate": 0.041666666666666664,
+        "avg_prompt_tokens": 14708.666666666666
+      },
+      "tdf_full": {
+        "n": 237,
+        "accuracy": 0.3206751054852321,
+        "cap_hit_rate": 0.046413502109704644,
+        "avg_prompt_tokens": 14755.037974683544
+      },
+      "hybrid": {
+        "n": 239,
+        "accuracy": 0.3807531380753138,
+        "cap_hit_rate": 0.029288702928870293,
+        "avg_prompt_tokens": 15183.912133891214
+      },
+      "toon": {
+        "n": 240,
+        "accuracy": 0.475,
+        "cap_hit_rate": 0.0375,
+        "avg_prompt_tokens": 15824.2875
+      },
+      "tdf_nocaret": {
+        "n": 237,
+        "accuracy": 0.3628691983122363,
+        "cap_hit_rate": 0.04219409282700422,
+        "avg_prompt_tokens": 14894.210970464135
+      },
+      "tdf_nocodes": {
+        "n": 238,
+        "accuracy": 0.36134453781512604,
+        "cap_hit_rate": 0.0546218487394958,
+        "avg_prompt_tokens": 14816.47899159664
+      }
+    },
+    "paired_vs_md": {
+      "tdf_hoist": {
+        "n_paired": 235,
+        "mean_diff_pp": -15.319148936170212,
+        "ci_lo_pp": -21.27659574468085,
+        "ci_hi_pp": -9.361702127659575
+      },
+      "tdf_nocaret0": {
+        "n_paired": 232,
+        "mean_diff_pp": -10.344827586206897,
+        "ci_lo_pp": -16.379310344827587,
+        "ci_hi_pp": -4.741379310344827
+      },
+      "json": {
+        "n_paired": 237,
+        "mean_diff_pp": 3.79746835443038,
+        "ci_lo_pp": 0.0,
+        "ci_hi_pp": 7.59493670886076
+      },
+      "tdf_nodict": {
+        "n_paired": 237,
+        "mean_diff_pp": -10.970464135021098,
+        "ci_lo_pp": -16.455696202531644,
+        "ci_hi_pp": -5.485232067510549
+      },
+      "tdf_full": {
+        "n_paired": 235,
+        "mean_diff_pp": -13.617021276595745,
+        "ci_lo_pp": -19.148936170212767,
+        "ci_hi_pp": -7.659574468085106
+      },
+      "hybrid": {
+        "n_paired": 231,
+        "mean_diff_pp": -9.090909090909092,
+        "ci_lo_pp": -14.285714285714285,
+        "ci_hi_pp": -3.896103896103896
+      },
+      "toon": {
+        "n_paired": 236,
+        "mean_diff_pp": 0.847457627118644,
+        "ci_lo_pp": -3.389830508474576,
+        "ci_hi_pp": 5.084745762711865
+      },
+      "tdf_nocaret": {
+        "n_paired": 233,
+        "mean_diff_pp": -9.871244635193133,
+        "ci_lo_pp": -15.021459227467812,
+        "ci_hi_pp": -4.721030042918455
+      },
+      "tdf_nocodes": {
+        "n_paired": 234,
+        "mean_diff_pp": -10.683760683760683,
+        "ci_lo_pp": -15.81196581196581,
+        "ci_hi_pp": -5.555555555555555
+      }
+    },
+    "by_type": {
+      "tdf_hoist": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          3,
+          4
+        ],
+        "row_association": [
+          19,
+          42
+        ],
+        "multi_hop_table": [
+          1,
+          13
+        ],
+        "column_association": [
+          33,
+          45
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "repeated_cell": [
+          7,
+          17
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "negation": [
+          3,
+          26
+        ],
+        "deref_code": [
+          1,
+          3
+        ],
+        "cross_reference": [
+          0,
+          2
+        ]
+      },
+      "md": {
+        "exact_identifier": [
+          2,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          36,
+          44
+        ],
+        "repeated_cell": [
+          15,
+          17
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "numeric_comparison": [
+          4,
+          35
+        ],
+        "negation": [
+          6,
+          27
+        ],
+        "column_association": [
+          37,
+          42
+        ],
+        "multi_hop_table": [
+          3,
+          12
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          1,
+          2
+        ]
+      },
+      "tdf_nocaret0": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          3,
+          3
+        ],
+        "multi_hop_table": [
+          3,
+          14
+        ],
+        "column_association": [
+          37,
+          44
+        ],
+        "repeated_cell": [
+          9,
+          17
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "numeric_comparison": [
+          6,
+          34
+        ],
+        "negation": [
+          3,
+          27
+        ],
+        "row_association": [
+          22,
+          43
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "json": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          3
+        ],
+        "multi_hop_table": [
+          6,
+          13
+        ],
+        "row_association": [
+          38,
+          44
+        ],
+        "column_association": [
+          40,
+          43
+        ],
+        "repeated_cell": [
+          17,
+          17
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "numeric_comparison": [
+          7,
+          35
+        ],
+        "negation": [
+          3,
+          27
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          1,
+          2
+        ]
+      },
+      "tdf_nodict": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          4
+        ],
+        "row_association": [
+          24,
+          44
+        ],
+        "multi_hop_table": [
+          2,
+          13
+        ],
+        "column_association": [
+          37,
+          44
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "repeated_cell": [
+          11,
+          17
+        ],
+        "numeric_comparison": [
+          0,
+          34
+        ],
+        "negation": [
+          3,
+          27
+        ],
+        "deref_code": [
+          1,
+          3
+        ],
+        "cross_reference": [
+          0,
+          2
+        ]
+      },
+      "tdf_full": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          3,
+          3
+        ],
+        "row_association": [
+          20,
+          42
+        ],
+        "column_association": [
+          38,
+          44
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "repeated_cell": [
+          7,
+          17
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "negation": [
+          2,
+          27
+        ],
+        "multi_hop_table": [
+          0,
+          12
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      },
+      "hybrid": {
+        "exact_identifier": [
+          1,
+          4
+        ],
+        "deref_dict": [
+          1,
+          3
+        ],
+        "row_association": [
+          32,
+          44
+        ],
+        "multi_hop_table": [
+          5,
+          14
+        ],
+        "column_association": [
+          36,
+          45
+        ],
+        "ordering": [
+          0,
+          47
+        ],
+        "repeated_cell": [
+          11,
+          17
+        ],
+        "numeric_comparison": [
+          0,
+          34
+        ],
+        "negation": [
+          3,
+          26
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          0,
+          2
+        ]
+      },
+      "toon": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          1,
+          3
+        ],
+        "row_association": [
+          40,
+          44
+        ],
+        "multi_hop_table": [
+          4,
+          13
+        ],
+        "column_association": [
+          42,
+          44
+        ],
+        "repeated_cell": [
+          15,
+          17
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "negation": [
+          3,
+          27
+        ],
+        "deref_code": [
+          2,
+          3
+        ],
+        "cross_reference": [
+          1,
+          2
+        ]
+      },
+      "tdf_nocaret": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          3,
+          3
+        ],
+        "row_association": [
+          22,
+          42
+        ],
+        "multi_hop_table": [
+          1,
+          13
+        ],
+        "column_association": [
+          39,
+          44
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "repeated_cell": [
+          13,
+          17
+        ],
+        "numeric_comparison": [
+          0,
+          34
+        ],
+        "negation": [
+          3,
+          27
+        ],
+        "deref_code": [
+          1,
+          3
+        ],
+        "cross_reference": [
+          0,
+          2
+        ]
+      },
+      "tdf_nocodes": {
+        "exact_identifier": [
+          3,
+          4
+        ],
+        "deref_dict": [
+          2,
+          3
+        ],
+        "multi_hop_table": [
+          1,
+          13
+        ],
+        "column_association": [
+          35,
+          44
+        ],
+        "repeated_cell": [
+          13,
+          17
+        ],
+        "ordering": [
+          1,
+          48
+        ],
+        "numeric_comparison": [
+          2,
+          35
+        ],
+        "negation": [
+          3,
+          27
+        ],
+        "row_association": [
+          24,
+          42
+        ],
+        "cross_reference": [
+          0,
+          2
+        ],
+        "deref_code": [
+          2,
+          3
+        ]
+      }
+    }
+  }
+}
