@@ -250,16 +250,21 @@ Priority order, cheapest-and-most-load-bearing first:
    this recommendation — lowest-cardinality-relative-to-height, or a column
    name matching `id|key|code`) is real follow-up work, but it is premature
    until the column-0 version is even shipped and measured.
-3. **Build §7 as a thin, additive layer, not a rewrite.** Don't replace the
-   existing hand-tuned gates — wrap each existing transform with a function
-   that reports `(tokens_before, tokens_after, token_savings)` (trivial,
-   already computable from `tdf.tokens.count` before/after) and a
-   *placeholder* risk breakdown seeded from the already-known failure modes
-   (e.g., caret-elision on a non-anchor column = nonzero reasoning_risk,
-   citing the exact Phase-5 finding that motivated the anchor fix). Getting
-   the reporting shape in place first is what makes the λ-weighted score
-   tunable later, and it's what the mission's §7 output contract actually
-   asks for even before the weights are tuned.
+3. **DONE — §7 additive reporting layer.** `tdf/reasoning.py` (Phase 15)
+   wraps `drop_constant_columns`, `elide_repeats`, and `build_dictionary`
+   with `TransformReport`s exposing `tokens_before/tokens_after/
+   token_savings/structural_risk/semantic_risk/reasoning_risk`, plus
+   `score(report, lambda1, lambda2, lambda3)` implementing the mission's
+   objective with explicit, caller-supplied weights (no default policy is
+   applied automatically anywhere). It does not change what `render_tdf`
+   emits — `explain(doc)` operates on a private deep copy. Two things worth
+   flagging about how the risk numbers were chosen: the dictionary's
+   `reasoning_risk=0.02` is not a guess, it cites the ablation ladder in
+   `eval/results/REPORT.md` (removing `§n` recovers <=0.1pp); the caret-
+   elision risk (0.8 identifier-like column / 0.05 otherwise) is a
+   deliberately coarse heuristic because no per-column accuracy measurement
+   exists — `tdf_nocaret0` (recommendation #2 above) is the mechanism that
+   could eventually replace it with a real number, once it's actually run.
 4. **Semantic Tree (§4) and inheritance compression (§6) are the largest
    unimplemented piece of the original spec** and should be scoped as their
    own phase — they're a precondition for "parent/context factoring" beyond
