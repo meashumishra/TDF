@@ -104,16 +104,33 @@ partially-covered one.
 - **Constant-column factoring — IMPLEMENTED.** `drop_constant_columns`,
   including the original-column-index fix from the independent audit's
   BUG-1 (optimize.py:173-177).
-- **Repeated record factoring — PARTIAL.** `elide_repeats`/
-  `elide_repeats_keep_anchor` collapse a cell identical to the one directly
-  above it, column by column, with column 0 hard-protected as the row anchor
+- **Repeated record factoring — PARTIAL, and the one confirmed fix here is
+  UNSHIPPED.** `elide_repeats` (optimize.py:198) collapses a cell identical
+  to the one directly above it, column by column, with **no anchor
+  protection anywhere** — and this is what `tdf/emit.py:267`'s `_tdf_table`
+  actually calls, meaning every real `tdf convert` / `render_tdf` output
+  today can caret-elide column 0 exactly as freely as any other column.
+  `elide_repeats_keep_anchor` (optimize.py:216), which protects column 0
   after Phase-5 failure analysis showed caret-eliding a lookup key caused
-  the dominant row_association accuracy loss (optimize.py:216-233, citing
-  `reports/FAILURE_ANALYSIS.md`). This is real, measured risk-awareness —
-  but it protects *only* column 0. A table whose primary key lives in
-  column 2 gets no equivalent protection; nothing detects "which column is
-  the identifier" generically (again traces back to §3's missing Identifier
-  type).
+  the dominant row_association accuracy loss, is **never called from the
+  default emission path at all** — its only caller is
+  `eval/formats/encode.py`'s `encode_tdf_nocaret0`, an exploratory eval arm
+  that monkeypatches it in via `unittest.mock` purely to *measure* the idea.
+  Worse: that arm has **zero rows in the v1 accuracy run**
+  (`eval/results/archive_v1_256tok/raw.jsonl` has 789 rows each for md,
+  json, toon, tdf_full, tdf_hoist, tdf_nodict, tdf_nocodes, tdf_nocaret,
+  hybrid — and none for tdf_nocaret0). So the fix is not just under-
+  generalized past column 0 (the original version of this finding); it was
+  **never shipped, and never empirically validated** — it is a plausible,
+  well-motivated idea supported by real failure analysis of the *problem*,
+  but the *remediation* itself has no accuracy evidence behind it yet. The
+  v2 budget re-run launched alongside this audit (§14) includes
+  `tdf_nocaret0` in its arm set and will produce the first real measurement;
+  shipping this into the default pipeline should wait for that result
+  rather than happening on the strength of the reasoning alone. A table
+  whose primary key lives in a column other than 0 gets no equivalent
+  candidate protection either way; nothing detects "which column is the
+  identifier" generically (traces back to §3's missing Identifier type).
 - **Inheritance compression — MISSING.** Same gap as §4.
 - **Safe reference sharing — IMPLEMENTED.** `§n` phrase references and `!V`
   column codebooks are both declared, reversible reference schemes.
@@ -125,7 +142,7 @@ that plays a role resembling this section, and why none of it satisfies it:
 
 | Mechanism | Risk-awareness it actually has | What it's missing vs. §7 |
 |---|---|---|
-| `elide_repeats_keep_anchor` (optimize.py:216) | Column-0 protection added after a *measured* accuracy failure | Fixed rule, not a computed score; doesn't generalize past column 0; exposes no risk number |
+| `elide_repeats_keep_anchor` (optimize.py:216) | Column-0 protection motivated by a *measured* accuracy failure (the underlying row_association loss is real) | Not wired into the default pipeline at all (`emit._tdf_table` calls plain `elide_repeats`); its own accuracy impact has never been measured (zero rows in the v1 run); fixed rule even if shipped, not a computed score; doesn't generalize past column 0; exposes no risk number |
 | `tier.is_index_like` (tier.py:44-46) | `MIN_TOKENS=120`, `MAX_DENSITY=0.6` gate elision to genuinely index-like spans | Two hand-picked constants, not a risk score; no reasoning_risk component at all (an index block could still be reasoning-relevant) |
 | `build_dictionary` acceptance (`repair.select`, optimize.py:448-454) | `min_occurrences`, `min_phrase_tokens` thresholds bound how aggressively phrases get pulled out | Purely a token-accounting threshold (see the `saving = ...` arithmetic in the docstring) — no structural/semantic/reasoning risk term at all |
 | `selector.select_representation` (selector.py:41-112) | Picks Markdown/Hybrid/Skeleton by literally rendering and measuring each; skeleton labeled `"high"` risk because bodies are dropped | One categorical string for the *whole document*, not per-transformation; no λ weights; no breakdown into structural/semantic/reasoning components |
@@ -149,7 +166,9 @@ negations, conditions). What protects them today:
 - **Numbers** — genuinely protected: `normalize_cell` explicitly refuses to
   guess trailing-zero precision (optimize.py:108-118), citing the
   independent audit's BUG-3.
-- **Row identifiers** — protected *only in column 0* (see §6 above).
+- **Row identifiers** — **not protected in the shipped default pipeline at
+  all**; the column-0 anchor protection exists in the codebase but is only
+  reachable through an unshipped, unmeasured eval arm (see §6 above).
 - **Column identifiers (headers)** — incidentally safe: no current pass
   ever rewrites header text lossily.
 - **Dates, units, URLs, file paths, DB keys, legal clauses, negations,
@@ -203,18 +222,34 @@ in `eval/` (QA grading), which is optional and outside the compiler.
 
 Priority order, cheapest-and-most-load-bearing first:
 
-1. **Close the §8 test gap now, before building anything new.** Add
-   adversarial regression tests asserting negation-bearing sentences, URLs,
-   file paths, and dates survive every existing transform (dictionary,
-   columnar, caret-elision, constant-column factoring) byte-for-byte. This
-   is cheap, and turns an audit finding into either a confirmed-safe result
-   or a new bug per mission rule #9.
-2. **Generalize anchor protection past column 0.** The row-identifier
-   protection in `elide_repeats_keep_anchor` is real and measured-necessary,
-   but hard-coding "column 0" is fragile. A cheap heuristic (lowest-
-   cardinality-relative-to-height column, or a column whose name matches
-   `id|key|code` patterns) would extend protection without needing full
-   Identifier typing.
+1. **DONE — §8 test gap closed.** `tests/test_protected_information.py`
+   (Phase 14) now runs negation, URLs, file paths, dates, leading-zero and
+   near-duplicate IDs, conditional clauses, and column headers through the
+   full default pipeline and asserts character-exact survival. Writing that
+   suite is also what surfaced the correction to recommendation #2 below —
+   its first draft assumed column 0 was protected and failed to catch that
+   the real default path isn't, until the test was pointed at column 0
+   directly.
+2. **Ship or explicitly shelve the already-written anchor fix — do not
+   generalize it before either.** Correction to the original version of
+   this recommendation: `elide_repeats_keep_anchor` is not "real and
+   measured-necessary, just under-generalized" — it is **not called from
+   the default pipeline at all** (`tdf/emit.py`'s `_tdf_table` calls plain
+   `elide_repeats`; the only caller of the anchor-protecting version is
+   `eval/formats/encode.py`'s exploratory `tdf_nocaret0` arm, reached via a
+   `unittest.mock` patch), and that arm **has zero measured accuracy rows**
+   in the v1 run. So today, column 0 gets caret-elided in real `tdf
+   convert` output exactly like every other column — the Phase-5 fix exists
+   in the codebase but has never shipped or been validated. The §14 budget
+   re-run launched alongside this audit includes `tdf_nocaret0` and will
+   produce the first real accuracy measurement; the correct next step is to
+   read that result and then either (a) wire `elide_repeats_keep_anchor`
+   into `_tdf_table` by default if it doesn't cost accuracy elsewhere, or
+   (b) document it as a validated-but-rejected idea if it does. Generalizing
+   protection past column 0 (the heuristic idea from the original version of
+   this recommendation — lowest-cardinality-relative-to-height, or a column
+   name matching `id|key|code`) is real follow-up work, but it is premature
+   until the column-0 version is even shipped and measured.
 3. **Build §7 as a thin, additive layer, not a rewrite.** Don't replace the
    existing hand-tuned gates — wrap each existing transform with a function
    that reports `(tokens_before, tokens_after, token_savings)` (trivial,
