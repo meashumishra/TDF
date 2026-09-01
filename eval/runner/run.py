@@ -49,7 +49,7 @@ def _size_bucket(prompt_tokens: int) -> str:
     return "small"
 
 
-def _build_tasks(questions, docs, encoded_docs, seeds):
+def _build_tasks(questions, docs, encoded_docs, seeds, arm_filter=None):
     """One task per (question, arm, seed). size_bucket is derived from THIS
     arm's own prompt_tokens -- it previously carried over from whichever arm
     ran first for a question, so a small md prompt could inherit "large"
@@ -58,6 +58,8 @@ def _build_tasks(questions, docs, encoded_docs, seeds):
     for q in questions:
         doc_id = q["doc_id"]
         for arm_name in ARMS.keys():
+            if arm_filter is not None and arm_name not in arm_filter:
+                continue
             if arm_name not in encoded_docs[doc_id]:
                 continue
             doc_text = encoded_docs[doc_id][arm_name]
@@ -104,6 +106,11 @@ def run_eval():
     with open("eval/questions/questions.json", "r") as f:
         questions = json.load(f)
 
+    doc_filter = os.environ.get("EVAL_DOC_IDS")
+    if doc_filter:
+        wanted = {d.strip() for d in doc_filter.split(",") if d.strip()}
+        questions = [q for q in questions if q["doc_id"] in wanted]
+
     # Only load/encode documents actual questions reference. The corpus
     # directory can (and, since the Phase 6 expansion, does) hold documents
     # with zero questions written against them yet -- encoding those for
@@ -121,10 +128,15 @@ def run_eval():
         with open(pkl_file, "rb") as f:
             docs[pkl_file.stem] = pickle.load(f)
 
+    arm_env = os.environ.get("EVAL_ARMS")
+    arm_filter = {a.strip() for a in arm_env.split(",") if a.strip()} if arm_env else None
+
     encoded_docs = {}
     for doc_id, doc in docs.items():
         encoded_docs[doc_id] = {}
         for arm_name, encode_fn in ARMS.items():
+            if arm_filter is not None and arm_name not in arm_filter:
+                continue
             try:
                 encoded_docs[doc_id][arm_name] = encode_fn(doc)
             except Exception:
@@ -135,7 +147,7 @@ def run_eval():
     concurrency = max(1, int(os.environ.get("EVAL_CONCURRENCY", "1")))
     out_path = Path(os.environ.get("EVAL_OUT", "eval/results/raw.jsonl"))
 
-    tasks = _build_tasks(questions, docs, encoded_docs, seeds)
+    tasks = _build_tasks(questions, docs, encoded_docs, seeds, arm_filter)
     print(
         f"Starting eval: model={model_name}, docs={len(docs)}, questions={len(questions)}, "
         f"arms={len(ARMS)}, seeds={seeds}, concurrency={concurrency}, tasks={len(tasks)}, "
