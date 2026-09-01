@@ -265,18 +265,21 @@ Priority order, cheapest-and-most-load-bearing first:
    deliberately coarse heuristic because no per-column accuracy measurement
    exists — `tdf_nocaret0` (recommendation #2 above) is the mechanism that
    could eventually replace it with a real number, once it's actually run.
-4. **PARTIALLY DONE — Semantic Tree (§4) detection layer.** `tdf/tree.py`
+4. **DONE — Semantic Tree (§4), detection and wire encoding.** `tdf/tree.py`
    (Phase 17) deterministically finds contiguous group-key runs on column 0
    (the mission's own India/Brazil example) and reports net token economics
    via the same `TransformReport` shape as recommendation #3, wired into
-   `explain()`. Deliberately NOT done: wiring an actual group-header sigil
-   into the wire format. `tdf/emit.py`'s `_tdf_table` already coordinates
-   unit hoisting, constant-column `!F` index remapping, tab-vs-space
-   separator selection, and periodic header re-emission every 50 rows —
-   working out how a new sigil interacts with all four safely is real,
-   separate scope, not a small addition. Inheritance compression (§6) still
-   needs this wire-format piece before it can exist at all; it remains the
-   single largest unimplemented piece of the original spec.
+   `explain()`. `tdf/emit.py`/`tdf/parse.py` (Phase 19) now also wire an
+   actual `!N`/`@` group-header sigil into the wire format, opt-in via
+   `render_tdf(doc, use_grouping=True)` — coexisting correctly with `!F`
+   constant-column factoring, `!V` columnar codebooks, and the 50-row
+   periodic header re-emission, with a full round-trip/adversarial test
+   suite (`tests/test_tree_wire.py`) and a `docs/SPEC.md` grammar entry.
+   It is not yet exposed on the `tdf convert` CLI or the eval harness's
+   `ARMS` registry — no accuracy data exists for it, unlike `tdf_nocaret0`.
+   Inheritance compression (§6) can now build on this wire encoding rather
+   than needing its own from scratch, but doing so — and getting accuracy
+   data for grouping at all — remains open follow-up work.
 5. **Trie/prefix compression (§5B) and template extraction (§5D)** are
    real gaps but lower priority than the above: the existing phrase
    dictionary and columnar encoding already capture most of the same
