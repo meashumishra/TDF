@@ -97,6 +97,61 @@ def _synthesise_code_docs(family: str) -> list[dict]:
     return out
 
 
+def _base26(n: int, width: int = 4) -> str:
+    """n -> a fixed-width uppercase base-26 string (0 -> 'AAAA', 1 -> 'AAAB', ...).
+
+    Used for record_id instead of a decimal number: perturb.py's
+    perturb_text rescales every standalone \\d+ run by a random 0.5-1.5x
+    factor, which collided different small original ids onto the same
+    shifted value in testing (record_id must survive perturbation as a
+    stable, unique key for eval/questions/generate.py's row/column
+    association questions to be unambiguous). A run of letters has no
+    \\d+ substring for that regex to touch, so it passes through perturbed
+    exactly as generated.
+    """
+    letters = []
+    for _ in range(width):
+        n, r = divmod(n, 26)
+        letters.append(chr(ord("A") + r))
+    return "".join(reversed(letters))
+
+
+def _synthesise_grouped_metrics(family: str) -> list[dict]:
+    """A country-year-metric CSV with genuine multi-entity contiguous-row
+    structure -- the mission's own India/Brazil worked example (section 4),
+    which none of the original 5 corpus documents happen to contain. Column
+    0 (country) repeats across contiguous blocks of rows; record_id is a
+    globally unique, letter-only key (see _base26) so
+    eval/questions/generate.py's row_association/column_association
+    questions have an unambiguous anchor independent of grouping and
+    survive perturb.py's numeric rescaling untouched. Deterministic: no
+    network, no RNG seed dependency (values are a closed-form function of
+    row index).
+    """
+    countries = [
+        "Argentina", "Brazil", "Canada", "Denmark", "Egypt", "Finland",
+        "Germany", "Hungary", "India", "Japan", "Kenya", "Mexico",
+        "Norway", "Portugal", "Spain",
+    ]
+    years = list(range(2017, 2025))  # 8 years per country
+
+    rows = ["country,record_id,year,revenue_musd,growth_pct"]
+    rec = 0
+    for ci, country in enumerate(countries):
+        for yi, year in enumerate(years):
+            revenue = 100 + ci * 37 + yi * 11
+            growth = -8 + ((ci * 5 + yi * 3) % 17)  # ranges negative..positive
+            rows.append(f"{country},REC-{_base26(rec)},{year},{revenue},{growth}")
+            rec += 1
+
+    dest = RAW / family / "country_metrics.csv"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text("\n".join(rows) + "\n")
+    return [{"id": "grouped_metrics", "family": family,
+             "url": "generate:grouped_metrics", "filename": f"{family}/country_metrics.csv",
+             "type": "csv", "sha256": _sha(dest), "path": str(dest)}]
+
+
 def main() -> None:
     manifest = json.loads(MANIFEST.read_text()) if MANIFEST.exists() else []
     have = {m["id"] for m in manifest}
@@ -122,6 +177,9 @@ def main() -> None:
     if "code_documentation" in SYNTHETIC_FAMILIES \
             and "code_doc_dataclasses" not in have:
         for m in _synthesise_code_docs("code_documentation"):
+            register(m)
+    if "grouped_metrics" in SYNTHETIC_FAMILIES and "grouped_metrics" not in have:
+        for m in _synthesise_grouped_metrics("grouped_metrics"):
             register(m)
 
     MANIFEST.write_text(json.dumps(manifest, indent=2))

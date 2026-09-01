@@ -164,5 +164,14 @@
     "type": "json",
     "sha256": "9ca6f5471cd45b0f17d48965a8303b790093444017ee5f8f703398e1ee5151b3",
     "path": "eval/corpus/raw/api_spec/petstore.json"
+  },
+  {
+    "id": "grouped_metrics",
+    "family": "grouped_metrics",
+    "url": "generate:grouped_metrics",
+    "filename": "grouped_metrics/country_metrics.csv",
+    "type": "csv",
+    "sha256": "45f68f970a54e70f38131a489e928ac4a445dbc89f154c0aebaead6cf5c1c90e",
+    "path": "eval/corpus/raw/grouped_metrics/country_metrics.csv"
   }
 ]

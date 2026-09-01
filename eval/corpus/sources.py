@@ -51,4 +51,4 @@ FAMILIES: dict[str, list[dict]] = {
 }
 
 # Locally synthesised families (no network): registered by expand.py itself.
-SYNTHETIC_FAMILIES = ("logs_synthetic", "code_documentation")
+SYNTHETIC_FAMILIES = ("logs_synthetic", "code_documentation", "grouped_metrics")

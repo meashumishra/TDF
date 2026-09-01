@@ -1839,5 +1839,61 @@
     "question": "What is one value present in column 'region'?",
     "answer": "APAC",
     "doc_id": "sales_report"
+  },
+  {
+    "id": "grouped_metrics_row_association_0",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADD'?",
+    "answer": "Kenya",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_column_association_1",
+    "type": "column_association",
+    "question": "In the row where 'record_id' is 'REC-AADD', which column has value 'Kenya'?",
+    "answer": "country",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_ordering_2",
+    "type": "ordering",
+    "question": "What is the last 'record_id' value in this table, in row order?",
+    "answer": "REC-AAEP",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_repeated_cell_3",
+    "type": "repeated_cell",
+    "question": "For 'record_id'='REC-AAAB', what is 'country'?",
+    "answer": "Argentina",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_numeric_comparison_4",
+    "type": "numeric_comparison",
+    "question": "Which 'record_id' has the largest 'year'?",
+    "answer": "REC-AAAF",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_negation_5",
+    "type": "negation",
+    "question": "Name one 'record_id' whose 'year' is NOT associated with 'REC-AAAA'.",
+    "answer": "REC-AAAB",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_multi_hop_table_6",
+    "type": "multi_hop_table",
+    "question": "Within rows where 'country' is 'Argentina', which 'record_id' has the highest 'year'?",
+    "answer": "REC-AAAF",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_deref_code_7",
+    "type": "deref_code",
+    "question": "What is one value present in column 'year'?",
+    "answer": "1355",
+    "doc_id": "grouped_metrics"
   }
 ]
