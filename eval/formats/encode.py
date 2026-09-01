@@ -99,6 +99,21 @@ def encode_tdf_nocaret0(doc: Doc) -> str:
     return out
 
 
+def encode_tdf_grouped(doc: Doc) -> str:
+    """tdf_full, but with semantic-tree grouping enabled (Phase 19, mission
+    section 4): a repeated column-0 value is stated once per contiguous run
+    via a '!N'/'@' group header instead of being repeated per row or
+    caret-elided, whenever tree.py's economics say it's net token-positive.
+    Falls back to tdf_full's caret behavior on any table where grouping
+    doesn't pay -- see tdf/tree.py and tdf/emit.py's _render_grouped_table.
+    No prior accuracy data exists for this arm; it has never been run."""
+    d = copy.deepcopy(doc)
+    from tdf.columnar import encode_columns
+    books = encode_columns(d)
+    out = render_tdf(d, legend=True, codebooks=books, use_grouping=True)
+    _assert_lossless(doc, out)
+    return out
+
 def encode_hybrid(doc: Doc) -> str:
     """Per-block arbitration (emit.render_hybrid): prose stays Markdown,
     tables/KV/page-marks go dense only where they win. Floor-guaranteed
@@ -153,6 +168,9 @@ ARMS = {
     # Added AFTER the first eval was unblinded (see PREREGISTRATION.md's
     # post-hoc note): hybrid is exploratory until it has its own run.
     "hybrid": encode_hybrid,
+    # Added AFTER both the v1 and v2 accuracy runs (see PREREGISTRATION.md's
+    # post-hoc note): exploratory, no accuracy data collected yet.
+    "tdf_grouped": encode_tdf_grouped,
 }
 
 if __name__ == "__main__":

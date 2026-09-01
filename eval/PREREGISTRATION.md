@@ -15,6 +15,29 @@
   caret-collapsed out of the wire. Exploratory like `hybrid`; a positive
   result must additionally survive the token-cost comparison (the anchor
   column is paid for literally).
+- **`tdf_grouped` arm added after both the v1 and v2 unblinded runs**
+  (mission section 4, Phase 19): a repeated column-0 value is stated once
+  per contiguous run via a `!N`/`@` group header (`docs/SPEC.md`) instead of
+  per-row repetition or caret-elision, whenever `tdf/tree.py`'s token
+  economics say it's net positive. Exploratory like `hybrid`/`tdf_nocaret0`
+  — **no accuracy data exists for it yet at all** (not run in v1 or v2); any
+  future numbers are not part of the decision rules below.
+  **Registered but currently untestable on this corpus**: verified that
+  grouping fires on NONE of the 5 existing documents. `co2_data` looked
+  like the natural fit (its raw data repeats a country across many
+  consecutive rows, matching the mission's own worked example), but
+  `eval/corpus/perturb.py` trims it to the first 100 rows, which for a
+  country-then-year-sorted dataset means every row is "Afghanistan" — a
+  single distinct value, i.e. a whole-table constant that `!F` already
+  claims before grouping detection ever runs (correctly: `!F` is strictly
+  cheaper than a group header for a column with only one value). The other
+  4 documents have no naturally repeating leading-entity column at all.
+  Getting real accuracy data for this arm requires either a new corpus
+  document with genuine multi-entity contiguous-row structure, or a
+  reshaped (not just re-trimmed) view of `co2_data` that preserves several
+  countries -- not done here, since `eval/corpus/expand.py`'s own policy
+  is that existing perturbed inputs are never regenerated, to preserve
+  comparability with the v1/v2 benchmark inputs.
 
 ## Decision Rules
 

@@ -32,11 +32,11 @@ def sales_report():
         return pickle.load(f)
 
 
-def test_registry_contains_all_ten_arms():
+def test_registry_contains_all_eleven_arms():
     assert set(ARMS) == {
         "md", "json", "toon",
         "tdf_full", "tdf_hoist", "tdf_nodict", "tdf_nocodes", "tdf_nocaret",
-        "tdf_nocaret0", "hybrid",
+        "tdf_nocaret0", "hybrid", "tdf_grouped",
     }
 
 
@@ -70,6 +70,29 @@ def test_nocaret0_arm_keeps_row_anchor_literal():
         tbl = next(b for b in parse_tdf(wire).blocks if hasattr(b, "cols"))
         assert tbl.cols == ["region", "segment", "growth"]
         assert [r[0] for r in tbl.rows] == ["EMEA", "EMEA", "APAC"]
+
+
+def test_grouped_arm_uses_group_headers_and_stays_lossless():
+    """tdf_grouped (Phase 19): column-0 repeats become '!N'/'@' group
+    headers instead of caret-elision, on a fixture large enough for
+    tree.py's economics to actually favor grouping over the break-even
+    case a 2-row repeat like the anchor test above would hit."""
+    from copy import deepcopy
+
+    doc = Doc(blocks=[Table(
+        cols=["country", "year", "value"],
+        rows=[["India", "2024", "100"], ["India", "2025", "120"],
+              ["India", "2026", "150"], ["Brazil", "2020", "90"],
+              ["Brazil", "2021", "95"]],
+    )])
+    out = ARMS["tdf_grouped"](deepcopy(doc))
+    assert "!N 0:country" in out
+    assert "@ India" in out and "@ Brazil" in out
+
+    from tdf.parse import parse_tdf
+    tbl = next(b for b in parse_tdf(out).blocks if hasattr(b, "cols"))
+    assert tbl.cols == doc.blocks[0].cols
+    assert tbl.rows == doc.blocks[0].rows
 
 
 def test_hybrid_arm_is_registered_and_lossless(sales_report):
