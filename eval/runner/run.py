@@ -148,9 +148,10 @@ def run_eval():
     out_path = Path(os.environ.get("EVAL_OUT", "eval/results/raw.jsonl"))
 
     tasks = _build_tasks(questions, docs, encoded_docs, seeds, arm_filter)
+    arms_used = sorted(arm_filter) if arm_filter is not None else sorted(ARMS)
     print(
         f"Starting eval: model={model_name}, docs={len(docs)}, questions={len(questions)}, "
-        f"arms={len(ARMS)}, seeds={seeds}, concurrency={concurrency}, tasks={len(tasks)}, "
+        f"arms={arms_used}, seeds={seeds}, concurrency={concurrency}, tasks={len(tasks)}, "
         f"out={out_path}",
         flush=True,
     )
