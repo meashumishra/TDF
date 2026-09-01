@@ -353,3 +353,22 @@ def test_optimizer_structural_roundtrip(doc: Doc):
         f"Structural mismatch after optimize().\nTDF:\n{out}\n"
         f"expected: {canonicalize(expected)}\nparsed:   {canonicalize(parsed)}"
     )
+
+
+def test_kv_key_of_bare_u2028_with_colon_in_value():
+    """Regression for a bug surfaced by test_doc_structural_roundtrip's
+    Hypothesis search (unrelated to Phase 19's grouping work -- reproduced
+    identically on master before it). parse_tdf reads lines via
+    str.splitlines(), which treats U+2028 (LINE SEPARATOR) as a line
+    boundary like \\n -- but _oneline's newline-collapsing regex only
+    handled \\r\\n\\t, so a KV key of a bare U+2028 fragmented into an
+    extra physical line on parse, turning one KV pair into an empty-key KV
+    plus a stray Para. Fixed by extending emit._NEWLINE to the full set of
+    line-boundary characters str.splitlines() recognizes (\\v, \\f,
+    \\x1c-\\x1e, \\x85, U+2028, U+2029)."""
+    doc = Doc(blocks=[KV(pairs=[(" ", "!T 5 caption")], caption="")])
+    working = copy.deepcopy(doc)
+    books = encode_columns(working)
+    out = render_tdf(working, optimized=False, codebooks=books)
+    parsed = parse_tdf(out)
+    assert canonicalize(doc) == canonicalize(parsed)

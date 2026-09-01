@@ -198,7 +198,14 @@ def _md_block_parts(b: Block) -> list[str]:
 
 # ----------------------------------------------------------------------- TDF
 
-_NEWLINE = re.compile(r"[\r\n\t]+")
+# parse_tdf reads lines via str.splitlines(), which treats more than just
+# \r\n as a line boundary -- \v, \f, \x1c-\x1e, \x85 (NEL), and U+2028/U+2029
+# (Unicode LINE/PARAGRAPH SEPARATOR) all split a line there too. A value
+# containing any of them was therefore fragmented into extra physical
+# lines on parse even though _oneline had already "collapsed" it, exactly
+# the class of corruption this function exists to prevent for \n itself
+# (see its docstring) -- discovered via a KV key of a bare U+2028.
+_NEWLINE = re.compile(r"[\r\n\t\v\f\x1c-\x1e\x85\u2028\u2029]+")
 
 
 def _oneline(v: str) -> str:
@@ -257,14 +264,69 @@ def _render_rows(cols: list[str], rows: list[list[str]], sep: str) -> str:
     return "\n".join(lines)
 
 
-def _tdf_table(t: Table) -> list[str]:
+def _render_member_row(cells: list[str]) -> str:
+    """Space-join a grouped table's member row (column 0 already removed).
+
+    Cell 0 of a member row is the table's ORIGINAL column 1 -- nothing to
+    do with the '@' group-header marker -- but if its literal text happens
+    to start with '@', an unquoted render would be indistinguishable from a
+    new group header on parse. _quote() only quotes for embedded spaces or
+    '"', so that case needs a forced quote here, the same defensive pattern
+    _escape_caret_cell uses for a literal '^' colliding with the caret
+    marker.
+    """
+    out = []
+    for i, c in enumerate(cells):
+        if i == 0 and c.startswith("@"):
+            out.append('"' + _oneline(c).replace('"', '""') + '"')
+        else:
+            out.append(_quote(c))
+    return " ".join(out)
+
+
+def _render_grouped_table(cols: list[str], rows: list[list[str]]) -> list[str]:
+    """Render column 0 as group headers instead of per-row repetition or
+    caret-elision -- the semantic-tree encoding from tdf/tree.py (mission
+    section 4). Always space-separated: tab mode has no quoting mechanism,
+    so it has no way to escape a member row whose first cell starts with
+    '@' (see _render_member_row) -- grouped tables trade away the tab-mode
+    option for that safety, which tree.group_savings_report's economics
+    already accounted for when it decided grouping was worth it.
+
+    Every row belongs to exactly one group, including singleton runs (see
+    tdf/tree.py's GroupRun docstring) -- the caller (group_savings_report)
+    only proposes grouping when the resulting savings are net positive
+    across the whole table, singleton overhead included.
+    """
+    from .tree import detect_group_runs
+
+    runs = detect_group_runs(rows)
+    member_cols = cols[1:]
+    n_line = f"!N 0:{_oneline(cols[0])}"
+    c_line = "!C " + " ".join(_quote(c) for c in member_cols)
+    out = [n_line, c_line]
+
+    emitted = 0
+    for run in runs:
+        members = elide_repeats([r[1:] for r in rows[run.start:run.end]])
+        out.append(f"@ {_quote(run.value)}")
+        for m in members:
+            out.append(_render_member_row(m))
+            emitted += 1
+            if emitted % 50 == 0:
+                out.append(n_line)
+                out.append(c_line)
+                out.append(f"@ {_quote(run.value)}")
+    return out
+
+
+def _tdf_table(t: Table, use_grouping: bool = False) -> list[str]:
     cols = list(t.cols) or [f"c{i + 1}" for i in range(len(t.rows[0]) if t.rows else 0)]
     rows = [[(r[i] if i < len(r) else "") for i in range(len(cols))] for r in t.rows]
 
     cols, rows = hoist_units(cols, rows)
     cols, rows, constants = drop_constant_columns(cols, rows)
     rows = [[_escape_caret_cell(c) for c in r] for r in rows]
-    rows = elide_repeats(rows)
 
     head = f"!T {len(rows)}" + (f" {_oneline(t.caption)}" if t.caption else "")
     out = [head]
@@ -289,6 +351,14 @@ def _tdf_table(t: Table) -> list[str]:
     # zero-width rows need no body lines at all to represent that.
     if not cols:
         return out
+
+    if use_grouping:
+        from .tree import group_savings_report
+        if group_savings_report(cols, rows) is not None:
+            out.extend(_render_grouped_table(cols, rows))
+            return out
+
+    rows = elide_repeats(rows)
 
     # Pick whichever separator tokenises cheaper for this specific table --
     # except a single-column table has no separator between fields, so the
@@ -326,10 +396,13 @@ def render_tdf(
     optimized: bool = True,
     codebooks: "list | None" = None,
     use_boilerplate: bool = False,
+    use_grouping: bool = False,
 ) -> str:
     """Serialize to TDF. Mutates ``doc`` when ``optimized`` (passes are in-place).
 
     ``use_boilerplate`` defaults to False -- see optimize()'s docstring.
+    ``use_grouping`` defaults to False -- semantic-tree grouping (mission
+    section 4, tdf/tree.py) is new and opt-in, same as use_boilerplate.
     """
     arts = (optimize(doc, use_boilerplate=use_boilerplate) if optimized
             else {"boilerplate": [], "dictionary": []})
@@ -387,7 +460,7 @@ def render_tdf(
                 if book.table is b:
                     out.append(f"!V {book.header}")
                     out.extend(f"{code} {val}" for code, val in book.mapping.items())
-            out.extend(_tdf_table(b))
+            out.extend(_tdf_table(b, use_grouping=use_grouping))
         elif isinstance(b, KV):
             out.append("!K" + (f" {_oneline(b.caption)}" if b.caption else ""))
             out.extend(

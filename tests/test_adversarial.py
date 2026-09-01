@@ -46,6 +46,9 @@ HOSTILE = [
     "！fullwidth！Ｔ", "🚀emoji", "table: 列の値", "النص العربي",
     "SELECT * FROM t; DROP TABLE t;", '{"json": [1, 2]}',
     "http://x/y?z=1&w=2",
+    # Phase 19: semantic-tree grouping's new sigil ("!N") and body marker
+    # ("@ ") -- must survive as ordinary content outside a grouped table.
+    "!N 0:country", "@ India", "@India no space",
 ]
 
 

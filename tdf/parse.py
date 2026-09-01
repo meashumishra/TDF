@@ -96,7 +96,7 @@ def _split(line: str, sep: str) -> list[str]:
     return out
 
 
-_SIGILS = "DRTFCKGPEVH"
+_SIGILS = "DRTFCKGPEVHN"
 
 
 def _is_sigil(line: str, letter: str) -> bool:
@@ -301,6 +301,22 @@ def parse_tdf(text: str) -> Doc:
                             constants.append((int(idx_str), k, v))
                 i += 1
 
+            # A grouped table (tdf/tree.py's semantic-tree encoding, mission
+            # section 4): column n_idx is stated once per contiguous run of
+            # rows via an "@ value" line rather than repeated per row or
+            # caret-elided. n_idx indexes into the !C line that follows,
+            # same index space !F uses.
+            n_idx = None
+            n_name = ""
+            n_line = None
+            if i < n and _is_sigil(lines[i].strip(), "N"):
+                n_line = lines[i]
+                nm = re.match(r"^!N\s+(\d+):(.*)$", lines[i].strip())
+                if nm:
+                    n_idx = int(nm.group(1))
+                    n_name = nm.group(2)
+                i += 1
+
             cols: list[str] = []
             sep = " "
             c_line = None
@@ -326,6 +342,41 @@ def parse_tdf(text: str) -> Doc:
                 # blank/absent line as "one empty-string column" is exactly
                 # the ambiguity that produced the phantom column.
                 rows = [[] for _ in range(nrows)]
+            elif n_idx is not None:
+                # Grouped table: "@ value" lines declare the group; member
+                # rows are one field narrower (the group column is absent,
+                # not caret-elided) and get it reinserted at n_idx here so
+                # everything downstream (unit restoration, !F reinsertion,
+                # codebook decoding) sees ordinary full-width rows exactly
+                # like the ungrouped case -- see emit._render_grouped_table.
+                current_group = ""
+                prev: list[str] | None = None
+                added = 0
+                while added < nrows:
+                    if i >= n:
+                        break
+                    if (lines[i] == c_line or lines[i] == n_line
+                            or (f_line is not None and lines[i] == f_line)):
+                        i += 1
+                        continue
+                    line = lines[i]
+                    if line == "@" or line.startswith("@ "):
+                        value_part = line[2:] if line.startswith("@ ") else ""
+                        current_group = _split(value_part, " ")[0] if value_part else ""
+                        i += 1
+                        continue
+                    split_cells = _split(line, " ")
+                    added += 1
+                    member = []
+                    for j, c in enumerate(split_cells):
+                        if c == "^" and prev and j < len(prev):
+                            member.append(prev[j])
+                        else:
+                            member.append(_unescape_caret_cell(c))
+                    prev = member
+                    rows.append(member[:n_idx] + [current_group] + member[n_idx:])
+                    i += 1
+                cols = cols[:n_idx] + [n_name] + cols[n_idx:]
             else:
                 prev: list[str] | None = None
                 added = 0
