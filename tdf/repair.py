@@ -120,30 +120,86 @@ class _Repair:
         return occurrences * count(" ".join(words))
 
     def run(self, min_occurrences: int, max_merges: int = 4000) -> list[list[str]]:
-        """Merge repeatedly; return every phrase the grammar built."""
+        """Merge repeatedly; return every phrase the grammar built.
+
+        Incremental pair-count maintenance over a linked-list sequence, not
+        a fresh full-sequence rescan per merge. The naive version (one
+        O(n) count pass + one O(n) rebuild pass per outer iteration, up to
+        max_merges times) is O(n * max_merges): profiled at 170s of self
+        time on Pride and Prejudice (~130k words), driven by ~1.2 billion
+        len() calls -- one full rescan per merge, most of which touches
+        text nothing about the merge changed. Only positions adjacent to
+        an actual merge site ever have their pair membership change, so
+        only those need updating; everywhere else, last iteration's counts
+        are still correct.
+
+        `left_of[i]` records which pair-key (if any) position i is
+        CURRENTLY the left end of -- not "would a pair reconstructed from
+        val[i], val[i+1] match some key", because a self-pair run's
+        non-overlap rule (below) means not every adjacent pair is counted
+        at all. Removal always goes through left_of, never through
+        recomputing the pair from current values, so a position that was
+        never counted (skipped by the self-pair rule) is correctly a
+        no-op to "remove" rather than corrupting some unrelated key's
+        count. select() independently re-verifies every accepted
+        candidate's real occurrence count via word_bounded_count before
+        it is ever substituted into a document, so this module's own
+        bookkeeping only has to be a good-faith proposal generator, not
+        the final authority on correctness.
+        """
         built: list[list[str]] = []
+        seq = self.seq
+        n = len(seq)
+        if n < 2:
+            return built
+
+        NIL = -1
+        nxt = list(range(1, n)) + [NIL]
+        prv = [NIL] + list(range(n - 1))
+        val = list(seq)
+        left_of: list[int | None] = [None] * n
+        counts: dict[int, int] = defaultdict(int)
+        positions: dict[int, set] = defaultdict(set)
+
+        def add_pair(i: int, j: int) -> None:
+            a, b = val[i], val[j]
+            if a == self.barrier_id or b == self.barrier_id:
+                return
+            key = _pair_key(a, b)
+            counts[key] += 1
+            positions[key].add(i)
+            left_of[i] = key
+
+        def remove_at(i: int) -> None:
+            key = left_of[i]
+            if key is None:
+                return
+            counts[key] -= 1
+            positions[key].discard(i)
+            if counts[key] <= 0:
+                counts.pop(key, None)
+                positions.pop(key, None)
+            left_of[i] = None
+
+        # Initial scan: same non-overlap semantics as the old single-pass
+        # version ("a a a" counts one pair, not two -- skip the consumed
+        # right element so it can never also start a match).
+        i = 0
+        while i < n - 1:
+            a, b = val[i], val[i + 1]
+            if a == self.barrier_id or b == self.barrier_id:
+                i += 1
+                continue
+            add_pair(i, i + 1)
+            i += 2 if a == b else 1
 
         for _ in range(max_merges):
-            counts: dict[int, int] = defaultdict(int)
-            seq = self.seq
-            i = 0
-            # Count non-overlapping pair occurrences, never spanning a barrier.
-            while i < len(seq) - 1:
-                a, b = seq[i], seq[i + 1]
-                if a == self.barrier_id or b == self.barrier_id:
-                    i += 1
-                    continue
-                key = _pair_key(a, b)
-                counts[key] += 1
-                # Skip the second element so "a a a" counts one pair, not two.
-                i += 2 if a == b else 1
-
             best_key = None
             best_value = 0
-            for key, n in counts.items():
-                if n < min_occurrences:
+            for key, cnt in counts.items():
+                if cnt < min_occurrences:
                     continue
-                value = self._value(key >> 32, key & 0xFFFFFFFF, n)
+                value = self._value(key >> 32, key & 0xFFFFFFFF, cnt)
                 if value > best_value:
                     best_key, best_value = key, value
 
@@ -156,16 +212,32 @@ class _Repair:
             self.expansion.append(words)
             built.append(words)
 
-            out: list[int] = []
-            i = 0
-            while i < len(seq):
-                if i < len(seq) - 1 and seq[i] == a and seq[i + 1] == b:
-                    out.append(new_id)
-                    i += 2
-                else:
-                    out.append(seq[i])
-                    i += 1
-            self.seq = out
+            occ = sorted(positions.pop(best_key, ()))
+            counts.pop(best_key, None)
+            for i in occ:
+                j = nxt[i]
+                # Stale if this occurrence's left slot was already consumed
+                # as the RIGHT half of an earlier merge in this same pass
+                # (only reachable when a == b, mirroring the old "i += 2").
+                if left_of[i] != best_key or j == NIL:
+                    continue
+
+                p, q = prv[i], nxt[j]
+                remove_at(i)
+                if p != NIL:
+                    remove_at(p)
+                if q != NIL:
+                    remove_at(j)
+
+                val[i] = new_id
+                nxt[i] = q
+                if q != NIL:
+                    prv[q] = i
+
+                if p != NIL:
+                    add_pair(p, i)
+                if q != NIL:
+                    add_pair(i, q)
 
         return built
 
@@ -202,7 +274,20 @@ def select(
     """
     working = corpus
     accepted: list[str] = []
-    ranked = sorted(candidates, key=lambda p: -(word_bounded_count(corpus, p) * count(p)))
+    # Ranking by measured occurrence count needs one word_bounded_count
+    # scan of the full corpus PER CANDIDATE just to establish an order --
+    # on a novel-length document with thousands of candidates this was
+    # ~half of select()'s cost (profiled: ~5800 findall() calls, ~39s on
+    # Pride and Prejudice). The ranking only decides processing order and
+    # who gets skipped once max_entries fills up; it is not a correctness
+    # gate -- every candidate the loop actually considers still gets its
+    # real occurrence count re-verified against `working` below, which is
+    # the authoritative check. Ranking by token cost alone (cheap: no
+    # corpus scan) is a reasonable proxy since repair_candidates() already
+    # hands us longest-first, and it can only change WHICH valid,
+    # independently-reverified phrases get selected under the max_entries
+    # cap -- never let an invalid or unprofitable one through.
+    ranked = sorted(candidates, key=lambda p: -count(p))
 
     for phrase in ranked:
         if len(accepted) >= max_entries:
