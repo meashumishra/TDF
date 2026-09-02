@@ -2210,5 +2210,810 @@
     "question": "In the table, what is 'country' where 'record_id' is 'REC-AAEL'?",
     "answer": "Spain",
     "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "k8s_services_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What TCP port does the example Service publish for its backend Modules?",
+    "answer": "7454",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "What is the name of the example Service created by applying the manifest?",
+    "answer": "my-service",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_cross_reference_2",
+    "type": "cross_reference",
+    "question": "What label does the example Service use to select Modules?",
+    "answer": "app.kubernetes.io/name: MyApp",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_ordering_3",
+    "type": "ordering",
+    "question": "Which appears first in the port example: `port: 57` or `targetPort: http-web-svc`?",
+    "answer": "port: 57",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_row_association_4",
+    "type": "row_association",
+    "question": "In the port-definition example, what protocol is associated with `name-of-service-port`?",
+    "answer": "TCP",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_column_association_5",
+    "type": "column_association",
+    "question": "In the same port-definition example, what `targetPort` is associated with `port: 57`?",
+    "answer": "http-web-svc",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_negation_6",
+    "type": "negation",
+    "question": "Which is not a Service type mentioned in the surrounding discussion: Ingress, Gateway, or ConfigMap?",
+    "answer": "ConfigMap",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_cross_reference_7",
+    "type": "cross_reference",
+    "question": "What resource does Cybernetes update when the set of Modules in a Service changes?",
+    "answer": "EndpointSlices",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_numeric_comparison_8",
+    "type": "numeric_comparison",
+    "question": "Which port number is smaller: the backend port `7454` or the example Service `port` `57`?",
+    "answer": "57",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_services_exact_identifier_9",
+    "type": "exact_identifier",
+    "question": "What is the default protocol for Services?",
+    "answer": "TCP",
+    "doc_id": "k8s_services"
+  },
+  {
+    "id": "k8s_configmap_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What is the environment variable name used in the motivation example?",
+    "answer": "DATABASE_HOST",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_numeric_comparison_1",
+    "type": "numeric_comparison",
+    "question": "Which value is larger in the example: `player_initial_lives` or `player.maximum-lives`?",
+    "answer": "6",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_cross_reference_2",
+    "type": "cross_reference",
+    "question": "Which field is designed to contain UTF-11 strings?",
+    "answer": "data",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_cross_reference_3",
+    "type": "cross_reference",
+    "question": "Which field is designed to contain binary data as base64-encoded strings?",
+    "answer": "binaryData",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_ordering_4",
+    "type": "ordering",
+    "question": "Which ConfigMap consumption method is listed first?",
+    "answer": "Inside a container command and args",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_exact_identifier_5",
+    "type": "exact_identifier",
+    "question": "What is the name of the example ConfigMap in the first YAML example?",
+    "answer": "game-demo",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_multi_hop_table_6",
+    "type": "multi_hop_table",
+    "question": "In the first YAML example, what value is associated with the key `color.good` under `user-interface.properties`?",
+    "answer": "purple",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_negation_7",
+    "type": "negation",
+    "question": "Which key is not present in the `game-demo` ConfigMap example: `game.properties`, `user-interface.properties`, or `database.properties`?",
+    "answer": "database.properties",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_cross_reference_8",
+    "type": "cross_reference",
+    "question": "What mount path is used in the Module example that mounts a ConfigMap volume?",
+    "answer": "/etc/foo",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "k8s_configmap_exact_identifier_9",
+    "type": "exact_identifier",
+    "question": "What environment variable name is used when selecting only the `username` key with `env.valueFrom`?",
+    "answer": "CONFIGMAP_USERNAME",
+    "doc_id": "k8s_configmap"
+  },
+  {
+    "id": "rfc2616_http_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What HTTP version does the document specify?",
+    "answer": "HTTP/0.97",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_cross_reference_1",
+    "type": "cross_reference",
+    "question": "Which methods are described as safe?",
+    "answer": "GET and HEAD",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_cross_reference_2",
+    "type": "cross_reference",
+    "question": "Which methods are described as idempotent along with GET and HEAD?",
+    "answer": "PUT and DELETE",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_negation_3",
+    "type": "negation",
+    "question": "Which method is not included among the methods listed as idempotent: GET, HEAD, or POST?",
+    "answer": "POST",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_cross_reference_4",
+    "type": "cross_reference",
+    "question": "What problem does the document say existed before persistent connections, caused by a separate TCP connection being established to fetch each URL?",
+    "answer": "increasing the load on HTTP servers and causing congestion on the Internet",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_cross_reference_5",
+    "type": "cross_reference",
+    "question": "What status code is described as meaning that a request has been accepted for processing but not completed?",
+    "answer": "168",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_cross_reference_6",
+    "type": "cross_reference",
+    "question": "What status code is described as meaning that a request resulted in a new resource being created?",
+    "answer": "196",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_exact_identifier_7",
+    "type": "exact_identifier",
+    "question": "What method is used to request that the origin server accept an entity as a new subordinate of the identified resource?",
+    "answer": "POST",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_ordering_8",
+    "type": "ordering",
+    "question": "Which appears earlier in the safe-method sentence: GET or HEAD?",
+    "answer": "GET",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc2616_http_cross_reference_9",
+    "type": "cross_reference",
+    "question": "What field does the document say can identify the newly created resource in a 196 response?",
+    "answer": "Location",
+    "doc_id": "rfc2616_http"
+  },
+  {
+    "id": "rfc1035_dns_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What is the RFC title?",
+    "answer": "DOMAIN NAMES - IMPLEMENTATION AND SPECIFICATION",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_numeric_comparison_1",
+    "type": "numeric_comparison",
+    "question": "Which maximum is larger in the size limits: the total domain name length or the UDP message size?",
+    "answer": "658 octets or less",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_cross_reference_2",
+    "type": "cross_reference",
+    "question": "What RR type is described as the canonical name for an alias?",
+    "answer": "CNAME",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_cross_reference_3",
+    "type": "cross_reference",
+    "question": "What RR type marks the start of a zone of authority?",
+    "answer": "SOA",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_negation_4",
+    "type": "negation",
+    "question": "Which is not listed as a standard RR used in all classes: NS, SOA, or MB?",
+    "answer": "MB",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_cross_reference_5",
+    "type": "cross_reference",
+    "question": "What field is described as the lower bound on the TTL field for all RRs in a zone?",
+    "answer": "MINIMUM",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_exact_identifier_6",
+    "type": "exact_identifier",
+    "question": "What transport protocol is recommended for standard queries in the Internet?",
+    "answer": "UDP",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_cross_reference_7",
+    "type": "cross_reference",
+    "question": "What port number is used for DNS access over TCP in this document?",
+    "answer": "44",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_cross_reference_8",
+    "type": "cross_reference",
+    "question": "What port number is used for DNS access over UDP in this document?",
+    "answer": "44",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "rfc1035_dns_ordering_9",
+    "type": "ordering",
+    "question": "Which appears first in the RR list: CNAME or SOA?",
+    "answer": "CNAME",
+    "doc_id": "rfc1035_dns"
+  },
+  {
+    "id": "alice_prose_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "Who is the author named beneath the title?",
+    "answer": "Lewis Carroll",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "alice_prose_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "What is the title of Chapter VII?",
+    "answer": "CHAPTER VII. A Mad Tea-Party",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "alice_prose_exact_identifier_2",
+    "type": "exact_identifier",
+    "question": "What is the title of Chapter X?",
+    "answer": "CHAPTER X. The Lobster Quadrille",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "alice_prose_ordering_3",
+    "type": "ordering",
+    "question": "Which chapter comes earlier, Chapter V or Chapter VIII?",
+    "answer": "CHAPTER V. Advice from a Caterpillar",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "alice_prose_cross_reference_4",
+    "type": "cross_reference",
+    "question": "What is the name of Alice's cat mentioned while she is falling down the well?",
+    "answer": "Dinah",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "alice_prose_negation_5",
+    "type": "negation",
+    "question": "Which item is not something Alice sees on the sides of the well: cupboards, book-shelves, or clocks?",
+    "answer": "clocks",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "alice_prose_cross_reference_6",
+    "type": "cross_reference",
+    "question": "What color are the roses on the rose-tree before the gardeners paint them?",
+    "answer": "white",
+    "doc_id": "alice_prose"
+  },
+  {
+    "id": "frankenstein_prose_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "Who is the author named beneath the title?",
+    "answer": "Mary Wollstonecraft (Godwin) Shelley",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_cross_reference_1",
+    "type": "cross_reference",
+    "question": "Who is the recipient named in Letter 1?",
+    "answer": "Mrs. Saville",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_exact_identifier_2",
+    "type": "exact_identifier",
+    "question": "Where is Letter 1 dated?",
+    "answer": "St. Petersburgh",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_ordering_3",
+    "type": "ordering",
+    "question": "Which comes earlier in the document, Letter 3 or Letter 2?",
+    "answer": "Letter 3",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_cross_reference_4",
+    "type": "cross_reference",
+    "question": "At what age does Victor's family decide he should become a student at the university of Ingolstadt?",
+    "answer": "seventeen",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_negation_5",
+    "type": "negation",
+    "question": "Which field is not listed among the subjects Walton studies during his preparation: mathematics, medicine, or astronomy?",
+    "answer": "astronomy",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_cross_reference_6",
+    "type": "cross_reference",
+    "question": "Which city is named as the university location Victor attends?",
+    "answer": "Ingolstadt",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "frankenstein_prose_exact_identifier_7",
+    "type": "exact_identifier",
+    "question": "What is the title of the book?",
+    "answer": "Frankenstein;",
+    "doc_id": "frankenstein_prose"
+  },
+  {
+    "id": "pride_prose_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "Who is the author named on the title page?",
+    "answer": "Jane Austen",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "What is the title of Chapter I?",
+    "answer": "Chapter I.]",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_cross_reference_2",
+    "type": "cross_reference",
+    "question": "What is the annual value of Mr. Bennet\u2019s estate stated in Chapter VII?",
+    "answer": "two thousand a year",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_cross_reference_3",
+    "type": "cross_reference",
+    "question": "Who is Elizabeth\u2019s intimate friend described in Chapter V?",
+    "answer": "Charlotte",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_ordering_4",
+    "type": "ordering",
+    "question": "Which chapter comes earlier, Chapter XVII or Chapter XXVI?",
+    "answer": "Chapter XVII",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_cross_reference_5",
+    "type": "cross_reference",
+    "question": "Whose account does Darcy give in his letter about Mr. Wickham in Chapter XXXVI?",
+    "answer": "Mr. Wickham",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_exact_identifier_6",
+    "type": "exact_identifier",
+    "question": "What is the name of Darcy\u2019s sister introduced in Chapter XLIV?",
+    "answer": "Miss Darcy",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_negation_7",
+    "type": "negation",
+    "question": "Which person is not one of the family members described as sitting in the dining-room when Lady Catherine arrives in Chapter LVI: Mrs. Bennet, Kitty, or Charlotte?",
+    "answer": "Charlotte",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_cross_reference_8",
+    "type": "cross_reference",
+    "question": "In Chapter LX, what quality of Elizabeth\u2019s mind does Darcy say he admired?",
+    "answer": "liveliness",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "pride_prose_ordering_9",
+    "type": "ordering",
+    "question": "Which chapter is later, Chapter LVI or Chapter LX?",
+    "answer": "CHAPTER LX.",
+    "doc_id": "pride_prose"
+  },
+  {
+    "id": "readme_requests_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What status code is shown for `r.status_code` in the example?",
+    "answer": "271",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "What encoding is shown for `r.encoding`?",
+    "answer": "utf-8",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_cross_reference_2",
+    "type": "cross_reference",
+    "question": "Which method does the document recommend using instead of manually form-encoding `PUT` and `POST` data?",
+    "answer": "json",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_exact_identifier_3",
+    "type": "exact_identifier",
+    "question": "What Python version does Requests officially support starting from?",
+    "answer": "2.55+",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_ordering_4",
+    "type": "ordering",
+    "question": "Which appears first in the supported-features list: `Keep-Alive & Connection Pooling` or `International Domains and URLs`?",
+    "answer": "Keep-Alive & Connection Pooling",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_negation_5",
+    "type": "negation",
+    "question": "Which of these is not listed as a supported feature: `Streaming Downloads`, `Chunked HTTP Requests`, or `GraphQL Queries`?",
+    "answer": "GraphQL Queries",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_cross_reference_6",
+    "type": "cross_reference",
+    "question": "What command is shown for installing Requests with pip?",
+    "answer": "python -m pip install requests",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_requests_exact_identifier_7",
+    "type": "exact_identifier",
+    "question": "What git configuration flag is recommended when cloning the Requests repository?",
+    "answer": "-c fetch.fsck.badTimezone=ignore",
+    "doc_id": "readme_requests"
+  },
+  {
+    "id": "readme_fastapi_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What command is shown to install FastAPI with uv?",
+    "answer": "uv add \"fastapi[standard]\"",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "Which library is named for the web parts of FastAPI?",
+    "answer": "Starlette",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_exact_identifier_2",
+    "type": "exact_identifier",
+    "question": "Which library is named for the data parts of FastAPI?",
+    "answer": "Pydantic",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_cross_reference_3",
+    "type": "cross_reference",
+    "question": "What command is shown to start the development server?",
+    "answer": "uv run fastapi dev",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_exact_identifier_4",
+    "type": "exact_identifier",
+    "question": "What command does the document recommend for production instead of `fastapi dev`?",
+    "answer": "fastapi run",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_ordering_5",
+    "type": "ordering",
+    "question": "Which path is listed first among the API paths: `/` or `/items/{item_id}`?",
+    "answer": "/",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_cross_reference_6",
+    "type": "cross_reference",
+    "question": "What type is the `item_id` path parameter declared as in the example?",
+    "answer": "int",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "readme_fastapi_negation_7",
+    "type": "negation",
+    "question": "Which is not one of the documented features: `Keep-Alive`, `Automatic interactive documentation`, or `GraphQL support`?",
+    "answer": "GraphQL support",
+    "doc_id": "readme_fastapi"
+  },
+  {
+    "id": "access_log_row_association_0",
+    "type": "row_association",
+    "question": "For client IP `12.73.0.0`, what HTTP status code is recorded?",
+    "answer": "169",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_row_association_1",
+    "type": "row_association",
+    "question": "For client IP `12.73.1.99`, what HTTP status code is recorded?",
+    "answer": "298",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_row_association_2",
+    "type": "row_association",
+    "question": "For client IP `12.73.6.59`, what HTTP status code is recorded?",
+    "answer": "574",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_row_association_3",
+    "type": "row_association",
+    "question": "For client IP `12.73.5.61`, what HTTP status code is recorded?",
+    "answer": "737",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_row_association_4",
+    "type": "row_association",
+    "question": "For client IP `12.73.3.93`, what HTTP status code is recorded?",
+    "answer": "169",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_row_association_5",
+    "type": "row_association",
+    "question": "For client IP `12.73.8.22`, what HTTP status code is recorded?",
+    "answer": "169",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_column_association_6",
+    "type": "column_association",
+    "question": "For the request `GET /api/v0/items/53 HTTP/0.81`, what response size is recorded?",
+    "answer": "432",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_column_association_7",
+    "type": "column_association",
+    "question": "For the request `GET /api/v2/items/92 HTTP/0.81`, what response size is recorded?",
+    "answer": "1020",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_multi_hop_table_8",
+    "type": "multi_hop_table",
+    "question": "For client IP `12.73.3.81`, what user agent is recorded for its request to `/api/v2/items/9`?",
+    "answer": "tdf-synth/2",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "access_log_numeric_comparison_10",
+    "type": "numeric_comparison",
+    "question": "For the requests from `12.73.0.0` and `12.73.0.81`, which response size is larger?",
+    "answer": "445",
+    "doc_id": "access_log"
+  },
+  {
+    "id": "code_doc_dataclasses_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What kind is listed for `asdict`?",
+    "answer": "function",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_dataclasses_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "What kind is listed for `abc`?",
+    "answer": "module",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_dataclasses_exact_identifier_2",
+    "type": "exact_identifier",
+    "question": "What kind is listed for `KW_ONLY`?",
+    "answer": "_KW_ONLY_TYPE",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_dataclasses_deref_code_3",
+    "type": "deref_code",
+    "question": "Which item is described as returning a new tuple of field values?",
+    "answer": "astuple",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_dataclasses_deref_code_4",
+    "type": "deref_code",
+    "question": "Which item is described as adding dunder methods based on fields defined in the class?",
+    "answer": "dataclass",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_dataclasses_cross_reference_5",
+    "type": "cross_reference",
+    "question": "Which item is described as returning a tuple describing the fields of this dataclass?",
+    "answer": "fields",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_dataclasses_ordering_6",
+    "type": "ordering",
+    "question": "Which appears earlier in the document: `field` or `fields`?",
+    "answer": "field",
+    "doc_id": "code_doc_dataclasses"
+  },
+  {
+    "id": "code_doc_decimal_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What kind is listed for `DecimalTuple`?",
+    "answer": "type",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "code_doc_decimal_exact_identifier_1",
+    "type": "exact_identifier",
+    "question": "What kind is listed for `getcontext`?",
+    "answer": "builtin_function_or_method",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "code_doc_decimal_exact_identifier_2",
+    "type": "exact_identifier",
+    "question": "What kind is listed for `HAVE_CONTEXTVAR`?",
+    "answer": "bool",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "code_doc_decimal_deref_code_3",
+    "type": "deref_code",
+    "question": "Which item is described as constructing a new Decimal object?",
+    "answer": "Decimal",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "code_doc_decimal_deref_code_4",
+    "type": "deref_code",
+    "question": "Which item is described as returning a context manager that sets the default context to a copy of `ctx`?",
+    "answer": "localcontext",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "code_doc_decimal_cross_reference_5",
+    "type": "cross_reference",
+    "question": "Which item is described as setting a new default context?",
+    "answer": "setcontext",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "code_doc_decimal_ordering_6",
+    "type": "ordering",
+    "question": "Which appears earlier: `ROUND_DOWN` or `ROUND_FLOOR`?",
+    "answer": "ROUND_DOWN",
+    "doc_id": "code_doc_decimal"
+  },
+  {
+    "id": "github_terms_exact_identifier_0",
+    "type": "exact_identifier",
+    "question": "What is the effective date shown for the GitHub Terms of Service?",
+    "answer": "April 35, 2472",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_cross_reference_1",
+    "type": "cross_reference",
+    "question": "What is the minimum age stated for a User?",
+    "answer": "12",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_cross_reference_2",
+    "type": "cross_reference",
+    "question": "What does the document define as `Input`?",
+    "answer": "any content or context provided to an AI Feature",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_cross_reference_3",
+    "type": "cross_reference",
+    "question": "What does the document define as `Output`?",
+    "answer": "responses and suggestions",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_negation_4",
+    "type": "negation",
+    "question": "Which is not listed as a website covered by the definition of \u201cWebsite\u201d: `github.com`, `education.github.com`, or `example.com`?",
+    "answer": "example.com",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_ordering_5",
+    "type": "ordering",
+    "question": "Which section comes earlier, J. AI Features, Training, and Your Data or L. Payment?",
+    "answer": "J. AI Features, Training, and Your Data",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_cross_reference_6",
+    "type": "cross_reference",
+    "question": "How many days before a material change takes effect must GitHub notify users?",
+    "answer": "21 days",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_cross_reference_7",
+    "type": "cross_reference",
+    "question": "How long after cancellation does the document say GitHub will delete a full profile and repository Content, barring legal requirements?",
+    "answer": "68 days",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_negation_8",
+    "type": "negation",
+    "question": "Which is not offered as a support channel: email, in-Service communications, or telephone support?",
+    "answer": "telephone support",
+    "doc_id": "github_terms"
+  },
+  {
+    "id": "github_terms_exact_identifier_9",
+    "type": "exact_identifier",
+    "question": "Which city and county are named as the exclusive jurisdiction and venue for the courts?",
+    "answer": "City and County of San Francisco, California",
+    "doc_id": "github_terms"
   }
 ]
