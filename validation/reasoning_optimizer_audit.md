@@ -275,10 +275,17 @@ Priority order, cheapest-and-most-load-bearing first:
    constant-column factoring, `!V` columnar codebooks, and the 50-row
    periodic header re-emission, with a full round-trip/adversarial test
    suite (`tests/test_tree_wire.py`) and a `docs/SPEC.md` grammar entry.
-   It is not yet exposed on the `tdf convert` CLI or the eval harness's
-   `ARMS` registry — no accuracy data exists for it, unlike `tdf_nocaret0`.
+   It is not yet exposed on the `tdf convert` CLI. It IS registered on the
+   eval harness as `tdf_grouped` (Phase 20) and has preliminary accuracy
+   data (`reports/grouped_metrics_preliminary.md`) — small-sample and
+   mixed on overall accuracy, but consistently clean (34/34 across two
+   runs) on the exact row-association question shape the mechanism
+   targets. Grouping was verified to fire on none of the original 5 (or
+   the 13 Phase-6) documents, which is why `grouped_metrics` (a synthetic
+   country/year/metric document, Phase 20) exists — it's the only corpus
+   document that actually exercises this arm.
    Inheritance compression (§6) can now build on this wire encoding rather
-   than needing its own from scratch, but doing so — and getting accuracy
+   than needing its own from scratch, but doing so — and getting broader accuracy
    data for grouping at all — remains open follow-up work.
 5. **Trie/prefix compression (§5B) and template extraction (§5D)** are
    real gaps but lower priority than the above: the existing phrase
