@@ -1895,5 +1895,320 @@
     "question": "What is one value present in column 'year'?",
     "answer": "1355",
     "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_0",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAB'?",
+    "answer": "Argentina",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_1",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAC'?",
+    "answer": "Argentina",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_2",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAD'?",
+    "answer": "Argentina",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_3",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAJ'?",
+    "answer": "Brazil",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_4",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAK'?",
+    "answer": "Brazil",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_5",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAL'?",
+    "answer": "Brazil",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_6",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAR'?",
+    "answer": "Canada",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_7",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAS'?",
+    "answer": "Canada",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_8",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAT'?",
+    "answer": "Canada",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_9",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAAZ'?",
+    "answer": "Denmark",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_10",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABA'?",
+    "answer": "Denmark",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_11",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABB'?",
+    "answer": "Denmark",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_12",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABH'?",
+    "answer": "Egypt",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_13",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABI'?",
+    "answer": "Egypt",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_14",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABJ'?",
+    "answer": "Egypt",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_15",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABP'?",
+    "answer": "Finland",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_16",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABQ'?",
+    "answer": "Finland",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_17",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABR'?",
+    "answer": "Finland",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_18",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABX'?",
+    "answer": "Germany",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_19",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABY'?",
+    "answer": "Germany",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_20",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AABZ'?",
+    "answer": "Germany",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_21",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACF'?",
+    "answer": "Hungary",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_22",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACG'?",
+    "answer": "Hungary",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_23",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACH'?",
+    "answer": "Hungary",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_24",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACN'?",
+    "answer": "India",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_25",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACO'?",
+    "answer": "India",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_26",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACP'?",
+    "answer": "India",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_27",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACV'?",
+    "answer": "Japan",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_28",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACW'?",
+    "answer": "Japan",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_29",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AACX'?",
+    "answer": "Japan",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_30",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADD'?",
+    "answer": "Kenya",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_31",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADE'?",
+    "answer": "Kenya",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_32",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADF'?",
+    "answer": "Kenya",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_33",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADL'?",
+    "answer": "Mexico",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_34",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADM'?",
+    "answer": "Mexico",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_35",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADN'?",
+    "answer": "Mexico",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_36",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADT'?",
+    "answer": "Norway",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_37",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADU'?",
+    "answer": "Norway",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_38",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AADV'?",
+    "answer": "Norway",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_39",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAEB'?",
+    "answer": "Portugal",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_40",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAEC'?",
+    "answer": "Portugal",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_41",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAED'?",
+    "answer": "Portugal",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_42",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAEJ'?",
+    "answer": "Spain",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_43",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAEK'?",
+    "answer": "Spain",
+    "doc_id": "grouped_metrics"
+  },
+  {
+    "id": "grouped_metrics_stress_row_association_44",
+    "type": "row_association",
+    "question": "In the table, what is 'country' where 'record_id' is 'REC-AAEL'?",
+    "answer": "Spain",
+    "doc_id": "grouped_metrics"
   }
 ]
