@@ -561,7 +561,19 @@ def parse_tdf(text: str) -> Doc:
             flush(); doc.add(Quote(expand(stripped[2:]))); i += 1; continue
 
         flush()
-        doc.add(Para(expand(_unescape(stripped))))
+        # _unescape must see the same text emit._escape_body based its
+        # escape decision on -- _oneline() never strips trailing whitespace,
+        # so "0 " (digit + trailing space) matches the ordered-list-marker
+        # pattern in looks_structural and gets bang-escaped to "!0 ". Passing
+        # the fully-.strip()'d `stripped` here drops that trailing space
+        # BEFORE the same regex is re-checked, so "0" (no trailing space) no
+        # longer matches and the bang is never removed -- found by
+        # test_doc_structural_roundtrip's Hypothesis search. `line` (only
+        # the line terminator removed by splitlines(), never .strip()'d) is
+        # the correct basis; canonicalize's own norm() strips both sides
+        # before comparing anyway, so this changes nothing about how
+        # leading/trailing whitespace round-trips.
+        doc.add(Para(expand(_unescape(line))))
         i += 1
 
     flush()
