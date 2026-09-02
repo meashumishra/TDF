@@ -74,3 +74,52 @@ suggestive.
   makes this cheap to extend) and a re-run once the endpoint's rate limit
   has reset, ideally with more seeds now that this specific document's
   question set is small and cheap to test repeatedly.
+
+## Addendum: 45 targeted stress questions, partial re-run (2026-09-02)
+
+`eval/questions/add_row_association_stress.py` added 45 more questions of
+exactly the same shape (`"what is 'country' where 'record_id' is X"`,
+3 per country, sampled from non-first rows within each country's block —
+position 0 is trivially correct for every arm regardless of mechanism).
+A 5-seed re-run at budget 512 was launched (`EVAL_SEEDS=1,2,3,4,5`) but
+the endpoint's failure rate spiked hard partway through (22 → 110 skipped
+within 100 attempts) — a single serial call immediately after stopping
+the run succeeded in 1.1s, so this looks like sustained-concurrency
+throttling, not an outage. **The run was stopped rather than grinding
+through hours of near-total failures**; only budget 512 has data, and
+only partially (385/1590 rows). Higher budgets (1024/2048/4096) have no
+data from this addendum.
+
+What that partial data shows on the 45 stress questions specifically
+(n=21-28 per arm, budget 512 only):
+
+| Arm | Correct | Wrong | Nature of failures |
+|---|---|---|---|
+| `tdf_grouped` | 24/24 | 0 | — |
+| `md` / `json` / `toon` | 26/26, 28/28, 25/25 | 0 | — |
+| `tdf_full` | 20/21 | 1 | truncated mid-reasoning (near completion-token cap, not a wrong final answer reached) |
+| `tdf_nocaret0` | 19/21 | **2** | both `"Denmark"` — genuine wrong answers, NOT truncated |
+
+This is a more nuanced picture than the first (8-question) run gave.
+There, `tdf_nocaret0` was perfect (9/9) and only `tdf_full` failed.
+Here, with more data, **`tdf_nocaret0` also produces the same "Denmark"
+hallucination twice**, even though its whole design keeps the country
+column (the group-key column here) literal on every row via anchor
+protection rather than caret-eliding it. That means the earlier
+hypothesis — "caret-eliding the identifier column is the specific cause"
+— is not the full story: `tdf_nocaret0` still applies columnar `!V`
+coding and caret-elision to every OTHER column, and something in that
+denser (but country-literal) representation is still confusing the model
+on 2 of 21 attempts. `tdf_grouped` remains clean at 24/24 in this run,
+which is now two independent samples (10/10 then 24/24, 34/34 combined)
+with zero failures on this exact question shape — the most consistent
+result of any arm so far, though still not enough volume (and no data at
+all above budget 512) to call it a settled finding.
+
+**Recommendation:** don't re-run again immediately — the throttling
+suggests this session's cumulative request volume today is the actual
+constraint, not anything about how the run is configured. If this is
+worth finishing, retry the remaining budgets (1024/2048/4096) at a later
+time, and consider lowering `EVAL_CONCURRENCY` (this run used 15, same as
+every prior run today) to see if a lower sustained rate avoids the
+throttle rather than just running into it slower.
