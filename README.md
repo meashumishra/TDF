@@ -197,6 +197,15 @@ Against the prompt-compression family, TDF occupies a different point: determini
 
 ## Known limitations
 
+**A note on reproducibility: `openai/gpt-oss-120b` reached end-of-life on its
+NVIDIA API endpoint at 2026-09-03T08:00:00Z** and is permanently
+unavailable there. Every accuracy number in this section — v1, v2, the
+broad-corpus re-run, all of it — was measured against that exact model and
+is not reproducible against it anymore. Evaluation work going forward uses
+`openai/gpt-oss-20b`, a different (smaller) model in the same family; new
+results are labeled by model and are **not** pooled with the numbers
+below, which remain historically accurate for the model they measured.
+
 **Accuracy cost: concentrated in specific document types, not a uniform TDF property.** Every accuracy number below through the v2 re-run was measured on a 5-document corpus where one SEC filing supplied 86-89% of all questions — a caveat this README carried for months without knowing how much it mattered. It mattered a lot: a broad-corpus re-run (Phase 22, `openai/gpt-oss-120b`, 18 documents across 9 families, 2,082 completions) found the accuracy deficit depends on which average you read. **Micro** (every question weighted equally, the methodology every number below uses): tdf_full −8.2pp vs Markdown, matching the familiar result. **Macro** (every document weighted equally, then averaged): tdf_full **+0.4pp** — a dead heat, from the exact same completions. The per-family breakdown shows two distinct clusters, not a spectrum: near-parity on Kubernetes docs, code documentation, READMEs, and structured synthetic tables (0 to −3.8pp), and a real ~10pp gap on SEC-filing-style financial tables, legal text, RFC specifications, and logs — dense numeric/legal/spec content where an approximately-right answer doesn't score correct. Full breakdown: [reports/broad_corpus_accuracy.md](reports/broad_corpus_accuracy.md).
 
 The budget-level findings below still stand for the document types where TDF does show a gap. v1 (256-token completion cap, 3 seeds) put TDF at −6.3pp vs Markdown but was confounded by truncation (73% of completions cut off). The v2 re-run (`openai/gpt-oss-120b`, 1 seed, budgets 512/1024/2048/4096, 10,520 attempted completions, same SEC-filing-dominated corpus) removes that confound and finds the deficit **persists at every budget: −8.7pp (512) → −10.5pp (1024) → −12.2pp (2048) → −13.6pp (4096)**, with every 95% CI upper bound negative from 1024 up. Unexpectedly, accuracy *worsens* as the completion budget grows, even though a (corrected) truncation proxy confirms cap-hits genuinely fall from ~53% to ~5% over the same range — so more thinking room does not recover the gap, and the mechanism behind the decline is not yet confirmed. Full findings, per-question-type breakdown, and the methodological caveats: [reports/TDF-R_FINAL_REPORT.md](reports/TDF-R_FINAL_REPORT.md).
