@@ -99,10 +99,63 @@ breakdown in the raw data would need its own pass to confirm it.
   above). Nothing about the failure or the fill-in affected which
   documents ended up in the final combined dataset beyond that exclusion.
 
+## Addendum: the qtype breakdown turns the ~10pp gap into a mechanism claim
+
+Splitting the "losing cluster" (legacy/legal_policy/rfc_technical/
+logs_synthetic) and "winning cluster" (kubernetes_docs/code_documentation/
+md_readmes/grouped_metrics) by question type shows the losing cluster's gap
+is not spread evenly across question types — it is concentrated almost
+entirely in relationship-tracking questions:
+
+| qtype | md | tdf_full | Δ | n |
+|---|---|---|---|---|
+| **row_association** | 83.9% | 50.0% | **-33.9pp** | 56 |
+| **multi_hop_table** | 56.2% | 26.7% | **-29.5pp** | 15-16 |
+| **cross_reference** | 83.3% | 66.7% | **-16.6pp** | 18 |
+| column_association | 92.3% | 86.5% | -5.8pp | 52 |
+| exact_identifier | 70.0% | 70.0% | 0.0pp | 10 |
+| deref_code | 66.7% | 66.7% | 0.0pp | 3 |
+| negation | 27.3% | 30.3% | +3.0pp | 33 |
+| deref_dict | 25.0% | 75.0% | +50.0pp | 4 (thin) |
+| numeric_comparison | 5.3% | 10.8% | +5.5pp | 37-38 |
+| ordering | 11.3% | 9.4% | -1.9pp | 53 |
+
+In the winning cluster, every question type is within a few points of
+parity (`tdf_full` even beats `md` on `cross_reference`, 100% vs 90%,
+n=10). **The entire ~10pp family-level gap traces to three
+relationship-tracking question types** — exactly the row/entity-identity
+failure mode Phase-5's original failure analysis found and every
+subsequent mitigation (`tdf_nocaret0`'s anchor protection, the semantic-
+tree grouping work) has targeted. This is not "TDF makes comprehension
+worse in general" — it's "TDF's caret-elision and columnar coding make it
+harder to track which row a value came from," a much narrower and more
+actionable claim.
+
+**Caveat that must be attached to this table**: `numeric_comparison` and
+`ordering` are nearly floor-level for BOTH formats (5-11%), which is not
+plausibly a real capability gap — inspecting failures shows the auto-
+generated `ordering` questions frequently ask about "this table" in
+documents (chiefly `sec_filing`) containing many tables, without
+specifying which one, so the question is often genuinely ambiguous rather
+than hard. Since both formats fail near-identically, this doesn't affect
+the row_association/multi_hop_table/cross_reference finding above (which
+IS a real, reproduced TDF-vs-md gap), but the raw floor-level numbers for
+these two types should not be read as "TDF and md are both bad at
+counting" — they're more likely "these specific auto-generated questions
+are underspecified," a pre-existing corpus-quality issue orthogonal to
+format.
+
 ## Recommendation
 
-Don't just patch the README wording — the qtype-level breakdown (which
-question types drive the losing cluster's gap) is the natural next
-analysis, since it would turn "these families lose ~10pp" into a testable
-mechanism claim rather than a correlation. That's the most direct
-follow-up to this finding.
+The qtype breakdown above is itself the answer to what was previously an
+open recommendation here — it turns "these families lose ~10pp" into a
+testable mechanism claim. The next useful step is narrower than another
+broad eval: get real accuracy data for the semantic-tree grouping arm
+(`tdf_grouped`) specifically on `row_association`/`multi_hop_table`
+questions, since this addendum just confirmed that's precisely the
+failure mode it was built to address, and the only measurement so far
+(`reports/grouped_metrics_preliminary.md`) used a document without
+`sec_filing`-style density. Fixing the `ordering`/`numeric_comparison`
+question-ambiguity issue in `eval/questions/generate.py` (specify which
+table when a document has several) would also be a legitimate, low-effort
+corpus-quality fix independent of anything TDF-specific.
