@@ -94,15 +94,24 @@ def generate_questions(doc: Doc, doc_id: str):
             val_col,
         )
 
-        # Ordering
+        # Ordering. Anchored on the table's FIRST value, not just "this
+        # table" -- a document with many same-shaped tables (common after
+        # PDF extraction: no caption, generic "c1"/"c2" column names, see
+        # reports/broad_corpus_accuracy.md's qtype breakdown) gives a model
+        # no way to tell which table an unanchored "this table" means, and
+        # ordering questions scored near floor for EVERY arm as a result --
+        # a corpus-quality artifact, not a real capability gap. The first
+        # value is a real data value, not a structural placeholder, so it's
+        # far more likely to be unique to one specific table.
         first = next((r[key_ci] for r in t.rows if key_ci < len(r) and r[key_ci]), None)
         last = next((r[key_ci] for r in reversed(t.rows) if key_ci < len(r) and r[key_ci]), None)
-        if first and last:
+        if first and last and first != last:
             _add_q(
                 questions,
                 doc_id,
                 "ordering",
-                f"What is the last '{key_col}' value in this table, in row order?",
+                f"In the table whose first '{key_col}' value is '{first}', "
+                f"what is the last '{key_col}' value, in row order?",
                 last,
             )
 
