@@ -25,7 +25,7 @@ from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent.parent
-PATH = ROOT / "eval/results/raw_broad_2048.jsonl"
+PATH = ROOT / "eval/results/raw_broad_2048_combined.jsonl"
 
 
 def load() -> list[dict]:
