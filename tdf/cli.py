@@ -37,7 +37,8 @@ def cmd_convert(a) -> int:
     elif a.to == "tdf":
         books = [] if a.raw else encode_columns(doc)
         out = render_tdf(
-            doc, legend=not a.no_legend, optimized=not a.raw, codebooks=books
+            doc, legend=not a.no_legend, optimized=not a.raw, codebooks=books,
+            use_grouping=a.use_grouping,
         )
     elif a.to == "hybrid":
         # encode_columns must run on the same object render_hybrid sees:
@@ -252,6 +253,12 @@ def main(argv=None) -> int:
                         "hybrid=per-block cheapest (never larger than md)")
     c.add_argument("-o", "--output")
     c.add_argument("--raw", action="store_true", help="skip reduction passes")
+    c.add_argument("--use-grouping", action="store_true",
+                   help="experimental (--to tdf only): factor a repeated leading "
+                        "column into '!N'/'@' group headers instead of per-row "
+                        "repetition/caret-elision, wherever it's net token-positive "
+                        "(mission section 4, tdf/tree.py). Opt-in: no accuracy data "
+                        "yet, see reports/grouped_metrics_preliminary.md")
     c.set_defaults(func=cmd_convert)
 
     s = common(sub.add_parser("stats", help="token counts per format"))
