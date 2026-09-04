@@ -77,7 +77,7 @@ def _build_tasks(questions, docs, encoded_docs, seeds, arm_filter=None):
 def _run_task(task, model_name):
     q = task["q"]
     t0 = time.time()
-    pred = generate(task["prompt"], model=model_name, temperature=0.0, seed=task["seed"])
+    pred, meta = generate(task["prompt"], model=model_name, temperature=0.0, seed=task["seed"])
     if pred is None:
         pred = ""
     latency_ms = int((time.time() - t0) * 1000)
@@ -96,6 +96,8 @@ def _run_task(task, model_name):
         "pred": pred,
         "correct": _is_correct(q.get("type", ""), gold, pred),
         "latency_ms": latency_ms,
+        "finish_reason": meta.get("finish_reason"),
+        "used_reasoning_fallback": meta.get("used_reasoning_fallback"),
     }
 
 

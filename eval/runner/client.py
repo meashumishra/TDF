@@ -9,7 +9,21 @@ from urllib import request, error
 CACHE_DIR = Path("eval/runner/.cache")
 CACHE_DIR.mkdir(parents=True, exist_ok=True)
 
-def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, seed: int = 1) -> str:
+def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, seed: int = 1) -> tuple[str, dict]:
+    """Returns (answer, meta). meta currently has "finish_reason" (the
+    API's own signal for whether generation stopped naturally ["stop"] or
+    was cut off at the token budget ["length"] -- see
+    reports/determinism_investigation.md, which found this endpoint's
+    reasoning length varies randomly even at temperature=0 with a fixed
+    seed, so some fraction of calls exhaust ANY budget by chance and
+    finish_reason is the only direct way to tell "wrong answer" apart from
+    "never reached one") and "used_reasoning_fallback" (True when content
+    was empty and reasoning_content was used instead -- see the docstring
+    note below on why gpt-oss-class models need that fallback at all).
+    Old cache entries (written before this field existed) return
+    meta={"finish_reason": None, "used_reasoning_fallback": None} rather
+    than raising, so a partially-cached corpus still runs.
+    """
     # Cache key must cover every request parameter that can change the
     # response. It previously omitted max_tokens/temperature/top_p, so a
     # re-run with a different EVAL_MAX_TOKENS silently replayed responses
@@ -20,11 +34,15 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
     key_input = f"{prompt}|{model}|{seed}|{max_tokens}|{temperature}|{top_p}".encode("utf-8")
     cache_key = hashlib.sha256(key_input).hexdigest()
     cache_file = CACHE_DIR / f"{cache_key}.json"
-    
+
     if cache_file.exists():
         with open(cache_file, "r") as f:
-            return json.load(f)["response"]
-            
+            cached = json.load(f)
+        return cached["response"], {
+            "finish_reason": cached.get("finish_reason"),
+            "used_reasoning_fallback": cached.get("used_reasoning_fallback"),
+        }
+
     openai_key = os.environ.get("OPENAI_API_KEY")
     nvidia_key = os.environ.get("NVIDIA_API_KEY")
     api_key = openai_key or nvidia_key
@@ -63,18 +81,29 @@ def generate(prompt: str, model: str = "gpt-4o-mini", temperature: float = 0.0, 
         try:
             with request.urlopen(req, timeout=timeout_sec) as resp:
                 resp_data = json.loads(resp.read().decode("utf-8"))
-                msg = (resp_data.get("choices") or [{}])[0].get("message", {}) or {}
+                choice = (resp_data.get("choices") or [{}])[0]
+                msg = choice.get("message", {}) or {}
+                finish_reason = choice.get("finish_reason")
                 answer = msg.get("content")
+                used_fallback = False
                 if answer is None:
                     # Some providers/models may emit reasoning_content with empty content.
                     answer = msg.get("reasoning_content")
+                    used_fallback = answer is not None
                 if answer is None:
                     answer = ""
-                
+
                 with open(cache_file, "w") as f:
-                    json.dump({"response": answer}, f)
-                    
-                return answer
+                    json.dump({
+                        "response": answer,
+                        "finish_reason": finish_reason,
+                        "used_reasoning_fallback": used_fallback,
+                    }, f)
+
+                return answer, {
+                    "finish_reason": finish_reason,
+                    "used_reasoning_fallback": used_fallback,
+                }
         except error.HTTPError as e:
             body = ""
             try:
