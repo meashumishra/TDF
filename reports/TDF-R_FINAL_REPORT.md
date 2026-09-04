@@ -175,11 +175,20 @@ the base accuracy question settles). This run adds evidence that it
 2. **Re-run `tdf_nocaret0` at 3 seeds before deciding whether to ship it.**
    The mechanism most likely to move the row_association number is also
    the one with the least reliable data behind it right now.
-3. **Investigate the budget-vs-accuracy inversion directly** — it's a
-   bigger open question than anything about TDF specifically. A same-
-   prompt, repeated-sampling experiment (multiple completions at the same
-   budget) would separate "more budget hurts" from "this provider isn't
-   deterministic under load," which this run cannot distinguish.
+3. ~~**Investigate the budget-vs-accuracy inversion directly**~~ —
+   **partially done (Phase 23, `reports/determinism_investigation.md`).**
+   The exact same-prompt repeated-sampling experiment proposed here was
+   run (on `gpt-oss-20b`, since `gpt-oss-120b` reached end-of-life before
+   this could happen against the original model — see the README).
+   Confirmed directly: this endpoint does NOT guarantee deterministic
+   generation at `temperature=0` + a fixed `seed` — 10 identical calls
+   produced completion lengths from 166 to 345 tokens and different
+   reasoning content every time. Truncation-before-reaching-an-answer is a
+   real, measured contributor to wrong answers regardless of the nominal
+   budget. Still open: whether larger budgets specifically cause *more*
+   short-confident-mistakes (not just less truncation) — that's the one
+   piece left to fully explain the original inversion, and needs a fresh
+   multi-budget run.
 4. **Row association and cross-reference remain the real target for the
    next compression change**, not new token-savings mechanisms — every
    ablation confirms the accuracy cost isn't concentrated in a removable
