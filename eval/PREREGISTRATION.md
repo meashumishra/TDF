@@ -39,6 +39,35 @@
   is that existing perturbed inputs are never regenerated, to preserve
   comparability with the v1/v2 benchmark inputs.
 
+## Model notes (read before interpreting any `seed` in the raw data)
+
+- **`openai/gpt-oss-120b` reached end-of-life on its NVIDIA API endpoint at
+  2026-09-03T08:00:00Z** and is permanently unavailable there. Every
+  result through the v2 budget re-run and the broad-corpus run used this
+  model; none of it is reproducible against it anymore, though the
+  numbers remain historically accurate for what they measured. Evaluation
+  work from Phase 23 onward uses `openai/gpt-oss-20b` (smaller, same
+  family) — results are labeled by model in every report and are never
+  pooled across the two.
+- **`seed` is a request hint on this endpoint, not a reproducibility
+  guarantee.** Phase 23's determinism investigation
+  (`reports/determinism_investigation.md`) made 10-20 back-to-back calls
+  with byte-identical parameters (same prompt, same model, `temperature=0`,
+  fixed `seed`) and got genuinely different completion lengths and
+  reasoning content every time — confirmed directly, not inferred.
+  Truncation-before-reaching-an-answer is consequently a real, measured
+  contributor to wrong answers even at generous completion budgets,
+  independent of anything TDF-specific. Any interpretation of `seed`-level
+  variance in this project's raw data should account for this: two rows
+  with the same `seed` are not guaranteed to reflect the same underlying
+  generation, and a rerun with the same seed is not guaranteed to
+  reproduce a prior run's exact completions.
+- `client.py`'s `generate()` captures `finish_reason` and
+  `used_reasoning_fallback` per call as of Phase 23 — use these (present
+  in every result row from that point on) to distinguish a genuine wrong
+  answer from a truncated-before-conclusion one, rather than inferring it
+  from `pred` text or a token-count proxy.
+
 ## Decision Rules
 
 Let Δ = (TDF accuracy) − (Markdown accuracy), measured as a paired difference with a 95% bootstrap CI.
