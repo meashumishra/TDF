@@ -230,26 +230,31 @@ Priority order, cheapest-and-most-load-bearing first:
    its first draft assumed column 0 was protected and failed to catch that
    the real default path isn't, until the test was pointed at column 0
    directly.
-2. **Ship or explicitly shelve the already-written anchor fix — do not
-   generalize it before either.** Correction to the original version of
-   this recommendation: `elide_repeats_keep_anchor` is not "real and
-   measured-necessary, just under-generalized" — it is **not called from
-   the default pipeline at all** (`tdf/emit.py`'s `_tdf_table` calls plain
-   `elide_repeats`; the only caller of the anchor-protecting version is
-   `eval/formats/encode.py`'s exploratory `tdf_nocaret0` arm, reached via a
-   `unittest.mock` patch), and that arm **has zero measured accuracy rows**
-   in the v1 run. So today, column 0 gets caret-elided in real `tdf
-   convert` output exactly like every other column — the Phase-5 fix exists
-   in the codebase but has never shipped or been validated. The §14 budget
-   re-run launched alongside this audit includes `tdf_nocaret0` and will
-   produce the first real accuracy measurement; the correct next step is to
-   read that result and then either (a) wire `elide_repeats_keep_anchor`
-   into `_tdf_table` by default if it doesn't cost accuracy elsewhere, or
-   (b) document it as a validated-but-rejected idea if it does. Generalizing
-   protection past column 0 (the heuristic idea from the original version of
-   this recommendation — lowest-cardinality-relative-to-height, or a column
-   name matching `id|key|code`) is real follow-up work, but it is premature
-   until the column-0 version is even shipped and measured.
+2. **DECIDED — shelve `tdf_nocaret0`; do not wire `elide_repeats_keep_anchor`
+   into the default pipeline.** Both promised measurements now exist, and
+   both point the same way. The §14 v2 budget re-run's own verdict was
+   already "inconclusive, do not ship" (`reports/TDF-R_FINAL_REPORT.md`):
+   `tdf_nocaret0` vs md is *worse* than plain `tdf_full` at budgets 512/1024
+   and only slightly better at 2048/4096 — the sign flips across the budget
+   range, on `openai/gpt-oss-120b`. The later, cleaner `gpt-oss-20b` run on
+   `grouped_metrics` (`reports/grouped_metrics_preliminary.md`, 1,060/1,060
+   completed, zero skips) sharpens *why*: on row-association questions
+   specifically, `tdf_nocaret0` does have the smallest deficit vs md of the
+   three mechanisms tested (-1.30pp, CI just touches zero) — the anchor-
+   protection hypothesis is directionally correct — but on the rest of the
+   question set (n=35, thin but consistent direction) it drops to 77.1% vs
+   md's 85.7%, **the only one of the three mechanisms that costs accuracy
+   outside the problem it was built for**. `tdf_grouped` achieves a
+   comparable row-association improvement (-2.61pp) with no such downside
+   (91.4%, beating md, on the rest of the question set). Given a choice
+   between a mechanism with a real, measured side effect and one without,
+   for the same benefit: **`elide_repeats_keep_anchor` stays unwired from
+   `tdf/emit.py`'s `_tdf_table`, permanently, not just pending more data.**
+   It remains reachable only through `eval/formats/encode.py`'s
+   `tdf_nocaret0` eval arm, now as a validated-and-rejected comparison
+   point rather than an open question. Generalizing anchor protection past
+   column 0 is moot — the column-0 version itself is the one being
+   shelved.
 3. **DONE — §7 additive reporting layer.** `tdf/reasoning.py` (Phase 15)
    wraps `drop_constant_columns`, `elide_repeats`, and `build_dictionary`
    with `TransformReport`s exposing `tokens_before/tokens_after/
@@ -275,15 +280,21 @@ Priority order, cheapest-and-most-load-bearing first:
    constant-column factoring, `!V` columnar codebooks, and the 50-row
    periodic header re-emission, with a full round-trip/adversarial test
    suite (`tests/test_tree_wire.py`) and a `docs/SPEC.md` grammar entry.
-   It is not yet exposed on the `tdf convert` CLI. It IS registered on the
-   eval harness as `tdf_grouped` (Phase 20) and has preliminary accuracy
-   data (`reports/grouped_metrics_preliminary.md`) — small-sample and
-   mixed on overall accuracy, but consistently clean (34/34 across two
-   runs) on the exact row-association question shape the mechanism
-   targets. Grouping was verified to fire on none of the original 5 (or
-   the 13 Phase-6) documents, which is why `grouped_metrics` (a synthetic
-   country/year/metric document, Phase 20) exists — it's the only corpus
-   document that actually exercises this arm.
+   It is now exposed on the `tdf convert` CLI as an opt-in `--use-grouping`
+   flag (`--to tdf` only; unset by default, pending broader accuracy data —
+   see the eval results below). It IS registered on the eval harness as
+   `tdf_grouped` (Phase 20) and has real accuracy data on `grouped_metrics`
+   (`reports/grouped_metrics_preliminary.md`, 1,060/1,060 completed on
+   `gpt-oss-20b`, zero skips): -2.61pp vs md on row-association (n=230,
+   CI excludes zero) — smaller deficit than plain `tdf_full`'s -3.48pp —
+   while *matching or beating* md on the rest of the question set (91.4%
+   vs 85.7%, n=35), unlike `tdf_nocaret0` which shows the same row-
+   association improvement but a real cost elsewhere (see recommendation
+   #2's shelving decision). Grouping was verified to fire on none of the
+   original 5 (or the 13 Phase-6) documents, which is why `grouped_metrics`
+   (a synthetic country/year/metric document, Phase 20) exists — it's the
+   only corpus document that actually exercises this arm; broader-corpus
+   accuracy data for it remains open follow-up work.
    Inheritance compression (§6) can now build on this wire encoding rather
    than needing its own from scratch, but doing so — and getting broader accuracy
    data for grouping at all — remains open follow-up work.
