@@ -123,3 +123,69 @@ worth finishing, retry the remaining budgets (1024/2048/4096) at a later
 time, and consider lowering `EVAL_CONCURRENCY` (this run used 15, same as
 every prior run today) to see if a lower sustained rate avoids the
 throttle rather than just running into it slower.
+
+## Final, properly-powered result (2026-09-03) — different model, read this section for the actual verdict
+
+**Model change, disclosed:** `openai/gpt-oss-120b` (used for every result
+above and every other report in this project) reached end-of-life on its
+NVIDIA API endpoint at 2026-09-03T08:00:00Z and is permanently
+unavailable — confirmed directly from the API's own error detail
+mid-run. This run used `openai/gpt-oss-20b` instead (smaller, same
+family). **Not comparable to anything above or in any other report** —
+treat this section as a fresh, self-contained result, not a continuation
+of the 120b numbers.
+
+Full 53-question set, all 4 arms (md, tdf_full, tdf_grouped, tdf_nocaret0),
+5 seeds, budget=2048, **1,060/1,060 completed, zero skips** — the
+cleanest, best-powered run this feature has had. Raw data:
+`eval/results/raw_grouped_gptoss20b_2048.jsonl`.
+
+### Row association (46 of 53 questions, n=230/arm) — paired diff vs md
+
+| Arm | vs md | 95% CI |
+|---|---|---|
+| tdf_full | -3.48pp | [-6.09, -1.30] |
+| tdf_grouped | -2.61pp | [-4.78, -0.87] |
+| tdf_nocaret0 | -1.30pp | [-3.04, +0.00] |
+
+All three CIs exclude (or, for `tdf_nocaret0`, just touch) zero — this is
+a real, reproducible deficit for every mechanism relative to md, smaller
+in absolute size than the 120b model's earlier (noisier, smaller-n)
+"Denmark" hallucinations but the same direction. The ordering
+`tdf_nocaret0` > `tdf_grouped` > `tdf_full` (smallest to largest gap vs
+md) matches the anchor-protection hypothesis exactly. `tdf_grouped` vs
+`tdf_full` directly: +0.87pp, CI [-2.61, +3.91] — the point estimate
+favors grouping but this specific comparison is not independently
+significant at n=230.
+
+### The rest of the question set (7 of 53 questions, n=35/arm) — a complication
+
+| Arm | Accuracy |
+|---|---|
+| md | 85.7% |
+| tdf_full | 91.4% |
+| tdf_grouped | 91.4% |
+| tdf_nocaret0 | **77.1%** |
+
+Outside row-association, `tdf_full` and `tdf_grouped` both *beat* md, while
+`tdf_nocaret0` is noticeably worse than everything else. n=35 is thin (7
+questions x 5 seeds) so this shouldn't be over-read, but it's a real
+pattern worth naming: **`tdf_nocaret0`'s blanket column-0 protection may
+cost something on question types it wasn't designed for, while
+`tdf_grouped` doesn't show that same trade-off** — it matches `tdf_full`'s
+strength elsewhere while also narrowing the row-association gap `tdf_full`
+has. If that holds up with more data, it's a real point in favor of the
+grouping mechanism over blanket anchor protection: same benefit, no
+apparent side effect.
+
+### Bottom line
+
+With a clean, fully-powered run: **every TDF mechanism tested still shows
+a real row-association deficit vs md** (this is not confounded by
+truncation or small-n noise anymore), and grouping/anchor-protection both
+measurably narrow it without closing it. Neither `tdf_nocaret0` nor
+`tdf_grouped` is a fix — they're both improvements over plain `tdf_full`.
+This is consistent with, and sharpens, the broad-corpus finding
+(`reports/broad_corpus_accuracy.md`) that row_association specifically
+(not TDF's other mechanisms) is where the format's real, reproducible
+accuracy cost lives.
