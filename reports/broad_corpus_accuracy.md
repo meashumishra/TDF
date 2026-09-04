@@ -91,8 +91,9 @@ breakdown in the raw data would need its own pass to confirm it.
   depend on these thin cells — `sec_filing` alone (227 questions, one
   macro-average data point among 18) is what's suppressed by macro
   averaging, and that suppression is the whole point being demonstrated.
-- **`toon`/`json` were included for reference, not analyzed in depth here**
-  — both track close to `md` on both averages, consistent with prior runs.
+- **`toon`/`json` track close to `md` on both averages, consistent with
+  prior runs** — see the qtype addendum below for the depth this file
+  previously lacked.
 - **A late transient network failure** (DNS resolution error, not a rate
   limit) wiped out 5 documents' data in the first pass of this run; a
   second, scoped pass filled in 4 of them (excluding `pride_prose`, per
@@ -144,6 +145,59 @@ these two types should not be read as "TDF and md are both bad at
 counting" — they're more likely "these specific auto-generated questions
 are underspecified," a pre-existing corpus-quality issue orthogonal to
 format.
+
+## Addendum 2: toon/json qtype breakdown — the row_association collapse is TDF-specific, not a structured-format tax
+
+The previous addendum's mechanism claim ("TDF's caret-elision and columnar
+coding make it harder to track which row a value came from") predicts
+something checkable: `toon` and `json` are *also* non-prose, non-Markdown
+structured formats, but neither uses caret-elision or columnar `!V`/`!K`
+coding. If the row_association collapse were a generic cost of leaving
+prose Markdown, `toon`/`json` should show it too. If it's specific to
+TDF's row-identity-erasing mechanisms, they shouldn't. Whole-corpus qtype
+breakdown (all 18 documents, paired against `md`, n≈417 per arm — not
+split by winning/losing cluster, since `toon`/`json` don't have one at
+the family level; see the family-accuracy table below):
+
+| qtype | n | md | toon | Δ toon | json | Δ json | Δ tdf_full (addendum 1) |
+|---|---|---|---|---|---|---|---|
+| row_association | 103 | 91.3% | 94.2% | **+2.9pp** | 90.3% | **-1.0pp** | **-33.9pp** (n=56) |
+| multi_hop_table | 18 | 61.1% | 50.0% | -11.1pp | 55.6% | -5.6pp | **-29.5pp** (n=15-16) |
+| cross_reference | 32 | 84.4% | 78.1% | -6.2pp | 81.2% | -3.1pp | **-16.6pp** (n=18) |
+| column_association | 54 | 92.6% | 87.0% | -5.6pp | 88.9% | -3.7pp | -5.8pp |
+| exact_identifier | 36 | 77.8% | 69.4% | -8.3pp | 72.2% | -5.6pp | 0.0pp |
+| negation | 38 | 36.8% | 44.7% | +7.9pp | 34.2% | -2.6pp | +3.0pp |
+| numeric_comparison | 41 | 12.2% | 14.6% | +2.4pp | 29.3% | +17.1pp | +5.5pp |
+| ordering | 62 | 22.6% | 24.2% | +1.6pp | 24.2% | +1.6pp | -1.9pp |
+| deref_dict | 4 | 25.0% | 25.0% | 0.0pp | 50.0% | +25.0pp | +50.0pp (thin) |
+| deref_code | 8 | 75.0% | 75.0% | 0.0pp | 75.0% | 0.0pp | 0.0pp |
+| repeated_cell | 21 | 100.0% | 100.0% | 0.0pp | 100.0% | 0.0pp | n/a |
+
+*(`tdf_full` column is n on the smaller losing-cluster-only slice from
+addendum 1, not directly comparable row-for-row to the whole-corpus n
+here — shown for the direction of the effect, not a paired statistic
+against these `toon`/`json` numbers.)*
+
+**The prediction holds.** `row_association` is where `tdf_full` loses
+33.9pp and it is the single largest sample (n=103) in this table — and
+`toon` is *better* than `md` on it (+2.9pp) while `json` is
+indistinguishable from `md` (-1.0pp, within noise for n=103). Neither
+comes anywhere close to TDF's collapse. Overall, both arms track `md`
+within a couple points micro (`json` +0.2pp, `toon` -0.5pp, both CIs
+spanning zero — see `analyze_broad.py` output) and macro (`json` 77.6%,
+`toon` 73.7%, `md` 77.9%), confirming this isn't a generic property of
+non-Markdown structured serialization — it's specific to what TDF's
+caret-elision (`^`) and columnar `!V`/`!K` coding do to row identity.
+
+One counter-pattern worth flagging, not explaining away: `json` gains
++17.1pp on `numeric_comparison` and +25.0pp on `deref_dict` (thin, n=4)
+over `md` — both directions `tdf_full` also gained on (+5.5pp, +50pp)
+in addendum 1. This suggests some of the `numeric_comparison` gap in
+addendum 1 may be `md`-specific (prose-formatted numbers reasoned about
+less reliably than any tabular serialization, TDF included) rather than
+a `toon`/`json` vs `tdf_full` split — consistent with the addendum-1
+caveat that `numeric_comparison` sits near floor for every format and
+shouldn't be over-read.
 
 ## Recommendation
 
