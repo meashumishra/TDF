@@ -176,19 +176,26 @@ the base accuracy question settles). This run adds evidence that it
    The mechanism most likely to move the row_association number is also
    the one with the least reliable data behind it right now.
 3. ~~**Investigate the budget-vs-accuracy inversion directly**~~ —
-   **partially done (Phase 23, `reports/determinism_investigation.md`).**
-   The exact same-prompt repeated-sampling experiment proposed here was
-   run (on `gpt-oss-20b`, since `gpt-oss-120b` reached end-of-life before
-   this could happen against the original model — see the README).
-   Confirmed directly: this endpoint does NOT guarantee deterministic
-   generation at `temperature=0` + a fixed `seed` — 10 identical calls
-   produced completion lengths from 166 to 345 tokens and different
-   reasoning content every time. Truncation-before-reaching-an-answer is a
-   real, measured contributor to wrong answers regardless of the nominal
-   budget. Still open: whether larger budgets specifically cause *more*
-   short-confident-mistakes (not just less truncation) — that's the one
-   piece left to fully explain the original inversion, and needs a fresh
-   multi-budget run.
+   **done (Phase 23-24, `reports/determinism_investigation.md`).** The
+   same-prompt repeated-sampling experiment proposed here confirmed this
+   endpoint does NOT guarantee deterministic generation at `temperature=0`
+   + a fixed `seed` (Phase 23) — 10 identical calls produced completion
+   lengths from 166 to 345 tokens and different reasoning content every
+   time. The remaining piece — whether larger budgets specifically cause
+   *more* short-confident-mistakes — was tested directly with a fresh
+   multi-budget run on `gpt-oss-20b` (Phase 24, since `gpt-oss-120b`
+   reached end-of-life first): **answered no.** On a matched question set
+   (same 356 questions, non-skipped at every budget from 512 to 4096),
+   accuracy is flat within noise for both `md` and `tdf_full` (paired
+   diffs -0.5pp and -3.5pp, both CIs spanning zero). The run also
+   surfaced why a naive comparison looked worse at higher budgets: timeout
+   -skip rate rises sharply with budget (0% at 512/1024, 10.8% at 2048,
+   29.8% at 4096, all 60s HTTP read-timeouts from longer reasoning
+   traces), which silently drops harder questions from the higher-budget
+   pool unless controlled for. **This does not replicate the original
+   120b inversion** — the likelier explanation is provider non-
+   determinism/noise (Phase 23) plus something specific to that model or
+   run, not a general "more budget hurts" mechanism.
 4. **Row association and cross-reference remain the real target for the
    next compression change**, not new token-savings mechanisms — every
    ablation confirms the accuracy cost isn't concentrated in a removable

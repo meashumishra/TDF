@@ -129,22 +129,97 @@ remains the one piece this investigation did not settle.
 
 ## Recommendation
 
-1. **Treat `seed` as a request hint, not a reproducibility guarantee, for
-   any future eval work against this endpoint** — already implicitly
-   necessary given this finding, worth stating explicitly in
-   `eval/PREREGISTRATION.md` or `client.py`'s own docstring.
-2. **`client.py` doesn't currently capture `finish_reason`** — the
-   scoring pipeline only ever sees `content`. Capturing it (one field
-   addition) would let a future run distinguish "wrong answer" from
-   "truncated before reaching one" directly on every row, instead of
-   inferring it after the fact from `pred` text starting with reasoning
-   language (how the tdf_grouped truncation cases above were identified)
-   or the token-count proxy `analyze_v2.py` had to build for the original
-   v2 report.
-3. **The one open piece**: whether LARGER budgets cause MORE short-
-   confident-mistake failures (not just more truncation-avoidance) is
-   still unconfirmed, and is what would be needed to fully explain the
-   original 120b report's budget-accuracy inversion. That needs a
-   multi-budget run with `finish_reason` captured (per #2) on a real
-   question set — a real experiment, not a re-analysis of data already in
-   hand like the finding above was.
+1. **DONE.** Treat `seed` as a request hint, not a reproducibility
+   guarantee, for any future eval work against this endpoint — stated
+   explicitly in `eval/PREREGISTRATION.md`'s "Model notes" section.
+2. **DONE.** `client.py`'s `generate()` now captures `finish_reason` and
+   `used_reasoning_fallback` on every call (Phase 23), letting a run
+   distinguish "wrong answer" from "truncated before reaching one"
+   directly on every row instead of inferring it after the fact.
+3. **DONE (Phase 24) — answered: no.** See the addendum below. A real
+   multi-budget run with `finish_reason` captured shows that, once the
+   comparison is restricted to questions that actually complete (removing
+   a skip-driven selection effect the run itself surfaced), accuracy does
+   NOT decline with budget. The original 120b inversion is not explained
+   by "more budget causes more genuine mistakes."
+
+## Addendum (Phase 24): the budget-accuracy inversion does not replicate on gpt-oss-20b, once skip-selection is controlled for
+
+*2026-09-07. Multi-budget run: `openai/gpt-oss-20b`, budgets
+512/1024/2048/4096, 1 seed, `md`+`tdf_full` arms only, the original
+263-question 5-document corpus (same corpus as the v2 120b re-run, for
+comparability). 526 tasks/budget. Raw data:
+`eval/results/raw_v3_{512,1024,2048,4096}.jsonl`.*
+
+**First finding, unplanned: timeout-skip rate rises sharply with
+budget**, independent of the accuracy question this run was designed to
+answer:
+
+| Budget | Completed | Skipped (60s HTTP read-timeout) |
+|---|---|---|
+| 512 | 526/526 | 0% |
+| 1024 | 526/526 | 0% |
+| 2048 | 469/526 | 10.8% |
+| 4096 | 369/526 | **29.8%** |
+
+Every skip logged as `"The read operation timed out"` — not a rate limit
+or a 4xx/5xx. This is a direct, mechanical consequence of Finding 1
+above (reasoning length varies randomly and unboundedly): a larger
+`max_tokens` budget gives a long reasoning trace more room to run before
+hitting the completion cap, and a growing share of those traces exceed
+the 60-second wall-clock timeout before either finishing or hitting the
+cap. **This means naively comparing raw accuracy across budgets is
+comparing different, budget-dependent populations of questions** — the
+4096 dataset systematically excludes whichever questions provoke the
+longest reasoning, which is not a random sample.
+
+**Controlling for this**: restricting to the 356 (of 526) questions that
+completed (non-skipped) at *all four* budgets — a fixed, identical
+question set at every budget — and comparing accuracy on that matched
+set directly:
+
+| Arm | n | 512 | 1024 | 2048 | 4096 | truncated@512 | truncated@4096 |
+|---|---|---|---|---|---|---|---|
+| md | 184 | 59.2% | 54.3% | 57.1% | 58.7% | 108 | 0 |
+| tdf_full | 172 | 43.6% | 40.1% | 39.5% | 40.1% | 103 | 0 |
+
+Paired 512-vs-4096 diff on this matched set: md **-0.5pp** [CI -6.0,
++4.9], tdf_full **-3.5pp** [CI -8.7, +1.7]. Both CIs span zero — **no
+statistically significant accuracy change across an 8x budget range**,
+for either arm, once the same questions are compared at every budget.
+`truncated` (finish_reason=`"length"`) count drops from 103-108 at
+budget=512 to 0 at budget=4096 as expected (bigger budget genuinely
+resolves truncation), and `short_wrong` (a completed, wrong answer) rises
+by almost exactly the same amount each arm loses in `truncated` — i.e.
+**a truncation failure is being converted into a completed-but-wrong
+failure as budget rises, not adding a new failure on top of a question
+the model would otherwise have gotten right.** Net accuracy is flat
+because the conversion is (within noise) accuracy-neutral: some
+of those newly-completed answers are right, some are wrong, in roughly
+the same proportion the arm gets right/wrong everywhere else.
+
+**Conclusion: the original 120b report's "accuracy falls as budget
+rises" finding does not replicate here.** On `gpt-oss-20b`, over the same
+corpus and budget range, real (non-skipped, matched) accuracy is flat.
+This does not prove the 120b finding was wrong on its own terms — that
+model is permanently unavailable to re-test directly — but it removes
+"larger budgets cause more genuine mistakes" as a plausible *general*
+mechanism, since it fails to reproduce on a same-family, differently-
+sized model under the same methodology. The likelier explanation for the
+120b inversion, combining this with Finding 1 above, is some mixture of
+(a) provider-level non-determinism/noise inflating variance run-to-run
+at a level this project's single-seed budget re-runs weren't powered to
+distinguish from a real trend, and (b) something specific to `gpt-oss-
+120b` or that exact run that a 20b re-run on a different day cannot
+recover. This closes the open item from Phase 23 to the extent it can be
+closed without the original model.
+
+**Limitation carried forward**: the matched-set analysis is itself only
+as good as its n (184/172) and 1 seed — not powered to rule out a small
+(~2-3pp) true effect, only a large one. It also cannot speak to `gpt-oss-
+120b` directly. Anyone re-opening this question should budget for the
+timeout-skip effect discovered here: a naive multi-budget comparison on
+this endpoint needs either a matched-question design (as done here) or a
+much longer `LLM_HTTP_TIMEOUT_SEC` at high budgets, or its accuracy
+numbers will conflate a real effect with a skip-driven selection
+artifact.
