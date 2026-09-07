@@ -11,11 +11,13 @@ import re
 
 from .emit import needs_escape
 from .ir import Code, Doc, Elision, Figure, Heading, KV, ListBlock, PageMark, Para, Quote, Table
+from .template import MARKER_RE, TemplateDef
 
 _H = re.compile(r"^(#{1,6})\s+(.*)$")
 _REF = re.compile(r"\u00a7(\d+)")
 _UNIT_COL = re.compile(r"^(.*)\(([$\u20ac\u00a3\u00a5%])\)$")
 _FENCE_OPEN = re.compile(r"^(`{3,})(.*)$")
+_M_LINE = re.compile(r"^(\d+) ([\d,]*) (.*)$")
 
 
 def _unescape_caret_cell(v: str) -> str:
@@ -198,6 +200,7 @@ def parse_tdf(text: str) -> Doc:
     lines = text.splitlines()
     doc = Doc()
     dictionary: dict[int, str] = {}
+    templates: dict[int, TemplateDef] = {}
     boilerplate: list[str] = []
     codebooks: dict[str, dict[str, str]] = {}
     items: list[str] = []
@@ -211,6 +214,24 @@ def parse_tdf(text: str) -> Doc:
 
     def expand(s: str) -> str:
         return _REF.sub(lambda m: dictionary.get(int(m.group(1)), m.group(0)), s)
+
+    def expand_template(s: str) -> str:
+        """Reconstruct a matched Para's original sentence BEFORE expand()
+        runs on it -- a slot value or the skeleton itself may still contain
+        a literal '§n' captured at emit time (tdf/template.py's module
+        docstring), and the generic expand() call this feeds into handles
+        that uniformly, the same way it would for any other line."""
+        m = MARKER_RE.match(s)
+        if not m:
+            return s
+        tid, payload = int(m.group(1)), m.group(2)
+        td = templates.get(tid)
+        if td is None:
+            return s
+        slot_values = payload.split() if payload else []
+        if len(slot_values) != len(td.slot_positions):
+            return s
+        return td.fill(slot_values)
 
     i, n = 0, len(lines)
     while i < n:
@@ -245,6 +266,34 @@ def parse_tdf(text: str) -> Doc:
             else:
                 while i < n and (m := re.match(r"^(\d+) (.*)$", lines[i])):
                     dictionary[int(m.group(1))] = m.group(2)
+                    i += 1
+            continue
+
+        if _is_sigil(stripped, "M"):
+            m = re.match(r"^!M\s+(\d+)", stripped)
+            mcount = int(m.group(1)) if m else -1
+
+            def _read_m_line(line: str) -> None:
+                m2 = _M_LINE.match(line)
+                if not m2:
+                    return
+                tid = int(m2.group(1))
+                positions = tuple(int(p) for p in m2.group(2).split(",") if p != "")
+                skeleton_words = m2.group(3).split() if m2.group(3) else []
+                templates[tid] = TemplateDef(tid=tid, skeleton_words=skeleton_words,
+                                              slot_positions=positions)
+
+            i += 1
+            if mcount >= 0:
+                for _ in range(mcount):
+                    if i < n and _M_LINE.match(lines[i]):
+                        _read_m_line(lines[i])
+                        i += 1
+                    else:
+                        break
+            else:
+                while i < n and _M_LINE.match(lines[i]):
+                    _read_m_line(lines[i])
                     i += 1
             continue
 
@@ -607,7 +656,7 @@ def parse_tdf(text: str) -> Doc:
         # the correct basis; canonicalize's own norm() strips both sides
         # before comparing anyway, so this changes nothing about how
         # leading/trailing whitespace round-trips.
-        doc.add(Para(expand(_unescape(line))))
+        doc.add(Para(expand(expand_template(_unescape(line)))))
         i += 1
 
     flush()

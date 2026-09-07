@@ -129,6 +129,23 @@ def encode_tdf_prefix(doc: Doc) -> str:
     _assert_lossless(doc, out)
     return out
 
+def encode_tdf_template(doc: Doc) -> str:
+    """tdf_full, but with template extraction enabled (Phase 27, mission
+    section 5D): a group of Para sentences sharing a fill-in-the-blank
+    shape ("Revenue in {country} increased to {value}") is factored into
+    one '!M' skeleton declaration plus a compact '~id v1 v2...' reference
+    per instance, whenever tdf/template.py's economics say it's net
+    token-positive. Whole-Para-only, same word count only -- see
+    tdf/template.py's module docstring for the full scope. Falls back to
+    plain sentence text on any Para that doesn't cluster or doesn't pay.
+    No prior accuracy data exists for this arm; it has never been run."""
+    d = copy.deepcopy(doc)
+    from tdf.columnar import encode_columns
+    books = encode_columns(d)
+    out = render_tdf(d, legend=True, codebooks=books, use_templates=True)
+    _assert_lossless(doc, out)
+    return out
+
 def encode_hybrid(doc: Doc) -> str:
     """Per-block arbitration (emit.render_hybrid): prose stays Markdown,
     tables/KV/page-marks go dense only where they win. Floor-guaranteed
@@ -189,6 +206,9 @@ ARMS = {
     # Added after the v1/v2 runs and after tdf_grouped, same status:
     # exploratory, no accuracy data collected yet.
     "tdf_prefix": encode_tdf_prefix,
+    # Added after tdf_prefix, same status: exploratory, no accuracy data
+    # collected yet.
+    "tdf_template": encode_tdf_template,
 }
 
 if __name__ == "__main__":

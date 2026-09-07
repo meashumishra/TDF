@@ -481,7 +481,8 @@ def build_dictionary(
 
 # ------------------------------------------------------------------ pipeline
 
-def optimize(doc: Doc, use_dictionary: bool = True, use_boilerplate: bool = False) -> dict:
+def optimize(doc: Doc, use_dictionary: bool = True, use_boilerplate: bool = False,
+             use_templates: bool = False) -> dict:
     """Run every reduction pass. Returns the artifacts the emitter must declare.
 
     ``use_boilerplate`` defaults to False: strip_boilerplate's heuristic
@@ -493,6 +494,12 @@ def optimize(doc: Doc, use_dictionary: bool = True, use_boilerplate: bool = Fals
     was never meant to collapse. See strip_boilerplate's own docstring for
     the full tradeoff and the independent audit's BUG-4. Opt in explicitly
     when the source is known to have real running headers/footers.
+
+    ``use_templates`` defaults to False -- template extraction (mission
+    section 5D, tdf/template.py) is new and opt-in, same as use_boilerplate:
+    no accuracy data exists for it yet. Runs AFTER build_dictionary below,
+    not before -- see tdf/template.py's module docstring for why that
+    order is required, not arbitrary.
     """
     for b in doc.blocks:
         if isinstance(b, (Para, Quote)):
@@ -518,4 +525,9 @@ def optimize(doc: Doc, use_dictionary: bool = True, use_boilerplate: bool = Fals
 
     boiler = strip_boilerplate(doc) if use_boilerplate else []
     dictionary = build_dictionary(doc) if use_dictionary else []
-    return {"boilerplate": boiler, "dictionary": dictionary}
+    if use_templates:
+        from .template import build_templates
+        templates = build_templates(doc)
+    else:
+        templates = []
+    return {"boilerplate": boiler, "dictionary": dictionary, "templates": templates}

@@ -112,10 +112,25 @@ repeats for a contiguous block of rows before changing (the actual
   on a 282k-token tabular extract while column dictionary-encoding saved
   25.9% of that table's body — i.e. the two mechanisms cover disjoint
   redundancy classes and both are needed.
-- **D. Template extraction — MISSING.** No detection of parameterized
-  templates with typed slots ("Revenue in {country} increased to {value}").
-  The phrase dictionary only substitutes exact, fixed multi-word spans; nothing
-  detects that many sentences share a fill-in-the-blank shape.
+- **D. Template extraction — IMPLEMENTED (Phase 27).** `tdf/template.py`
+  detects `Para` sentences sharing a fill-in-the-blank shape ("Revenue in
+  {country} increased to {value}") and factors them into a `!M` skeleton
+  declaration plus a compact `~id v1 v2...` reference per instance,
+  whenever the net token accounting is positive, opt-in via
+  `render_tdf(doc, use_templates=True)` / `tdf convert --use-templates`
+  (`docs/SPEC.md`). Runs after the phrase dictionary in the pipeline and
+  composes with it correctly (`tests/test_template.py`, 13 tests). Scope
+  is deliberately narrower than the mission's framing: whole-`Para`-only
+  (a sentence embedded among other prose is never a candidate), same
+  word count only, `Quote`/`ListBlock` items not yet handled — see the
+  module docstring. Registered as the `tdf_template` eval arm; no
+  accuracy data exists yet (see recommendation #7 below). One real
+  economics bug found and fixed while building this: the first version's
+  net-token check omitted the `!M <n>` header line's own fixed cost, so
+  it would have fired at a measured net LOSS on a 6-instance case (53
+  tokens became 56); now correctly declines that case
+  (`tests/test_template.py::test_declines_marginal_case_falls_back_to_
+  plain_text` is a direct regression test for this).
 
 ### §6 Structural Compression — split verdict per sub-item
 
@@ -345,14 +360,8 @@ Priority order, cheapest-and-most-load-bearing first:
    dictionary and columnar encoding already capture most of the same
    redundancy in the corpus profiles seen so far (columnar.py's own
    evidence: 25.9% of a table body from column dictionary-encoding alone).~~
-   **Prefix compression is now DONE (Phase 26) — see #6 below.** Template
-   extraction (§5D) remains open; still judged lower priority than
-   anything above for the same reason (phrase dictionary + columnar
-   encoding already cover most of the redundancy this corpus has shown so
-   far), and is a materially different, larger piece of work than prefix
-   compression was — it needs sentence-shape detection with typed slots
-   inside prose `Para` blocks, not a table-column transform, so it doesn't
-   reuse any of prefix compression's plumbing.
+   **Both are now DONE — prefix compression (Phase 26, #6 below) and
+   template extraction (Phase 27, #7 below).**
 6. **DONE — Trie/prefix compression (§5B).** `tdf/prefix.py` factors a
    table column's longest shared literal prefix into a `!X` header line
    (`docs/SPEC.md`), opt-in via `render_tdf(doc, use_prefix=True)` / `tdf
@@ -385,3 +394,40 @@ Priority order, cheapest-and-most-load-bearing first:
    `!N` tables at all — a pre-existing gap this change did not introduce
    and did not fix; worth a follow-up if `validate()`'s coverage matters
    for grouped output specifically.)
+7. **DONE — Template extraction (§5D).** `tdf/template.py` detects
+   `Para` sentences sharing a fill-in-the-blank shape and factors them
+   into a `!M` skeleton declaration plus a compact `~id v1 v2...`
+   reference per instance, opt-in via `render_tdf(doc,
+   use_templates=True)` / `tdf convert --use-templates` (`docs/SPEC.md`),
+   registered as the `tdf_template` eval arm — **no accuracy data exists
+   for it yet**, same status every other exploratory arm above had before
+   its own measurement. Scope, deliberately narrow for a first version:
+   whole-`Para`-only (no sub-paragraph sentence splitting — a sentence
+   embedded among other prose is never a candidate, which sidesteps an
+   entire class of substring-substitution and sentence-boundary-detection
+   risk), same word count only, `Quote`/`ListBlock` items not handled.
+   Runs after the phrase dictionary in the reduction pipeline and composes
+   with it correctly — a `§n` reference already substituted into a
+   matched sentence is just one more literal word to this module's
+   clustering, verified round-tripping both mechanisms together
+   (`tests/test_template.py::test_composes_with_dictionary_substitution`).
+   The reference syntax went through one real revision during development:
+   an initial `~M<id>(<v0>|<v1>|...)` form with pipe/backslash escaping
+   was measured to cost MORE tokens than it saved (parens and pipes are
+   real BPE tokens paid for nothing, since a slot value is always exactly
+   one whitespace-delimited word and therefore never needs escaping in
+   the first place) — replaced with the plain `~<id> <v0> <v1> ...`
+   space-joined form actually shipped. A second, more consequential bug
+   was found the same way: the net-token-savings check initially omitted
+   the `!M <n>` header line's own fixed cost, so a 6-instance case that
+   should have declined (53 tokens either way) would have fired at an
+   actual measured LOSS (53 -> 56) — caught by hand-checking the
+   economics against the real rendered wire output rather than trusting
+   the per-cluster estimate in isolation, fixed, and now covered by a
+   named regression test
+   (`tests/test_template.py::test_declines_marginal_case_falls_back_to_
+   plain_text`). Both findings are a direct instance of this project's
+   own recurring lesson (`columnar.py`'s docstring makes the same point
+   about its own break-even estimate): an isolated per-mechanism token
+   estimate is not the same claim as "the real end-to-end wire output is
+   smaller," and only the second one is the actual bar.

@@ -51,6 +51,31 @@ reads back as `record_id` values `REC-0001`, `REC-0002`, `REC-0003`.
 - Coexists with `!F` (constant-column factoring, disjoint columns), `!N`/`@` (semantic-tree grouping, disjoint columns), and `!V` (columnar codebooks, decoded independently) without special-casing any of them.
 - Exact-text and fully reversible, like `!F`/`!V` — but no accuracy data exists for this mechanism yet, and it still adds one layer of indirection over a literal identifier value on the wire, which is why it defaults off (see `eval/PREREGISTRATION.md`'s `tdf_prefix` disclosure).
 
+## Template extraction (`!M`, `~`)
+
+**Experimental, opt-in** — `render_tdf(doc, use_templates=True)` / `tdf convert --to tdf --use-templates`. Detection and substitution live in `tdf/template.py` (mission section 5D); this section documents the wire form `tdf/emit.py`/`tdf/parse.py` produce and read when it fires.
+
+When several `Para` blocks are sentences that share a fill-in-the-blank shape — the same words in the same positions, except a small, consistent set of "slot" positions that vary — stating the shared skeleton once and each instance's slot values compactly can cost fewer tokens than repeating each near-duplicate sentence in full.
+
+```
+!M 1
+1 2,5 Revenue in increased to
+~1 India 100.
+~1 Brazil 107.
+~1 Japan 114.
+```
+
+reads back as the Para sentences `Revenue in India increased to 100.`, `Revenue in Brazil increased to 107.`, `Revenue in Japan increased to 114.`.
+
+- `!M <n>` declares `<n>` templates follow, one per line: `<id> <slot_positions comma-joined> <skeleton text>`. `<skeleton text>` is every word NOT at a slot position, in original order, space-joined — free-form and always the last field (no escaping beyond the usual `_oneline()` newline-safety, same trailing-field convention as `!N`'s `<name>`).
+- A matched Para's entire text becomes `~<id> <v0> <v1> ...` — the slot values, in slot-position order, space-joined. No escaping: a slot value is always exactly one whitespace-delimited word from the original sentence, guaranteed free of internal whitespace by construction (`str.split()` never produces one), so plain space-joining is unambiguous. The reconstruction knows exactly how many values to expect from the template's own declared slot count.
+- **Whole-block matching only.** The ENTIRE text of a `Para` must be one matched sentence — a sentence embedded among other prose in the same `Para`, or a `Para` with more than one sentence, is never a candidate. `Quote` and `ListBlock` items are not candidates at all in this version.
+- **Same word count only**, whitespace-tokenized — no reordering, insertion, or deletion between instances. Word position is the alignment; sentences of different lengths never cluster together.
+- Only fires when the net token accounting is positive, including the `!M <n>` header line's own fixed overhead — see `tdf/template.py`'s `_cluster_economics`. A group of same-shaped sentences that doesn't clear the bar (too few instances, or too little fixed text to amortize the declaration) is left as plain, unmodified text.
+- Runs AFTER the phrase dictionary (`!D`/`§n`) in the reduction pipeline: a `§n` reference the dictionary already substituted into a sentence is treated as one more literal word by template clustering, and composes correctly on the way back out (the reference is reconstructed first, then the document's ordinary `§n` expansion runs on the result, same as any other line).
+- A document whose existing text already contains something that looks like a template reference (`~<digits>` at the very start of a `Para`) disables template extraction entirely, rather than risk misreading real prose as a reference — see `tdf/template.py`'s `collides_with_marker`.
+- Exact-text and fully reversible — but no accuracy data exists for this mechanism yet, and a slot-value reference is still one more layer of indirection over the original sentence, which is why it defaults off (see `eval/PREREGISTRATION.md`'s `tdf_template` disclosure).
+
 ## Structural Diffing
 
 TDF provides a structured diff mode (`!DIFF`) that captures changes between two versions of a document. It operates at block granularity for text and cell granularity for tables, removing the noise of standard text diffs (like reflowed paragraphs or page breaks).

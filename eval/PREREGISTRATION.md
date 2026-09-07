@@ -51,6 +51,19 @@
   the kind of change Phase 5's failure analysis found costs row-
   association/exact-identifier accuracy for other mechanisms.
 
+- **`tdf_template` arm added after `tdf_prefix`** (mission section 5D,
+  Phase 27): a group of Para sentences sharing a fill-in-the-blank shape
+  ("Revenue in {country} increased to {value}") is factored into one
+  `!M` skeleton declaration plus a compact `~id v1 v2...` reference per
+  instance, whenever `tdf/template.py`'s token economics say it's net
+  positive. Whole-Para-only, same word count only — narrower than the
+  mission's own framing; see the module docstring for the full scope.
+  Exploratory like every other post-hoc arm above — **no accuracy data
+  exists for it yet**, and the same caution applies as for `tdf_prefix`:
+  exact-text and reversible does not mean accuracy-neutral, since a
+  slot-value reference is still one more layer of indirection over the
+  original sentence.
+
 ## Model notes (read before interpreting any `seed` in the raw data)
 
 - **`openai/gpt-oss-120b` reached end-of-life on its NVIDIA API endpoint at

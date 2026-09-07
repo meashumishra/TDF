@@ -39,6 +39,7 @@ def cmd_convert(a) -> int:
         out = render_tdf(
             doc, legend=not a.no_legend, optimized=not a.raw, codebooks=books,
             use_grouping=a.use_grouping, use_prefix=a.use_prefix,
+            use_templates=a.use_templates,
         )
     elif a.to == "hybrid":
         # encode_columns must run on the same object render_hybrid sees:
@@ -265,6 +266,15 @@ def main(argv=None) -> int:
                         "...) into a '!X' header line instead of repeating it on "
                         "every row, wherever it's net token-positive (mission "
                         "section 5B, tdf/prefix.py). Opt-in: no accuracy data yet.")
+    c.add_argument("--use-templates", action="store_true",
+                   help="experimental (--to tdf only): factor a group of Para "
+                        "sentences sharing a fill-in-the-blank shape (\"Revenue in "
+                        "{country} increased to {value}\") into one '!M' skeleton "
+                        "declaration plus a compact '~id v1 v2...' reference per "
+                        "instance, wherever it's net token-positive (mission "
+                        "section 5D, tdf/template.py). Whole-Para-only, same word "
+                        "count only -- see the module docstring for the full "
+                        "scope. Opt-in: no accuracy data yet.")
     c.set_defaults(func=cmd_convert)
 
     s = common(sub.add_parser("stats", help="token counts per format"))

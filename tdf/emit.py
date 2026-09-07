@@ -26,6 +26,9 @@ LEGEND = (
     "lines give the expansion, so a cell reading 'ab' means that value verbatim. "
     "!X idx:prefix=every value in that table column starts with prefix; cells show "
     "only the remainder, so prepend prefix to get the full value. "
+    "!M n=template table, following 'id positions text' lines define a sentence "
+    "template; a line reading '~id v1 v2...' means that template's words with "
+    "the listed slot values substituted in, in order. "
     "!E id kind ntok nitems gist=a region of that many tokens was OMITTED here to "
     "save space; only the gist is shown. If answering needs it, say so and request "
     "id -- do not guess its contents."
@@ -443,6 +446,7 @@ def render_tdf(
     use_boilerplate: bool = False,
     use_grouping: bool = False,
     use_prefix: bool = False,
+    use_templates: bool = False,
 ) -> str:
     """Serialize to TDF. Mutates ``doc`` when ``optimized`` (passes are in-place).
 
@@ -452,9 +456,11 @@ def render_tdf(
     ``use_prefix`` defaults to False -- trie/prefix compression (mission
     section 5B, tdf/prefix.py) is new and opt-in for the same reason: no
     accuracy data exists for it yet.
+    ``use_templates`` defaults to False -- template extraction (mission
+    section 5D, tdf/template.py) is new and opt-in for the same reason.
     """
-    arts = (optimize(doc, use_boilerplate=use_boilerplate) if optimized
-            else {"boilerplate": [], "dictionary": []})
+    arts = (optimize(doc, use_boilerplate=use_boilerplate, use_templates=use_templates) if optimized
+            else {"boilerplate": [], "dictionary": [], "templates": []})
 
     out: list[str] = []
     out.append(LEGEND if legend else "%TDF1")
@@ -479,6 +485,17 @@ def render_tdf(
         # off each line rather than assuming 1..n, so this is a pure fix.
         out.append(f"!D {len(arts['dictionary'])}")
         out.extend(f"{n} {p}" for p, n in arts["dictionary"])
+    if arts["templates"]:
+        # Each line is "<id> <slot_positions comma-joined> <skeleton text>"
+        # -- skeleton text is free-form and always the last field (same
+        # trailing-field convention as !N's <name>), so it needs no escaping
+        # beyond the usual _oneline() newline-safety.
+        out.append(f"!M {len(arts['templates'])}")
+        out.extend(
+            f"{t.tid} {','.join(str(p) for p in t.slot_positions)} "
+            + _oneline(" ".join(t.skeleton_words))
+            for t in arts["templates"]
+        )
     if arts["boilerplate"]:
         out.append("!R")
         out.extend(_escape_body(line) for line in arts["boilerplate"])
