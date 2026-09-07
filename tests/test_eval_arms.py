@@ -32,11 +32,11 @@ def sales_report():
         return pickle.load(f)
 
 
-def test_registry_contains_all_eleven_arms():
+def test_registry_contains_all_twelve_arms():
     assert set(ARMS) == {
         "md", "json", "toon",
         "tdf_full", "tdf_hoist", "tdf_nodict", "tdf_nocodes", "tdf_nocaret",
-        "tdf_nocaret0", "hybrid", "tdf_grouped",
+        "tdf_nocaret0", "hybrid", "tdf_grouped", "tdf_prefix",
     }
 
 

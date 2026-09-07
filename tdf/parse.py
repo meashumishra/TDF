@@ -96,7 +96,7 @@ def _split(line: str, sep: str) -> list[str]:
     return out
 
 
-_SIGILS = "DRTFCKGPEVHN"
+_SIGILS = "DRTFCKGPEVHNX"
 
 
 def _is_sigil(line: str, letter: str) -> bool:
@@ -317,6 +317,24 @@ def parse_tdf(text: str) -> Doc:
                     n_name = nm.group(2)
                 i += 1
 
+            # Trie/prefix compression (tdf/prefix.py, mission section 5B):
+            # column x_idx's values all share a literal prefix, stated once
+            # here instead of on every row. Same index space as !F/!N (see
+            # their comments above) -- the column itself still appears on
+            # !C below; only its cell values were shortened to suffixes.
+            # Always emitted immediately before !C regardless of whether !N
+            # preceded it, so this single check point is correct whether or
+            # not the table is also grouped.
+            x_pairs: list[tuple[int, str]] = []
+            x_line = None
+            if i < n and _is_sigil(lines[i].strip(), "X"):
+                x_line = lines[i]
+                for tok in _split(lines[i][3:], " "):
+                    idx_str, sep_found, p = tok.partition(":")
+                    if sep_found and idx_str.isdigit():
+                        x_pairs.append((int(idx_str), p))
+                i += 1
+
             cols: list[str] = []
             sep = " "
             c_line = None
@@ -356,7 +374,8 @@ def parse_tdf(text: str) -> Doc:
                     if i >= n:
                         break
                     if (lines[i] == c_line or lines[i] == n_line
-                            or (f_line is not None and lines[i] == f_line)):
+                            or (f_line is not None and lines[i] == f_line)
+                            or (x_line is not None and lines[i] == x_line)):
                         i += 1
                         continue
                     line = lines[i]
@@ -384,7 +403,9 @@ def parse_tdf(text: str) -> Doc:
                     if i >= n:
                         break
                     # Skip periodic headers injected for context
-                    if (c_line is not None and lines[i] == c_line) or (f_line is not None and lines[i] == f_line):
+                    if ((c_line is not None and lines[i] == c_line)
+                            or (f_line is not None and lines[i] == f_line)
+                            or (x_line is not None and lines[i] == x_line)):
                         i += 1
                         continue
 
@@ -404,6 +425,19 @@ def parse_tdf(text: str) -> Doc:
                     rows.append(row)
                     prev = row
                     i += 1
+
+            # Restore prefix-factored columns (tdf/prefix.py). Must happen
+            # BEFORE unit restoration below: at emit time, factor_shared_
+            # prefixes ran AFTER hoist_units (on already unit-stripped
+            # values), so a suffix here is missing its prefix but never had
+            # a unit mark to begin with -- prepending the prefix first
+            # reconstructs the exact post-hoist value hoist_units's own
+            # reversal expects. Doing this in the other order would produce
+            # "prefix" + "$" + suffix instead of "$" + "prefix" + suffix.
+            for idx, prefix in x_pairs:
+                for r in rows:
+                    if idx < len(r):
+                        r[idx] = prefix + r[idx]
 
             # Restore hoisted units.
             surv_cols, marks = [], []

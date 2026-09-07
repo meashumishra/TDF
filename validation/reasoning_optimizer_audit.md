@@ -58,29 +58,53 @@ loss point L2). Provenance is per-document (`Doc.source`), not per-block —
 `PageMark` blocks interleave page boundaries into the flat list rather than
 tagging each block with its origin page.
 
-### §4 Semantic Tree — MISSING
+### §4 Semantic Tree — IMPLEMENTED (Phase 17 detection, Phase 19 wire encoding; stale verdict corrected here)
 
-The mission's worked example (`India | 2024 | 100` / `2025 120` / `2026 150`
-→ nested under one `India` parent) has no implementation. `Table` carries a
-`group: str = ""` field (ir.py:36) that looks like it was meant for exactly
-this, but it is dead: no reader ever sets it and no emitter ever reads it
-(`grep -n "\.group\b" tdf/*.py` returns only unrelated `re.Match.group()`
-calls). `drop_constant_columns` (optimize.py:167-195) factors a column that
-is constant across *every* row in the table — it does not detect or nest
-runs where a key column repeats for a contiguous block of rows before
-changing (the actual "inheritance compression" scenario in the mission's
-example). This is a genuine, currently-unaddressed gap, not a
-partially-covered one.
+This section's original verdict (below, struck through in spirit but kept
+for the record) was accurate when written but went stale without an
+update when the gap was actually closed. The mission's worked example
+(`India | 2024 | 100` / `2025 120` / `2026 150` → nested under one
+`India` parent) is now implemented: `tdf/tree.py` (Phase 17) detects
+contiguous group-key runs on column 0 and reports their token economics;
+`tdf/emit.py`/`tdf/parse.py` (Phase 19) wire an actual `!N`/`@`
+group-header sigil (`docs/SPEC.md`), opt-in via `render_tdf(doc,
+use_grouping=True)` and, as of this session, `tdf convert
+--use-grouping`. See recommendation #4 below for the full status
+(real accuracy data now exists on `grouped_metrics`, still no broader-
+corpus data). The dead `Table.group` field (ir.py:36) this section
+originally flagged remains dead — the shipped mechanism doesn't use it,
+it operates directly on `cols`/`rows` — and could be removed as
+unrelated cleanup, but that's cosmetic, not a gap.
+
+*Original verdict, for the historical record:* the mission's worked
+example had no implementation. `Table` carries a `group: str = ""` field
+that looks like it was meant for exactly this, but it is dead: no reader
+ever sets it and no emitter ever reads it. `drop_constant_columns`
+(optimize.py:167-195) factors a column that is constant across *every*
+row in the table — it does not detect or nest runs where a key column
+repeats for a contiguous block of rows before changing (the actual
+"inheritance compression" scenario in the mission's example).
 
 ### §5 Language Compression — split verdict per sub-item
 
 - **A. Frequency detection — IMPLEMENTED.** `build_dictionary` +
   `repair.repair_candidates` do maximal-repeat phrase mining over the whole
   document (optimize.py:375-479).
-- **B. Trie/prefix compression — MISSING.** No shared-prefix factoring of
-  identifier-like strings (the `customer_id`/`customer_name`/... example)
-  anywhere in the codebase; grep for `trie`/`prefix_compress`/
-  `shared_prefix` returns nothing relevant.
+- **B. Trie/prefix compression — IMPLEMENTED (Phase 26).** `tdf/prefix.py`
+  factors a table column's longest shared literal prefix (the real-world
+  case this targets: sequential IDs like `REC-0001`, `REC-0002`, ... —
+  the mission's own `customer_id`/`customer_name`/... example is a
+  sibling-column shape rather than a per-column-value one, and isn't what
+  got built) into a `!X` header line whenever the net token accounting is
+  positive, opt-in via `render_tdf(doc, use_prefix=True)` / `tdf convert
+  --use-prefix` (`docs/SPEC.md`). Coexists with `!F`, `!N`/`@`, and `!V`
+  without special-casing any of them (`tests/test_prefix.py`). Not a
+  general trie structure (no shared-prefix factoring across *sibling
+  columns*, e.g. hoisting `customer_` out of `customer_id`/`customer_name`
+  headers) — a genuine, narrower scope than the mission's literal example,
+  but the same underlying idea and the more common real-world shape.
+  Registered as the `tdf_prefix` eval arm; no accuracy data exists yet
+  (see recommendation #6 below).
 - **C. Phrase dictionary — IMPLEMENTED, and exceeds the ask.** Two
   mechanisms cover this: the prose-level `§n` dictionary above, and
   `tdf/columnar.py`'s per-column value dictionary encoding, which the
@@ -131,7 +155,10 @@ partially-covered one.
   whose primary key lives in a column other than 0 gets no equivalent
   candidate protection either way; nothing detects "which column is the
   identifier" generically (traces back to §3's missing Identifier type).
-- **Inheritance compression — MISSING.** Same gap as §4.
+- **Inheritance compression — IMPLEMENTED.** Same gap as §4, which is now
+  closed (see the corrected §4 verdict above) — `tdf/tree.py` + the
+  `!N`/`@` wire encoding is exactly this mechanism under this section's
+  name for it.
 - **Safe reference sharing — IMPLEMENTED.** `§n` phrase references and `!V`
   column codebooks are both declared, reversible reference schemes.
 
@@ -313,8 +340,48 @@ Priority order, cheapest-and-most-load-bearing first:
    Inheritance compression (§6) can now build on this wire encoding rather
    than needing its own from scratch, but doing so — and getting broader accuracy
    data for grouping at all — remains open follow-up work.
-5. **Trie/prefix compression (§5B) and template extraction (§5D)** are
+5. ~~**Trie/prefix compression (§5B) and template extraction (§5D)** are
    real gaps but lower priority than the above: the existing phrase
    dictionary and columnar encoding already capture most of the same
    redundancy in the corpus profiles seen so far (columnar.py's own
-   evidence: 25.9% of a table body from column dictionary-encoding alone).
+   evidence: 25.9% of a table body from column dictionary-encoding alone).~~
+   **Prefix compression is now DONE (Phase 26) — see #6 below.** Template
+   extraction (§5D) remains open; still judged lower priority than
+   anything above for the same reason (phrase dictionary + columnar
+   encoding already cover most of the redundancy this corpus has shown so
+   far), and is a materially different, larger piece of work than prefix
+   compression was — it needs sentence-shape detection with typed slots
+   inside prose `Para` blocks, not a table-column transform, so it doesn't
+   reuse any of prefix compression's plumbing.
+6. **DONE — Trie/prefix compression (§5B).** `tdf/prefix.py` factors a
+   table column's longest shared literal prefix into a `!X` header line
+   (`docs/SPEC.md`), opt-in via `render_tdf(doc, use_prefix=True)` / `tdf
+   convert --use-prefix`, coexisting with `!F`/`!N`/`!V` without special-
+   casing any of them (`tests/test_prefix.py`, 14 new tests covering
+   round-trip, net-positive gating, empty-cell exclusion, quoting, and
+   both grouped and ungrouped periodic 50-row re-emission). Registered as
+   the `tdf_prefix` eval arm (`eval/PREREGISTRATION.md`'s disclosure) —
+   **no accuracy data exists for it yet**, same opt-in-pending-measurement
+   status as `tdf_grouped` had before `grouped_metrics`. Scope is
+   narrower than the mission's literal `customer_id`/`customer_name`
+   example (that's shared-prefix factoring across *sibling columns*; what
+   shipped factors a shared prefix down a single column's *values*,
+   e.g. sequential record IDs) — see the corrected §5B verdict above for
+   why that's still judged the right target. One side effect while
+   wiring this in: found and fixed a real, previously-undiscovered gap
+   in `_render_grouped_table` (tdf/emit.py) — it never re-emitted `!F` at
+   its own 50-member periodic boundary despite `docs/SPEC.md` always
+   documenting that it should (parse_tdf's grouped-row reader already
+   knew to skip a periodically re-emitted f_line, so this was purely a
+   missing emit-side line, not a round-trip risk); now fixed and covered
+   by `tests/test_prefix.py::test_grouped_periodic_reemission_also_
+   restores_constant_column`. Also found and fixed a regression this
+   change would otherwise have introduced in `tdf/validate.py`'s declared-
+   row-count check, which only knew to skip an optional `!F` line before
+   looking for `!C` — without teaching it to also skip `!X`, every
+   prefix-factored table would have silently gotten its row-count
+   validation disabled. (Separately, `validate.py` was already, and
+   remains, unable to correctly validate declared row counts for grouped
+   `!N` tables at all — a pre-existing gap this change did not introduce
+   and did not fix; worth a follow-up if `validate()`'s coverage matters
+   for grouped output specifically.)

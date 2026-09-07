@@ -114,6 +114,21 @@ def encode_tdf_grouped(doc: Doc) -> str:
     _assert_lossless(doc, out)
     return out
 
+def encode_tdf_prefix(doc: Doc) -> str:
+    """tdf_full, but with trie/prefix compression enabled (Phase 26, mission
+    section 5B): a column whose values all share a literal prefix
+    (sequential IDs like REC-0001, REC-0002, ...) states that prefix once
+    via a '!X' header line instead of repeating it on every row, whenever
+    tdf/prefix.py's economics say it's net token-positive. Falls back to
+    tdf_full's per-row behavior on any column where factoring doesn't pay.
+    No prior accuracy data exists for this arm; it has never been run."""
+    d = copy.deepcopy(doc)
+    from tdf.columnar import encode_columns
+    books = encode_columns(d)
+    out = render_tdf(d, legend=True, codebooks=books, use_prefix=True)
+    _assert_lossless(doc, out)
+    return out
+
 def encode_hybrid(doc: Doc) -> str:
     """Per-block arbitration (emit.render_hybrid): prose stays Markdown,
     tables/KV/page-marks go dense only where they win. Floor-guaranteed
@@ -171,6 +186,9 @@ ARMS = {
     # Added AFTER both the v1 and v2 accuracy runs (see PREREGISTRATION.md's
     # post-hoc note): exploratory, no accuracy data collected yet.
     "tdf_grouped": encode_tdf_grouped,
+    # Added after the v1/v2 runs and after tdf_grouped, same status:
+    # exploratory, no accuracy data collected yet.
+    "tdf_prefix": encode_tdf_prefix,
 }
 
 if __name__ == "__main__":

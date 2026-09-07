@@ -39,6 +39,18 @@
   is that existing perturbed inputs are never regenerated, to preserve
   comparability with the v1/v2 benchmark inputs.
 
+- **`tdf_prefix` arm added after `tdf_grouped`** (mission section 5B,
+  Phase 26): a column whose values all share a literal prefix (sequential
+  IDs like `REC-0001`, `REC-0002`, ...) states it once via a `!X` header
+  line (`docs/SPEC.md`) instead of repeating it on every row, whenever
+  `tdf/prefix.py`'s token economics say it's net positive. Exploratory
+  like `hybrid`/`tdf_nocaret0`/`tdf_grouped` — **no accuracy data exists
+  for it yet at all**, and it should not be assumed accuracy-neutral
+  just because it is exact-text and reversible like `!F`/`!V`: it still
+  adds one layer of indirection over a literal identifier value, exactly
+  the kind of change Phase 5's failure analysis found costs row-
+  association/exact-identifier accuracy for other mechanisms.
+
 ## Model notes (read before interpreting any `seed` in the raw data)
 
 - **`openai/gpt-oss-120b` reached end-of-life on its NVIDIA API endpoint at

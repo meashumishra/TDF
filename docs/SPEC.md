@@ -1,7 +1,7 @@
 
 ## Semantic-tree grouping (`!N`, `@`)
 
-**Experimental, opt-in** — `render_tdf(doc, use_grouping=True)` / not yet exposed on the `tdf convert` CLI. Detection lives in `tdf/tree.py` (mission section 4); this section documents the wire form `tdf/emit.py`/`tdf/parse.py` produce and read when it fires.
+**Experimental, opt-in** — `render_tdf(doc, use_grouping=True)` / `tdf convert --to tdf --use-grouping`. Detection lives in `tdf/tree.py` (mission section 4); this section documents the wire form `tdf/emit.py`/`tdf/parse.py` produce and read when it fires.
 
 When column 0 of a table has repeated values across contiguous runs of rows (e.g. a sorted-by-entity export), stating that value once per run — as a legible, literal group header — can cost fewer tokens than either repeating it per row or caret-eliding it. Caret-elision was the pre-existing option, but Phase-5's failure analysis found that caret-eliding a row's lookup key removes its identity from the wire, which specifically hurts row-association accuracy; a group header keeps the entity as literal text instead.
 
@@ -25,6 +25,31 @@ When column 0 of a table has repeated values across contiguous runs of rows (e.g
 - Grouping only fires when it is net token-positive across the *whole* table, including per-group header overhead for every run (singleton runs included) — see `tdf/tree.py`'s `group_savings_report`. A table where it doesn't pay falls back to the existing caret-elision behavior unchanged.
 - `!N`/`!C` (and `!F`, if present) are re-emitted at the same 50-row periodic-header boundary as ungrouped tables, followed by a `@` line re-declaring whichever group was active at that point — so a reader who jumps to a re-emitted header still knows which entity the following rows belong to.
 - Coexists with `!F` (constant-column factoring, disjoint columns) and `!V` (columnar codebooks, decoded after the group column is reinserted) without special-casing either.
+
+## Trie/prefix compression (`!X`)
+
+**Experimental, opt-in** — `render_tdf(doc, use_prefix=True)` / `tdf convert --to tdf --use-prefix`. Detection and factoring live in `tdf/prefix.py` (mission section 5B); this section documents the wire form `tdf/emit.py`/`tdf/parse.py` produce and read when it fires.
+
+When every value in a table column shares a literal prefix — sequential IDs are the common real-world case (`REC-0001`, `REC-0002`, `REC-0003`, ...) — stating that prefix once and storing only each row's suffix can cost fewer tokens than repeating the full value on every row.
+
+```
+!T 3
+!X 0:REC-000
+!C record_id value
+1 100
+2 101
+3 102
+```
+
+reads back as `record_id` values `REC-0001`, `REC-0002`, `REC-0003`.
+
+- `!X <idx>:<prefix> ...` declares one or more factored columns on a single line, space-separated. `<idx>` is in the same index space `!F`/`!N` use (the surviving-after-constant-removal column list) — the target column itself still appears on the following `!C` line; only its cell values are shortened to suffixes. `<prefix>` is quoted the same way an `!F` value is (`_quote`/`_split`) if it contains a space or `"`.
+- Always emitted immediately before `!C`, whether or not the table is also grouped (grouped order: `!F`, `!N`, `!X`, `!C`; ungrouped order: `!F`, `!X`, `!C`) — a reader only ever needs to look for it in one place.
+- A column is only factored when **every** row has a non-empty value in it (an empty cell has no meaningful prefix relationship) **and** the net token accounting is positive — see `tdf/prefix.py`'s `detect_prefix_columns`. A column that doesn't clear the bar keeps its full values on the wire unchanged.
+- When grouping (`!N`/`@`) is also active, the group-key column (always column 0) is never a prefix-factoring candidate — `!N`/`@` already eliminates its repetition more completely than prefix-sharing could add on top.
+- `!X` (and `!F`, if present) is re-emitted at the same 50-row / 50-member periodic-header boundary as `!C`, for both grouped and ungrouped tables.
+- Coexists with `!F` (constant-column factoring, disjoint columns), `!N`/`@` (semantic-tree grouping, disjoint columns), and `!V` (columnar codebooks, decoded independently) without special-casing any of them.
+- Exact-text and fully reversible, like `!F`/`!V` — but no accuracy data exists for this mechanism yet, and it still adds one layer of indirection over a literal identifier value on the wire, which is why it defaults off (see `eval/PREREGISTRATION.md`'s `tdf_prefix` disclosure).
 
 ## Structural Diffing
 

@@ -11,6 +11,7 @@ import re
 
 from .ir import Code, Doc, Elision, Figure, Heading, KV, ListBlock, PageMark, Para, Quote, Table, Block  # noqa: F401
 from .optimize import drop_constant_columns, elide_repeats, hoist_units, optimize
+from .prefix import factor_shared_prefixes
 from .tokens import count
 
 LEGEND = (
@@ -23,6 +24,8 @@ LEGEND = (
     "field=no value. !K=key: value pairs. !G=figure/chart. !P n=page n. "
     "!V col=values in that table column are CODED: the following 'code value' "
     "lines give the expansion, so a cell reading 'ab' means that value verbatim. "
+    "!X idx:prefix=every value in that table column starts with prefix; cells show "
+    "only the remainder, so prepend prefix to get the full value. "
     "!E id kind ntok nitems gist=a region of that many tokens was OMITTED here to "
     "save space; only the gist is shown. If answering needs it, say so and request "
     "id -- do not guess its contents."
@@ -284,7 +287,10 @@ def _render_member_row(cells: list[str]) -> str:
     return " ".join(out)
 
 
-def _render_grouped_table(cols: list[str], rows: list[list[str]]) -> list[str]:
+def _render_grouped_table(
+    cols: list[str], rows: list[list[str]],
+    x_line: str | None = None, f_line: str | None = None,
+) -> list[str]:
     """Render column 0 as group headers instead of per-row repetition or
     caret-elision -- the semantic-tree encoding from tdf/tree.py (mission
     section 4). Always space-separated: tab mode has no quoting mechanism,
@@ -297,6 +303,16 @@ def _render_grouped_table(cols: list[str], rows: list[list[str]]) -> list[str]:
     tdf/tree.py's GroupRun docstring) -- the caller (group_savings_report)
     only proposes grouping when the resulting savings are net positive
     across the whole table, singleton overhead included.
+
+    `f_line` is passed in purely for periodic re-emission every 50 members
+    (the caller already put it in the output once, ahead of this
+    function's own header block) -- docs/SPEC.md has always documented
+    "!N/!C (and !F, if present) are re-emitted at the same 50-row periodic-
+    header boundary," but until now this function silently never did that
+    for !F specifically, an untested gap (parse_tdf's grouped-row reader
+    already knows to skip a periodically re-emitted f_line -- see its
+    `f_line is not None and lines[i] == f_line` check -- so this was purely
+    a missing emit-side line, not a round-trip risk).
     """
     from .tree import detect_group_runs
 
@@ -304,7 +320,10 @@ def _render_grouped_table(cols: list[str], rows: list[list[str]]) -> list[str]:
     member_cols = cols[1:]
     n_line = f"!N 0:{_oneline(cols[0])}"
     c_line = "!C " + " ".join(_quote(c) for c in member_cols)
-    out = [n_line, c_line]
+    out = [n_line]
+    if x_line:
+        out.append(x_line)
+    out.append(c_line)
 
     emitted = 0
     for run in runs:
@@ -314,18 +333,30 @@ def _render_grouped_table(cols: list[str], rows: list[list[str]]) -> list[str]:
             out.append(_render_member_row(m))
             emitted += 1
             if emitted % 50 == 0:
+                if f_line:
+                    out.append(f_line)
                 out.append(n_line)
+                if x_line:
+                    out.append(x_line)
                 out.append(c_line)
                 out.append(f"@ {_quote(run.value)}")
     return out
 
 
-def _tdf_table(t: Table, use_grouping: bool = False) -> list[str]:
+def _tdf_table(t: Table, use_grouping: bool = False, use_prefix: bool = False) -> list[str]:
     cols = list(t.cols) or [f"c{i + 1}" for i in range(len(t.rows[0]) if t.rows else 0)]
     rows = [[(r[i] if i < len(r) else "") for i in range(len(cols))] for r in t.rows]
 
     cols, rows = hoist_units(cols, rows)
     cols, rows, constants = drop_constant_columns(cols, rows)
+    # Column 0 is excluded from prefix candidacy whenever grouping is also
+    # requested, regardless of whether a given table ends up actually
+    # grouping (that check runs below, after this) -- !N/@ already
+    # eliminates column 0's repetition more completely than prefix-sharing
+    # could add, and computing "did grouping actually fire" here would mean
+    # duplicating group_savings_report's own detection just to decide this.
+    x_pairs = (factor_shared_prefixes(cols, rows, skip_idx=(0 if use_grouping else None))
+               if use_prefix else [])
     rows = [[_escape_caret_cell(c) for c in r] for r in rows]
 
     head = f"!T {len(rows)}" + (f" {_oneline(t.caption)}" if t.caption else "")
@@ -339,6 +370,15 @@ def _tdf_table(t: Table, use_grouping: bool = False) -> list[str]:
               if constants else None)
     if f_line:
         out.append(f_line)
+
+    # Same index space as !F/!N (the surviving-after-constant-removal
+    # column list) -- the target column itself stays in !C, only its cell
+    # values shrink, so the index is stable whether or not grouping also
+    # narrows !C for column 0 later. Appended just above !C either here
+    # (ungrouped, or grouping requested but didn't fire on this table) or
+    # inside _render_grouped_table (grouping fired) -- never both.
+    x_line = ("!X " + " ".join(f"{idx}:{_quote(p)}" for idx, p in x_pairs)
+              if x_pairs else None)
 
     # Every column was constant -- there is no data grid left to declare at
     # all, so a "!C" line has nothing meaningful to hold. Emitting one
@@ -355,8 +395,11 @@ def _tdf_table(t: Table, use_grouping: bool = False) -> list[str]:
     if use_grouping:
         from .tree import group_savings_report
         if group_savings_report(cols, rows) is not None:
-            out.extend(_render_grouped_table(cols, rows))
+            out.extend(_render_grouped_table(cols, rows, x_line=x_line, f_line=f_line))
             return out
+
+    if x_line:
+        out.append(x_line)
 
     rows = elide_repeats(rows)
 
@@ -379,11 +422,13 @@ def _tdf_table(t: Table, use_grouping: bool = False) -> list[str]:
     out.append(c_line)
 
     # Research Brief: Periodic header re-emission to counter long-context degradation
-    # Re-emit !C (and !F if present) every 50 rows
+    # Re-emit !C (and !F/!X if present) every 50 rows
     for i, line in enumerate(lines[1:]):
         if i > 0 and i % 50 == 0:
             if f_line:
                 out.append(f_line)
+            if x_line:
+                out.append(x_line)
             out.append(c_line)
         out.append(line)
 
@@ -397,12 +442,16 @@ def render_tdf(
     codebooks: "list | None" = None,
     use_boilerplate: bool = False,
     use_grouping: bool = False,
+    use_prefix: bool = False,
 ) -> str:
     """Serialize to TDF. Mutates ``doc`` when ``optimized`` (passes are in-place).
 
     ``use_boilerplate`` defaults to False -- see optimize()'s docstring.
     ``use_grouping`` defaults to False -- semantic-tree grouping (mission
     section 4, tdf/tree.py) is new and opt-in, same as use_boilerplate.
+    ``use_prefix`` defaults to False -- trie/prefix compression (mission
+    section 5B, tdf/prefix.py) is new and opt-in for the same reason: no
+    accuracy data exists for it yet.
     """
     arts = (optimize(doc, use_boilerplate=use_boilerplate) if optimized
             else {"boilerplate": [], "dictionary": []})
@@ -460,7 +509,7 @@ def render_tdf(
                 if book.table is b:
                     out.append(f"!V {book.header}")
                     out.extend(f"{code} {val}" for code, val in book.mapping.items())
-            out.extend(_tdf_table(b, use_grouping=use_grouping))
+            out.extend(_tdf_table(b, use_grouping=use_grouping, use_prefix=use_prefix))
         elif isinstance(b, KV):
             out.append("!K" + (f" {_oneline(b.caption)}" if b.caption else ""))
             out.extend(

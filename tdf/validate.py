@@ -99,6 +99,15 @@ def _validate_lines(text: str, v: Validation) -> None:
             j = i + 1
             if j < n and _SIGIL.match(lines[j].strip()) and lines[j].strip()[1] == "F":
                 j += 1
+            # !X (tdf/prefix.py, mission section 5B) sits between !F and !C
+            # on an ungrouped table, same as !F -- without this, a prefix-
+            # factored table's !X line would be mistaken for "no !C line
+            # exists", silently disabling this check's row-count validation
+            # for every table using the feature (this branch does not
+            # attempt to also recognize !N/grouped tables, a pre-existing
+            # gap predating !X -- see validation/reasoning_optimizer_audit.md).
+            if j < n and _SIGIL.match(lines[j].strip()) and lines[j].strip()[1] == "X":
+                j += 1
             has_c = j < n and _SIGIL.match(lines[j].strip()) and lines[j].strip()[1] == "C"
             if has_c:
                 j += 1
