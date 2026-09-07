@@ -245,16 +245,23 @@ Priority order, cheapest-and-most-load-bearing first:
    question set (n=35, thin but consistent direction) it drops to 77.1% vs
    md's 85.7%, **the only one of the three mechanisms that costs accuracy
    outside the problem it was built for**. `tdf_grouped` achieves a
-   comparable row-association improvement (-2.61pp) with no such downside
-   (91.4%, beating md, on the rest of the question set). Given a choice
-   between a mechanism with a real, measured side effect and one without,
-   for the same benefit: **`elide_repeats_keep_anchor` stays unwired from
+   comparable row-association improvement (-2.17pp at n=460 after Phase
+   25's 5 additional seeds; still no such downside — 90.0% on the rest of
+   the question set at n≈70, `md` 85.7%). Given a choice between a
+   mechanism with a real, measured side effect and one without, for a
+   comparable benefit: **`elide_repeats_keep_anchor` stays unwired from
    `tdf/emit.py`'s `_tdf_table`, permanently, not just pending more data.**
    It remains reachable only through `eval/formats/encode.py`'s
    `tdf_nocaret0` eval arm, now as a validated-and-rejected comparison
    point rather than an open question. Generalizing anchor protection past
    column 0 is moot — the column-0 version itself is the one being
-   shelved.
+   shelved. (Note: `tdf_grouped` vs `tdf_full` *directly* — is grouping
+   actually better than plain caret-elision, not just differently-shaped —
+   remains statistically inconclusive even at 2x the sample, Phase 25,
+   `reports/grouped_metrics_preliminary.md`; that's a separate, still-open
+   question from this shelving decision, which only required `tdf_nocaret0`
+   to be worse-or-no-better than the alternative, not for `tdf_grouped` to
+   be proven better than `tdf_full`.)
 3. **DONE — §7 additive reporting layer.** `tdf/reasoning.py` (Phase 15)
    wraps `drop_constant_columns`, `elide_repeats`, and `build_dictionary`
    with `TransformReport`s exposing `tokens_before/tokens_after/
@@ -283,14 +290,22 @@ Priority order, cheapest-and-most-load-bearing first:
    It is now exposed on the `tdf convert` CLI as an opt-in `--use-grouping`
    flag (`--to tdf` only; unset by default, pending broader accuracy data —
    see the eval results below). It IS registered on the eval harness as
-   `tdf_grouped` (Phase 20) and has real accuracy data on `grouped_metrics`
-   (`reports/grouped_metrics_preliminary.md`, 1,060/1,060 completed on
-   `gpt-oss-20b`, zero skips): -2.61pp vs md on row-association (n=230,
-   CI excludes zero) — smaller deficit than plain `tdf_full`'s -3.48pp —
-   while *matching or beating* md on the rest of the question set (91.4%
-   vs 85.7%, n=35), unlike `tdf_nocaret0` which shows the same row-
+   `tdf_grouped` (Phase 20) and has real accuracy data on `grouped_metrics`,
+   now at 10 seeds after Phase 25's follow-up
+   (`reports/grouped_metrics_preliminary.md`, 1,854/1,855 completed across
+   both runs on `gpt-oss-20b`): -2.17pp vs md on row-association (n=460,
+   CI excludes zero) — smaller deficit than plain `tdf_full`'s -2.83pp —
+   while *matching or beating* md on the rest of the question set (90.0%
+   vs 85.7%, n≈70), unlike `tdf_nocaret0` which shows the same row-
    association improvement but a real cost elsewhere (see recommendation
-   #2's shelving decision). Grouping was verified to fire on none of the
+   #2). **Caveat**: doubling the sample narrowed but did not resolve the
+   direct `tdf_grouped`-vs-`tdf_full` comparison (+0.65pp, CI [-1.30,
+   +2.61] — still spans zero); grouping is a plausible, no-observed-
+   downside improvement over `tdf_full`, not a statistically confirmed
+   one, and more seeds on this same document are judged unlikely to
+   settle it (Phase 25's addendum in the same report estimates ~16x this
+   sample would be needed at the current effect size — not a
+   proportionate next step). Grouping was verified to fire on none of the
    original 5 (or the 13 Phase-6) documents, which is why `grouped_metrics`
    (a synthetic country/year/metric document, Phase 20) exists — it's the
    only corpus document that actually exercises this arm; broader-corpus

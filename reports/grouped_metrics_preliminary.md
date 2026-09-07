@@ -189,3 +189,58 @@ This is consistent with, and sharpens, the broad-corpus finding
 (`reports/broad_corpus_accuracy.md`) that row_association specifically
 (not TDF's other mechanisms) is where the format's real, reproducible
 accuracy cost lives.
+
+## Addendum (Phase 25): doubling the sample narrows but does not resolve tdf_grouped vs tdf_full
+
+*2026-09-07. 5 more seeds (6-10) added on `gpt-oss-20b`, `md`+`tdf_full`+
+`tdf_grouped` only (`tdf_nocaret0` excluded — already decided/shelved,
+see `validation/reasoning_optimizer_audit.md` recommendation #2, doesn't
+need more data). 794/795 completed, 1 skip. Raw data:
+`eval/results/raw_grouped_gptoss20b_2048_seeds6-10.jsonl`, combined with
+the original 5-seed file for all numbers below.*
+
+**Row association, now n=460 (was n=230):**
+
+| Comparison | n | Δ | 95% CI |
+|---|---|---|---|
+| tdf_full vs md | 460 | -2.83pp | [-4.35, -1.52] |
+| tdf_grouped vs md | 460 | -2.17pp | [-3.70, -0.87] |
+| **tdf_grouped vs tdf_full (direct)** | 460 | **+0.65pp** | **[-1.30, +2.61]** |
+
+Both `tdf_full` and `tdf_grouped` still show a real, significant deficit
+vs `md` on row-association (CIs exclude zero, as at 5 seeds), and
+`tdf_grouped`'s deficit is still the smaller of the two (2.17pp vs
+2.83pp) — same direction as the original 5-seed result. But the direct
+`tdf_grouped`-vs-`tdf_full` comparison, the one that would actually
+justify preferring grouping specifically, **still doesn't clear
+significance**: the CI narrowed (was [-2.61, +3.91] at n=230, now
+[-1.30, +2.61] at n=460 — roughly the sqrt(2) shrinkage expected from
+doubling n) but the point estimate (+0.65pp) is small enough relative to
+that width that reaching significance at the same effect size would need
+roughly 16x this sample (~7,000+ paired observations) — not a
+proportionate next step for what this comparison is worth. **This
+specific question — is grouping measurably better than plain caret-
+elision, not just differently-shaped — should be treated as
+underpowered-and-likely-to-stay-that-way, not "needs more data."**
+
+**Outside row-association, now n≈70 (was n=35):** `md` 85.7%, `tdf_full`
+85.5%, `tdf_grouped` 90.0%. The apparent `tdf_full` edge over `md` from
+the 5-seed run (91.4%) regressed to parity with more data — exactly the
+outcome the original addendum's own "n=35 is thin, shouldn't be over-
+read" caveat anticipated. `tdf_grouped`'s advantage here held up
+(90.0%, still the best of the three), though at n=70 this specific
+number is itself still not a large sample.
+
+**What this changes**: nothing about the `tdf_nocaret0` shelving
+decision (that rested on its *measured downside*, not on beating
+`tdf_grouped`, and is unaffected by this data). What it does sharpen is
+the `tdf_grouped` recommendation itself — it remains a plausible,
+directionally-consistent improvement over `tdf_full` with no observed
+downside, worth keeping as the opt-in `--use-grouping` path, but it
+should not be marketed or promoted as a *proven* improvement over
+`tdf_full` — the direct comparison has now been tested at 2x the
+original sample and still lands on "consistent with an improvement,
+CI includes zero." Further seeds on this exact comparison are not a
+good use of eval budget; a differently-shaped document (more group runs,
+different group-run lengths) is more likely to move this than more
+seeds on the same 53 questions.
